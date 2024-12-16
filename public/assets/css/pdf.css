@@ -1,0 +1,156 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0 0 10px;
+    padding: 0;
+}
+
+h1 {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+h2 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+h4 {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+h5 {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+h6 {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* LETTERHEAD */
+.letterhead {
+    border-bottom: 3px double #ff0000;
+    margin-bottom: 10px;
+}
+
+.letterhead table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.letterhead .logo img {
+    max-width: 100px;
+    height: auto;
+}
+
+.letterhead .business-info {
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.letterhead .business-info p {
+    font-size: 12px;
+    color: #555;
+    margin: 2px 0;
+}
+
+.letterhead .date-time {
+    text-align: right;
+    font-size: 12px;
+    color: #555;
+}
+
+.letterhead .date-time p {
+    margin: 2px 0;
+}
+
+/* PDF title */
+.pdf-title {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.pdf-title h5 {
+    font-size: 18px;
+    font-weight: bold;
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 10px;
+    text-align: center;
+    margin: 0;
+    border-radius: 5px;
+    border: 1px solid #cccccc;
+}
+
+/* Pdf information */
+.pdf-information {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-family: Arial, sans-serif;
+}
+
+.pdf-information .table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #ddd;
+}
+
+.pdf-information thead th,
+.pdf-information thead td {
+    text-transform: capitalize;
+}
+
+.pdf-information th,
+.pdf-information td {
+    padding: 8px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.pdf-information th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+    color: #333;
+}
+
+.pdf-information td {
+    background-color: #ffffff;
+    color: #555;
+}
+
+.pdf-information .table-responsive {
+    overflow-x: auto;
+}
+
+.pdf-information tr:nth-child(even) td {
+    background-color: #f9f9f9;
+}
+
+.pdf-information tr:hover td {
+    background-color: #f1f1f1;
+}
+
+.pdf-information td {
+    font-size: 12px;
+}

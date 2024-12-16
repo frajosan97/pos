@@ -1,0 +1,42 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: rgb(201, 40, 0);
+    --secondary-color: rgb(201, 40, 0);
+    --white-color: #fefefe;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+.main-bg {
+    background-color: var(--primary-color) !important;
+}
+
+.text-color {
+    color: var(--primary-color) !important;
+}
+
+.pw-5 {
+    width: 5px !important;
+}
+
+.image-card img {
+    max-width: 100%;
+    max-height: auto;
+}
+
+.empty-cart img {
+    max-width: 150px;
+    max-height: auto;
+}
