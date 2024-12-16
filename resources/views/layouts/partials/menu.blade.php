@@ -101,6 +101,52 @@
     </ul>
 </li>
 
+<!-- MPESA INTERGRATION FOR SYSTEM -->
+<li class="nav-item">
+    <a class="nav-link" href="javascript:void(0)">
+        <i class="nav-icon fas fa-wallet"></i>
+        <p>MPESA API<i class="right fas fa-angle-left"></i></p>
+    </a>
+    <ul class="nav nav-treeview" style="margin-left: 15px;">
+        <li class="nav-item">
+            <a href="{{ route('mpesa.simulate.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-wallet"></i>
+                <p>C2B Simulation</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mpesa.stkpush.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-wallet"></i>
+                <p>STK Push</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mpesa.b2c.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-wallet"></i>
+                <p>B2C Simulation</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mpesa.account-balance.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-wallet"></i>
+                <p>Acc Balance</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mpesa.transaction-status.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-wallet"></i>
+                <p>Trans Status</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mpesa.reverse.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-wallet"></i>
+                <p>Reversal</p>
+            </a>
+        </li>
+    </ul>
+</li>
+
 @if (Auth::user()->userRoleInfo()->role > 2)
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
