@@ -24,38 +24,36 @@
                     <!-- Profile Details -->
                     <div class="col-md-9">
                         <h4 class="mb-3">Employee Biodata</h4>
-                        <table class="table table-borderless table-striped">
-                            <tbody>
-                                <tr>
-                                    <th class="text-muted">ID</th>
-                                    <td>{{ $user->id }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-muted">Email</th>
-                                    <td>{{ $user->email }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-muted">Phone</th>
-                                    <td>{{ $user->phone }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-muted">Gender</th>
-                                    <td>{{ ucfirst($user->gender) }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-muted">Passport</th>
-                                    <td>{{ $user->passport }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-muted">Branch</th>
-                                    <td>{{ $user->branch->name ?? 'Branch not assigned' }}</td>
-                                </tr>
-                                <tr>
-                                    <th class="text-muted">Email Verified</th>
-                                    <td>{{ $user->email_verified_at ? 'Verified' : 'Not Verified' }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="table-responive">
+                            <table class="table table-borderless table-striped">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-muted">Email</th>
+                                        <td>{{ $user->email }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Phone</th>
+                                        <td>{{ $user->phone }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Gender</th>
+                                        <td>{{ ucfirst($user->gender) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Passport</th>
+                                        <td>{{ $user->passport }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Branch</th>
+                                        <td>{{ $user->branch->name ?? 'Branch not assigned' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-muted">Email Verified</th>
+                                        <td>{{ $user->email_verified_at ? 'Verified' : 'Not Verified' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -70,22 +68,25 @@
         <div class="card shadow-sm border-0">
             <div class="card-body">
                 <h4 class="mb-3">Employee Sales Data</h4>
-                <table class="table table-bordered table-striped" id="salesDataTable">
-                    <thead>
-                        <tr>
-                            <th class="text-muted">Sale Date</th>
-                            <th class="text-muted">Customer Name</th>
-                            <th class="text-muted">Amount</th>
-                            <th class="text-muted">Status</th>
-                            <th class="text-muted">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Sales data will be dynamically populated by AJAX -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" id="salesDataTable">
+                        <thead>
+                            <tr>
+                                <th class="text-muted">Sale Date</th>
+                                <th class="text-muted">Customer Name</th>
+                                <th class="text-muted">Amount</th>
+                                <th class="text-muted">Status</th>
+                                <th class="text-muted">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Sales data will be dynamically populated by AJAX -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
+        
     </div>
 </div>
 

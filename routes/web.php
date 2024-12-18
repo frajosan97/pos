@@ -106,18 +106,10 @@ Route::group(['middleware' => ['auth']], function () {
         // Post requests
         Route::post('/registerUrl', [MpesaController::class, 'registerUrl'])->name('mpesa.registerUrl');
         Route::post('/simulate', [MpesaController::class, 'simulate'])->name('mpesa.simulate');
-        Route::post('/simulateB2c', [MpesaController::class, 'simulateB2c'])->name('mpesa.simulateB2C');
         Route::post('/stkpush', [MpesaController::class, 'stkpush'])->name('mpesa.stkpush');
-        Route::post('/reverse', [MpesaController::class, 'reverse'])->name('mpesa.reverse');
-        Route::post('/accountBalance', [MpesaController::class, 'accountBalance'])->name('mpesa.accountBalance');
-        Route::post('/getTransactionStatus', [MpesaController::class, 'getTransactionStatus'])->name('mpesa.getTransactionStatus');
         // Views display
         Route::view('/stkpush-form', 'portal.mpesa.stk_push')->name('mpesa.stkpush.form');
         Route::view('/simulate-form', 'portal.mpesa.simulate')->name('mpesa.simulate.form');
-        Route::view('/b2c-form', 'portal.mpesa.b2c')->name('mpesa.b2c.form');
-        Route::view('/reverse-form', 'portal.mpesa.reverse')->name('mpesa.reverse.form');
-        Route::view('/account-balance-form', 'portal.mpesa.acc_balance')->name('mpesa.account-balance.form');
-        Route::view('/transaction-status-form', 'portal.mpesa.trans_status')->name('mpesa.transaction-status.form');
     });
 
     /**

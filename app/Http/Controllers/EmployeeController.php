@@ -147,4 +147,21 @@ class EmployeeController extends Controller
             return response()->json(['error' => 'An error occurred while fetching the employee details.'], 500);
         }
     }
+
+    public function edit(string $id)
+    {
+        try {
+            // Fetch User with related data (branch and role)
+            $user = User::with(['branch', 'role'])->findOrFail($id);
+
+            // Return the main view with user data if it's not an AJAX request
+            return view('portal.employee.edit', compact('user'));
+        } catch (\Exception $exception) {
+            // Log the error details for debugging
+            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+
+            // Return a generic error message as JSON
+            return response()->json(['error' => 'An error occurred while fetching the employee details.'], 500);
+        }
+    }
 }

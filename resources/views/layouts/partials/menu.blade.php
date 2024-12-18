@@ -1,95 +1,88 @@
+<!-- POS Menu -->
 <li class="nav-item">
     <a href="/" class="nav-link">
-        <i class="nav-icon fas fa-tag"></i>
-        <p>Sell</p>
+        <i class="nav-icon fas fa-cash-register"></i>
+        <p>Point of Sale</p>
     </a>
 </li>
 
 <li class="nav-item">
     <a href="{{ route('analytics.index') }}" class="nav-link">
-        <i class="nav-icon fas fa-chart-bar"></i>
+        <i class="nav-icon fas fa-chart-line"></i>
         <p>Analytics</p>
     </a>
 </li>
 
+<!-- Products -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
-        <i class="nav-icon fas fa-boxes"></i>
-        <p>Products<i class="right fas fa-angle-left"></i></p>
+        <i class="nav-icon fas fa-box"></i>
+        <p>
+            Products
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
-    <ul class="nav nav-treeview" style="margin-left: 15px;">
+    <ul class="nav nav-treeview">
         <li class="nav-item">
             <a href="{{ route('catalogue.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-tags"></i>
+                <i class="nav-icon fas fa-book"></i>
                 <p>Catalogue</p>
             </a>
         </li>
         <li class="nav-item">
             <a href="{{ route('product.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-list"></i>
+                <i class="nav-icon fas fa-th-list"></i>
                 <p>Products List</p>
             </a>
         </li>
     </ul>
 </li>
 
+<!-- Reports -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
-        <i class="nav-icon fas fa-folder-open"></i>
-        <p>Reports<i class="right fas fa-angle-left"></i></p>
+        <i class="nav-icon fas fa-file-alt"></i>
+        <p>
+            Reports
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
-    <ul class="nav nav-treeview" style="margin-left: 15px;">
+    <ul class="nav nav-treeview">
         <li class="nav-item">
             <a href="{{ route('product.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-warehouse"></i>
+                <i class="nav-icon fas fa-clipboard-list"></i>
                 <p>Inventory</p>
             </a>
         </li>
         <li class="nav-item">
             <a href="{{ route('sale.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-shopping-cart"></i>
+                <i class="nav-icon fas fa-shopping-basket"></i>
                 <p>Sales</p>
             </a>
         </li>
         <li class="nav-item">
             <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-wallet"></i>
+                <i class="nav-icon fas fa-credit-card"></i>
                 <p>Payments</p>
             </a>
         </li>
     </ul>
 </li>
 
+<!-- Customers -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
-        <i class="nav-icon fas fa-user-tie"></i>
-        <p>Employees<i class="right fas fa-angle-left"></i></p>
+        <i class="nav-icon fas fa-users"></i>
+        <p>
+            Customers
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
-    <ul class="nav nav-treeview" style="margin-left: 15px;">
-        <li class="nav-item">
-            <a href="{{ route('employee.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-users"></i>
-                <p>Employees List</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('employee.create') }}" class="nav-link">
-                <i class="nav-icon fas fa-user-plus"></i>
-                <p>Add Employee</p>
-            </a>
-        </li>
-    </ul>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="javascript:void(0)">
-        <i class="nav-icon fas fa-user-tie"></i>
-        <p>Customers<i class="right fas fa-angle-left"></i></p>
-    </a>
-    <ul class="nav nav-treeview" style="margin-left: 15px;">
+    <ul class="nav nav-treeview">
         <li class="nav-item">
             <a href="{{ route('customer.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-users"></i>
-                <p>Customers</p>
+                <i class="nav-icon fas fa-address-book"></i>
+                <p>Customer List</p>
             </a>
         </li>
         <li class="nav-item">
@@ -101,59 +94,109 @@
     </ul>
 </li>
 
-<!-- MPESA INTERGRATION FOR SYSTEM -->
+<!-- Employees -->
+<li class="nav-item">
+    <a class="nav-link" href="javascript:void(0)">
+        <i class="nav-icon fas fa-users-cog"></i>
+        <p>
+            Employees
+            <i class="right fas fa-angle-left"></i>
+        </p>
+    </a>
+    <ul class="nav nav-treeview">
+        <li class="nav-item">
+            <a href="{{ route('employee.index') }}" class="nav-link">
+                <i class="nav-icon fas fa-user-friends"></i>
+                <p>Employees List</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('employee.create') }}" class="nav-link">
+                <i class="nav-icon fas fa-user-plus"></i>
+                <p>Add Employee</p>
+            </a>
+        </li>
+    </ul>
+</li>
+
+<!-- <li class="nav-item">
+    <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-receipt"></i>
+        <p>Receipts</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-percent"></i>
+        <p>Discounts</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-money-bill-wave"></i>
+        <p>Expenses</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-history"></i>
+        <p>Activity Logs</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-question-circle"></i>
+        <p>Help</p>
+    </a>
+</li>
+
+<li class="nav-item">
+    <a href="#" class="nav-link">
+        <i class="nav-icon fas fa-language"></i>
+        <p>Language</p>
+    </a>
+</li> -->
+
+<!-- M-Pesa API -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-wallet"></i>
-        <p>MPESA API<i class="right fas fa-angle-left"></i></p>
+        <p>
+            M-Pesa API
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
-    <ul class="nav nav-treeview" style="margin-left: 15px;">
+    <ul class="nav nav-treeview">
         <li class="nav-item">
             <a href="{{ route('mpesa.simulate.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-wallet"></i>
+                <i class="nav-icon fas fa-mobile-alt"></i>
                 <p>C2B Simulation</p>
             </a>
         </li>
         <li class="nav-item">
             <a href="{{ route('mpesa.stkpush.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-wallet"></i>
+                <i class="nav-icon fas fa-receipt"></i>
                 <p>STK Push</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('mpesa.b2c.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-wallet"></i>
-                <p>B2C Simulation</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('mpesa.account-balance.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-wallet"></i>
-                <p>Acc Balance</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('mpesa.transaction-status.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-wallet"></i>
-                <p>Trans Status</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('mpesa.reverse.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-wallet"></i>
-                <p>Reversal</p>
             </a>
         </li>
     </ul>
 </li>
 
 @if (Auth::user()->userRoleInfo()->role > 2)
+<!-- Settings -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
-        <i class="nav-icon fas fa-cogs"></i>
-        <p>Settings<i class="right fas fa-angle-left"></i></p>
+        <i class="nav-icon fas fa-tools"></i>
+        <p>
+            Settings
+            <i class="right fas fa-angle-left"></i>
+        </p>
     </a>
-    <ul class="nav nav-treeview" style="margin-left: 15px;">
+    <ul class="nav nav-treeview">
         <li class="nav-item">
             <a href="{{ route('setting.county') }}" class="nav-link">
                 <i class="nav-icon fas fa-map"></i>
@@ -162,7 +205,7 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('setting.constituency') }}" class="nav-link">
-                <i class="nav-icon fas fa-map-marked"></i>
+                <i class="nav-icon fas fa-map-signs"></i>
                 <p>Constituencies</p>
             </a>
         </li>
@@ -186,7 +229,7 @@
         </li>
         <li class="nav-item">
             <a href="{{ route('setting.role') }}" class="nav-link">
-                <i class="nav-icon fas fa-user-cog"></i>
+                <i class="nav-icon fas fa-user-shield"></i>
                 <p>System Roles</p>
             </a>
         </li>
@@ -194,13 +237,13 @@
 </li>
 @endif
 
-<!-- for ever user -->
-<li class="nav-item menu-open">
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-        @csrf
-    </form>
+<!-- Logout -->
+<li class="nav-item">
     <a class="nav-link" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
         <i class="nav-icon fas fa-sign-out-alt"></i>
         <p>Logout</p>
     </a>
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+        @csrf
+    </form>
 </li>
