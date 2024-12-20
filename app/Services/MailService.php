@@ -20,13 +20,13 @@ class MailService
         try {
             $fromEmail = env('MAIL_FROM_ADDRESS', 'info@yourdomain.com');
             $fromName = env('MAIL_FROM_NAME', 'Our Service');
-    
+
             Mail::send('layouts.email', ['details' => $details], function ($message) use ($details, $fromEmail, $fromName) {
                 $message->from($fromEmail, $fromName);
                 $message->to($details['email']);
                 $message->subject($details['subject']);
             });
-    
+
             // If no exceptions occurred, email was sent successfully
             return true;
         } catch (\Throwable $th) {
@@ -35,7 +35,7 @@ class MailService
             // Return false to indicate failure
             return false;
         }
-    }    
+    }
 
     /**
      * Send account registration email to the user.

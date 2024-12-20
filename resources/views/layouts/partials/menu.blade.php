@@ -119,48 +119,6 @@
     </ul>
 </li>
 
-<!-- <li class="nav-item">
-    <a href="#" class="nav-link">
-        <i class="nav-icon fas fa-receipt"></i>
-        <p>Receipts</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="#" class="nav-link">
-        <i class="nav-icon fas fa-percent"></i>
-        <p>Discounts</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="#" class="nav-link">
-        <i class="nav-icon fas fa-money-bill-wave"></i>
-        <p>Expenses</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="#" class="nav-link">
-        <i class="nav-icon fas fa-history"></i>
-        <p>Activity Logs</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="#" class="nav-link">
-        <i class="nav-icon fas fa-question-circle"></i>
-        <p>Help</p>
-    </a>
-</li>
-
-<li class="nav-item">
-    <a href="#" class="nav-link">
-        <i class="nav-icon fas fa-language"></i>
-        <p>Language</p>
-    </a>
-</li> -->
-
 <!-- M-Pesa API -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -186,7 +144,7 @@
     </ul>
 </li>
 
-@if (Auth::user()->userRoleInfo()->role > 2)
+@if (Auth::user()->getRoleInfo()->role > 2)
 <!-- Settings -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -231,6 +189,12 @@
             <a href="{{ route('setting.role') }}" class="nav-link">
                 <i class="nav-icon fas fa-user-shield"></i>
                 <p>System Roles</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('setting.company') }}" class="nav-link">
+                <i class="nav-icon fas fa-university"></i>
+                <p>Company Information</p>
             </a>
         </li>
     </ul>

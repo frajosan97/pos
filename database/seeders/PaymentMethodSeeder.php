@@ -16,13 +16,13 @@ class PaymentMethodSeeder extends Seeder
     {
         PaymentMethod::create([
             'icon' => 'cash-icon', // replace with actual icon path or class
-            'name' => 'Cash',
+            'name' => 'cash',
             'image' => 'assets/images/icons/cash.png', // replace with the actual image path
         ]);
 
         PaymentMethod::create([
             'icon' => 'mpesa-icon', // replace with actual icon path or class
-            'name' => 'M-Pesa',
+            'name' => 'mpesa',
             'image' => 'assets/images/icons/mpesa.png', // replace with the actual image path
         ]);
     }

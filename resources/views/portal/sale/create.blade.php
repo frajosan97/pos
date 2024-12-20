@@ -57,6 +57,7 @@
                 <!-- Cart Section -->
                 <div class="row mb-3">
                     <div class="col-md-12">
+                        <div class="table-responsive">
                         <table class="table table-bordered table-hover" id="cart-table">
                             <thead class="thead-dark">
                                 <tr>
@@ -82,11 +83,9 @@
                                 </tr>
                             </tfoot>
                         </table>
+                        </div>
                     </div>
                     <div class="col-md-12 text-end">
-                        <button class="btn btn-warning px-5 py-2" id="hold-sale">
-                            <i class="bi bi-pause-circle"></i> Hold Sale
-                        </button>
                         <button class="btn btn-success px-5 py-2" id="complete-sale">
                             <i class="bi bi-check-circle"></i> Complete Sale
                         </button>

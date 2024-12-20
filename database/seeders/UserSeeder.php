@@ -16,31 +16,16 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'branch_id' => 1, // Adjust branch_id as needed
-                'role_id' => 3, // Administrator role_id
+                'branch_id' => 1,
+                'role_id' => 3,
+                'user_name' => 'admin',
                 'name' => 'Administrator',
+                'phone' => '0700000000',
+                'id_number' => '12345678',
                 'email' => 'admin@gmail.com',
                 'password' => Hash::make('admin123456'),
-                'created_by' => 'System', // Optional
-                'updated_by' => 'System', // Optional
-            ],
-            [
-                'branch_id' => 1, // Adjust branch_id as needed
-                'role_id' => 2, // Branch Manager role_id
-                'name' => 'Branch Manager',
-                'email' => 'bm@gmail.com',
-                'password' => Hash::make('bm123456'),
-                'created_by' => 'System', // Optional
-                'updated_by' => 'System', // Optional
-            ],
-            [
-                'branch_id' => 1, // Adjust branch_id as needed
-                'role_id' => 1, // Officer role_id
-                'name' => 'Marketing Officer',
-                'email' => 'officer@example.com',
-                'password' => Hash::make('officer123456'),
-                'created_by' => 'System', // Optional
-                'updated_by' => 'System', // Optional
+                'created_by' => 'System',
+                'updated_by' => 'System',
             ],
         ];
 

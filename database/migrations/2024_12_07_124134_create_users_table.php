@@ -11,18 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Users Table
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->foreignId('branch_id')->constrained('branches')->cascadeOnDelete();
             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
+            $table->string('user_name')->unique();
             $table->string('name');
-            $table->text('passport')->default('avatar.png');
+            $table->string('passport')->default('passport.png');
             $table->string('gender')->nullable();
-            $table->string('phone')->default('0700000000');
-            $table->string('email')->unique();
+            $table->string('phone', 15)->unique()->nullable();
+            $table->string('id_number', 20)->unique();
+            $table->string('email')->unique()->index();
             $table->timestamp('email_verified_at')->nullable();
-            $table->int('status')->default(1)->nullable();
-            $table->string('otp')->nullable();
+            $table->integer('status')->default(1);
+            $table->string('otp', 10)->nullable();
+            $table->timestamp('otp_expires_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->string('created_by')->nullable();
@@ -30,15 +34,18 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        // Password Reset Tokens Table
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->id();
+            $table->string('email')->index();
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // Sessions Table
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
+            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
@@ -51,8 +58,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('users');
     }
 };

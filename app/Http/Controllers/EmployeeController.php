@@ -164,4 +164,58 @@ class EmployeeController extends Controller
             return response()->json(['error' => 'An error occurred while fetching the employee details.'], 500);
         }
     }
+
+    public function update(Request $request, string $id)
+    {
+        try {
+            // Validate request data
+            $request->validate([
+                'user_name' => 'required|string|max:255',
+                'name' => 'required|string|max:255',
+                'gender' => 'required|in:Male,Female',
+                'phone' => 'required|string|max:15',
+                'branch_id' => 'required|exists:branches,id',
+                'role_id' => 'required|exists:roles,id',
+                'status' => 'required|boolean',
+                'id_number' => 'nullable|string|max:20',
+                'passport' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            ]);
+
+            $user = User::findOrFail($id);
+
+            // Handle the product image upload if present
+            $passportPath = null;
+            if ($request->hasFile('passport')) {
+                $file = $request->file('passport');
+                $destinationPath = public_path('assets/images/profiles');
+                // Generate a unique name for the image
+                $fileName = uniqid() . '_' . $file->getClientOriginalName();
+                // Move the file to the desired location
+                $file->move($destinationPath, $fileName);
+                // Save the relative path
+                $passportPath = 'assets/images/profiles/' . $fileName;
+            }
+
+            // Update the user name
+            $user->update([
+                'user_name' => $request->input('user_name'),
+                'name' => $request->input('name'),
+                'gender' => $request->input('gender'),
+                'phone' => $request->input('phone'),
+                'branch_id' => $request->input('branch_id'),
+                'role_id' => $request->input('role_id'),
+                'status' => $request->input('status'),
+                'id_number' => $request->input('id_number'),
+                'passport' => $passportPath ?? $user->passport,
+            ]);
+
+            // Return a success message
+            return response()->json(['success' => 'E,ployee profile updated successfully'], 200);
+        } catch (\Exception $exception) {
+            // Log the exception details
+            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+            // Return a general error message
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
+    }
 }

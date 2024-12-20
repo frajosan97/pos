@@ -17,29 +17,29 @@
     <!-- password input group -->
     <div class="input-group">
         <div class="input-group-prepend">
-            <i class="bi bi-key"></i>
+            <i class="fas fa-lock"></i>
         </div>
         <div class="floating-label-container">
             <input type="password" name="password" id="password" placeholder="" required />
             <label for="password">password*</label>
         </div>
         <div class="input-group-prepend">
-            <i class="bi bi-eye" id="show-password-icon"></i>
+            <i class="fas fa-eye" id="show-password-icon"></i>
         </div>
     </div>
 
     <!-- password_confirmation input group -->
     <div class="input-group">
         <div class="input-group-prepend">
-            <i class="bi bi-key"></i>
+            <i class="fas fa-lock"></i>
         </div>
         <div class="floating-label-container">
-            <input type="password_confirmation" name="password_confirmation" id="password_confirmation" placeholder=""
+            <input type="password" name="password_confirmation" id="password_confirmation" placeholder=""
                 required />
             <label for="password_confirmation">password confirmation*</label>
         </div>
         <div class="input-group-prepend">
-            <i class="bi bi-eye" id="show-password-icon"></i>
+            <i class="fas fa-eye" id="show-password-icon"></i>
         </div>
     </div>
 

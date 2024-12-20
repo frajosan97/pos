@@ -13,7 +13,7 @@
     <!-- email input group -->
     <div class="input-group">
         <div class="input-group-prepend">
-            <i class="bi bi-person-circle"></i>
+            <i class="fas fa-envelope"></i>
         </div>
         <div class="floating-label-container">
             <input type="email" name="email" id="email" placeholder="" autocomplete="off" autofocus required />
@@ -25,14 +25,14 @@
     <!-- password input group -->
     <div class="input-group">
         <div class="input-group-prepend">
-            <i class="bi bi-key"></i>
+            <i class="fas fa-lock"></i>
         </div>
         <div class="floating-label-container">
             <input type="password" name="password" id="password" placeholder="" required />
             <label for="password">password*</label>
         </div>
         <div class="input-group-prepend">
-            <i class="bi bi-eye" id="show-password-icon"></i>
+            <i class="fas fa-eye" id="show-password-icon"></i>
         </div>
     </div>
 
@@ -44,7 +44,7 @@
     </div>
 
     <button type="submit" class="btn btn-filled rounded-4 w-100">
-        <i class="bi bi-sign-in"></i> Login
+        <i class="fas fa-sign-in"></i> Login
     </button>
 
 </form>

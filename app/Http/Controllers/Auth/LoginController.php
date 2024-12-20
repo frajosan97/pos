@@ -200,13 +200,13 @@ class LoginController extends Controller
                 [
                     'method' => 'email',
                     'label' => 'Send code to my email',
-                    'icon' => 'bi-person-circle',
+                    'icon' => 'fas fa-envelope',
                     'value' => $verify_methods['verifyEmail'] ?? null,
                 ],
                 [
                     'method' => 'phone',
                     'label' => 'Send code to my phone',
-                    'icon' => 'bi-chat-dots',
+                    'icon' => 'fas fa-sms',
                     'value' => $verify_methods['verifyPhone'] ?? null,
                 ],
             ];

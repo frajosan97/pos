@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title')</title>
+    <link rel="shortcut icon" href="{{ asset(getImage($company_info->logo,'logo.png')) }}" type="image/x-icon">
     <!-- Use absolute URL for the CSS file -->
     <link rel="stylesheet" href="{{ public_path('assets/css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ public_path('assets/css/pdf.css') }}">
@@ -19,16 +20,16 @@
                 <!-- Logo Section -->
                 <td style="width: 20%; text-align: left; vertical-align: middle;">
                     <div class="logo">
-                        <img src="{{ public_path('assets/images/logo.png') }}" alt="Logo">
+                        <img src="{{ asset(getImage($company_info->logo,'logo.png')) }}" alt="Logo">
                     </div>
                 </td>
 
                 <!-- Business Information Section -->
                 <td style="width: 60%; text-align: center; vertical-align: middle;">
                     <div class="business-info">
-                        <h2>{{ $company_info['name'] }}</h2>
-                        <h5>{{ $company_info['address'] }}</h5>
-                        <p>Tel: {{ $company_info['phone'] }} | Email: <span style="color: blue;">{{ $company_info['email'] }}</span></p>
+                        <h2>{{ $company_info->name }}</h2>
+                        <h5>{{ $company_info->address }}</h5>
+                        <p>Tel: {{ $company_info->phone }} | Email: <span style="color: blue;">{{ $company_info->email }}</span></p>
                     </div>
                 </td>
 

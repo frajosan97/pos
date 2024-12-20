@@ -81,10 +81,10 @@ $('#show-password-icon').click(function () {
 
     if (passwordInput.attr('type') === 'password') {
         passwordInput.attr('type', 'text');
-        icon.removeClass('bi-eye').addClass('bi-eye-slash');
+        icon.removeClass('fa-eye').addClass('fa-eye-slash');
     } else {
         passwordInput.attr('type', 'password');
-        icon.removeClass('bi-eye-slash').addClass('bi-eye');
+        icon.removeClass('fa-eye-slash').addClass('fa-eye');
     }
 });
 

@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ ucwords($company_info['name']) }}</title>
+    <title>{{ ucwords($company_info->name) }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset(getImage($company_info->logo,'logo.png')) }}" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.css') }}">
@@ -14,6 +14,11 @@
     <link href="{{ asset('assets/libs/dataTables/css/dataTables.bootstrap5.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <link rel="stylesheet" href="{{ asset('assets/libs/adminlte/css/adminlte.css') }}">
+    <style>
+        :root {
+            --primary-color: {{ $company_info->color ?? 'rgb(201, 40, 0)' }};
+        }
+    </style>
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
     @stack('style')
@@ -41,7 +46,7 @@
 
             <!-- Preloader -->
             <div class="preloader flex-column justify-content-center align-items-center">
-                <img class="animation__shake" src="{{ asset('assets/images/logo.png') }}" alt="" height="60" width="60">
+                <img class="animation__shake" src="{{ asset(getImage($company_info->logo,'logo.png')) }}" alt="" height="60" width="60">
             </div>
 
             <!-- Navbar -->
@@ -53,7 +58,7 @@
                     </li>
                     <li class="nav-item d-none d-sm-inline-block">
                         <a href="/" class="nav-link">
-                            Branch: {{ Auth::user()->userBranchinfo()->name }}
+                            Branch: {{ Auth::user()->getBranchInfo()->name }}
                         </a>
                     </li>
                 </ul>
@@ -79,7 +84,7 @@
             <aside class="main-sidebar sidebar-dark-primary elevation-4 main-bg">
                 <!-- Brand Logo -->
                 <a href="/" class="brand-link border-0 shadow-sm">
-                    <img src="{{ asset('assets/images/logo.png') }}" alt="" class="brand-image rounded-4" style="opacity: .8">
+                    <img src="{{ asset(getImage($company_info->logo,'logo.png')) }}" alt="" class="brand-image rounded-4" style="opacity: .8">
                     <span class="brand-text font-weight-light"> POS</span>
                 </a>
 
@@ -93,7 +98,7 @@
                         <div class="info">
                             <a href="/" class="d-block text-color fw-bolder text-capitalize">
                                 <h6 class="m-0 fw-bold">{{ Auth::user()->name }}</h6>
-                                <small>{{ Auth::user()->userRoleInfo()->name }}</small>
+                                <small>{{ Auth::user()->getRoleInfo()->name }}</small>
                             </a>
                         </div>
                     </div>
@@ -143,7 +148,7 @@
 
             <!-- Main Footer -->
             <footer class="main-footer border-0 text-center text-primary shadow-sm">
-                Copyright &copy; Atricare Ltd | Software by
+                Copyright &copy; {{ ucwords($company_info->name) }} | Software by
                 <a href="https://www.frajosantech.co.ke"><u>Frajosan IT Consultancies Ltd</u></a>
             </footer>
         </div>

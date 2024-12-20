@@ -13,7 +13,7 @@
     <!-- otp input group -->
     <div class="input-group">
         <div class="input-group-prepend">
-            <i class="bi bi-key"></i>
+            <i class="fas fa-unlock"></i>
         </div>
         <div class="floating-label-container">
             <input type="otp" name="otp" id="otp" placeholder="" autocomplete="off" autofocus required />

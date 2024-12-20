@@ -18,7 +18,7 @@
             <button type="submit" name="method" value="{{ $option['method'] }}"
                 class="btn w-100 rounded-4 text-start d-flex align-items-center">
                 <div class="icon-container me-3 d-flex align-items-center justify-content-center">
-                    <i class="bi {{ $option['icon'] }} text-white"></i>
+                    <i class="{{ $option['icon'] }} text-white"></i>
                 </div>
                 <div class="flex-grow-1">
                     <h6 class="m-0 fw-bold">{{ $option['label'] }}</h6>

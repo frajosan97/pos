@@ -145,5 +145,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::post('/role/store', [SettingController::class, 'storeRole'])->name('setting.role.store');
         Route::put('/role/update/{id}', [SettingController::class, 'updateRole'])->name('setting.role.update');
         Route::post('/role/destroy', [SettingController::class, 'destroyRole'])->name('setting.role.destroy');
+
+        Route::get('/company', [SettingController::class, 'company'])->name('setting.company');
+        Route::put('/company/update/{id}', [SettingController::class, 'updateCompany'])->name('setting.company.update');
     });
 });

@@ -8,6 +8,7 @@ use App\Models\County;
 use App\Models\Location;
 use App\Models\Role;
 use App\Models\Ward;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
@@ -540,6 +541,69 @@ class SettingController extends Controller
 
             // Return a success message
             return response()->json(['success' => 'Role updated successfully'], 200);
+        } catch (\Exception $exception) {
+            // Log the exception details
+            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+            // Return a general error message
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
+    }
+
+    public function company(Request $request)
+    {
+        $company = Company::first();
+        return view('portal.setting.company', compact('company'));
+    }
+
+    public function updateCompany(Request $request, string $id)
+    {
+        try {
+            // Validate incoming data
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'address' => 'required|string|max:255',
+                'phone' => 'required|string|max:15',
+                'email' => 'required|email|max:255',
+                'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'color' => 'nullable|string|max:7',
+                'sms_mode' => 'required|in:online,offline',
+                'sms_api_key' => 'nullable|string|max:255',
+                'sms_sender_id' => 'nullable|string|max:255',
+                'sms_partner_name' => 'nullable|string|max:255',
+            ]);
+
+            // Find the company record
+            $company = Company::findOrFail($id);
+
+            // Handle the product image upload if present
+            $logoPath = null;
+            if ($request->hasFile('logo')) {
+                $file = $request->file('logo');
+                $destinationPath = public_path('assets/images/logo');
+                // Generate a unique name for the image
+                $fileName = uniqid() . '_' . $file->getClientOriginalName();
+                // Move the file to the desired location
+                $file->move($destinationPath, $fileName);
+                // Save the relative path
+                $logoPath = 'assets/images/logo/' . $fileName;
+            }
+
+            // Update the company name
+            $company->update([
+                'name' => $request->input('name'),
+                'address' => $request->input('address'),
+                'phone' => $request->input('phone'),
+                'email' => $request->input('email'),
+                'color' => $request->input('color'),
+                'logo' => $logoPath ?? $company->logo,
+                'sms_mode' => $request->input('sms_mode'),
+                'sms_api_key' => $request->input('sms_api_key'),
+                'sms_sender_id' => $request->input('sms_sender_id'),
+                'sms_partner_name' => $request->input('sms_partner_name'),
+            ]);
+
+            // Return a success message
+            return response()->json(['success' => 'Company profile updated successfully'], 200);
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());

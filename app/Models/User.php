@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class User extends Authenticatable
 {
@@ -19,15 +19,19 @@ class User extends Authenticatable
     protected $fillable = [
         'branch_id',
         'role_id',
+        'user_name',
         'name',
         'passport',
         'gender',
         'phone',
+        'id_number',
         'email',
         'email_verified_at',
         'status',
         'otp',
-        'password'
+        'password',
+        'created_by',
+        'updated_by',
     ];
 
     /**
@@ -41,45 +45,96 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * The attributes that should be cast to native types.
      *
-     * @return array<string, string>
+     * @var array<string, string>
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'otp_expires_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
-    public function branch()
+    /**
+     * Relationship with the Branch model.
+     *
+     * @return BelongsTo
+     */
+    public function branch(): BelongsTo
     {
         return $this->belongsTo(Branch::class);
     }
 
-    public function role()
+    /**
+     * Relationship with the Role model.
+     *
+     * @return BelongsTo
+     */
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
     /**
-     * Get the entire role information.
+     * Get the role information for the user.
      *
-     * @return \App\Models\Role|null
+     * @return Role|null
      */
-    public function userRoleInfo()
+    public function getRoleInfo(): ?Role
     {
         return $this->role;
     }
 
     /**
-     * Get the entire branch information.
+     * Get the branch information for the user.
      *
-     * @return \App\Models\Branch|null
+     * @return Branch|null
      */
-    public function userBranchInfo()
+    public function getBranchInfo(): ?Branch
     {
         return $this->branch;
+    }
+
+    /**
+     * Check if the user is active.
+     *
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 1;
+    }
+
+    /**
+     * Get the full name of the user.
+     *
+     * @return string
+     */
+    public function fullName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Scope a query to only include active users.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
+
+    /**
+     * Scope a query to filter by role.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param int $roleId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeByRole($query, int $roleId)
+    {
+        return $query->where('role_id', $roleId);
     }
 }

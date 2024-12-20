@@ -13,7 +13,8 @@
                 <div class="row">
                     <!-- Profile Image -->
                     <div class="col-md-3 text-center text-capitalize">
-                        <img src="https://via.placeholder.com/150" alt="Profile Picture" class="rounded-circle img-fluid mb-3">
+                        <img src="{{ asset(getImage($user->passport,'passport.png')) }}"
+                            alt="Profile Picture" class="rounded-circle img-fluid profile-picture mb-3 p-1 shadow-sm">
                         <h3 class="fw-bold">{{ $user->name }}</h3>
                         <p class="text-muted">{{ $user->role->name ?? 'Role not assigned' }}</p>
                         <a href="{{ route('employee.edit', $user->id) }}" class="btn btn-primary">
@@ -38,10 +39,6 @@
                                     <tr>
                                         <th class="text-muted">Gender</th>
                                         <td>{{ ucfirst($user->gender) }}</td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-muted">Passport</th>
-                                        <td>{{ $user->passport }}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-muted">Branch</th>
@@ -86,7 +83,7 @@
                 </div>
             </div>
         </div>
-        
+
     </div>
 </div>
 

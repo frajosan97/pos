@@ -4,12 +4,6 @@
     box-sizing: border-box;
 }
 
-:root {
-    --primary-color: rgb(201, 40, 0);
-    --secondary-color: rgb(201, 40, 0);
-    --white-color: #fefefe;
-}
-
 body {
     font-family: 'Poppins', sans-serif;
     line-height: 1.6;
@@ -39,4 +33,11 @@ body {
 .empty-cart img {
     max-width: 150px;
     max-height: auto;
+}
+
+.profile-picture {
+    border-radius: 50%;
+    object-fit: cover;
+    width: 100px;
+    height: 100px;
 }

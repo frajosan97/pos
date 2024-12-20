@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Branch;
+use App\Models\Company;
 use Illuminate\Database\Seeder;
 use App\Models\County;
 
@@ -52,6 +53,8 @@ class BranchSeeder extends Seeder
             'Head Quota (HQ)',
         ];
 
+        $company = Company::first();
+
         // Insert each location into the database
         foreach ($branches as $branchName) {
             Branch::create([
@@ -60,6 +63,7 @@ class BranchSeeder extends Seeder
                 'ward_id' => $ward->id,
                 'constituency_id' => $constituency->id,
                 'county_id' => $county->id,
+                'company_id' => $company->id,
             ]);
         }
 

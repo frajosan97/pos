@@ -13,7 +13,7 @@
     <!-- email input group -->
     <div class="input-group">
         <div class="input-group-prepend">
-            <i class="bi bi-person-circle"></i>
+            <i class="fas fa-envelope"></i>
         </div>
         <div class="floating-label-container">
             <input type="email" name="email" id="email" placeholder="" autocomplete="off" autofocus required />
