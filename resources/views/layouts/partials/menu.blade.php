@@ -70,7 +70,7 @@
 </li>
 
 <!-- Customers -->
-<li class="nav-item">
+<!-- <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-users"></i>
         <p>
@@ -92,7 +92,7 @@
             </a>
         </li>
     </ul>
-</li>
+</li> -->
 
 <!-- Employees -->
 <li class="nav-item">
