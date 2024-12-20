@@ -76,17 +76,21 @@ class EmployeeController extends Controller
             $request->validate([
                 'branch' => 'required|exists:branches,id', // Ensure branch exists in the DB
                 'role' => 'required|exists:roles,id', // Ensure role exists in the DB
+                'user_name' => 'required|string|max:255|unique:users',
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
-                'phone' => 'required|string|max:15|regex:/^(\+?[\d\s\-()]){10,15}$/', // Improve phone validation with regex
+                'phone' => 'required|string|max:15|unique:users|regex:/^(\+?[\d\s\-()]){10,15}$/', // Improve phone validation with regex
+                'id_number' => 'required|string|max:255|unique:users',
             ]);
 
             $user = User::create([
-                'branch_id' => $request->branch,
-                'role_id' => $request->role,
-                'name' => $request->name,
-                'email' => $request->email,
-                'phone' => $request->phone,
+                'branch_id' => $request->input('branch'),
+                'role_id' => $request->input('role'),
+                'user_name' => $request->input('user_name'),
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'phone' => $request->input('phone'),
+                'id_number' => $request->input('id_number'),
                 'password' => Hash::make('12345678'),
                 'created_by' => Auth::user()->id ?? null,
                 'updated_by' => Auth::user()->id ?? null,
