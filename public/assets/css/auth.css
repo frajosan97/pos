@@ -121,7 +121,7 @@
 
 .auth-container h2 span {
     padding: 10px;
-    background: var(--white-color);
+    background: #fefefe;
     z-index: 1;
 }
 
@@ -162,19 +162,12 @@
 
 .auth-container .btn-filled {
     background-color: var(--primary-color);
-    color: var(--white-color);
+    color: #fefefe;
     border: none;
 }
 
 .auth-container .btn-filled:hover {
-    background-color: var(--secondary-color);
-    box-shadow: 0 4px 8px var(--btn-hover-shadow);
-}
-
-.auth-container .btn-filled:disabled {
-    background-color: var(--btn-disabled-bg);
-    color: var(--btn-disabled-color);
-    cursor: not-allowed;
+    background-color: var(--primary-color);
 }
 
 .auth-container .btn-outlined {
@@ -185,7 +178,7 @@
 
 .auth-container .btn-outlined:hover {
     background-color: var(--primary-color);
-    color: var(--white-color);
+    color: #fefefe;
 }
 
 #show-password-icon {
