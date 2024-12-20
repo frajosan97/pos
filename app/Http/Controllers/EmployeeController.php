@@ -52,8 +52,10 @@ class EmployeeController extends Controller
                 return view('portal.employee.index');
             }
         } catch (\Exception $exception) {
+            // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
-            return response()->json(['error' => 'An error occurred while fetching employees.'], 500);
+            // Return a general error message
+            return response()->json(['error' => $exception->getMessage()], 500);
         }
     }
 
@@ -96,8 +98,10 @@ class EmployeeController extends Controller
             // Success response
             return response()->json(['success' => 'Employee registered successfully and activation email sent to the provided email address']);
         } catch (\Exception $exception) {
+            // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
-            return response()->json(['error' => 'An error occurred while saving the employee.'], 500);
+            // Return a general error message
+            return response()->json(['error' => $exception->getMessage()], 500);
         }
     }
 
@@ -140,11 +144,10 @@ class EmployeeController extends Controller
             // Return the main view with user data if it's not an AJAX request
             return view('portal.employee.show', compact('user'));
         } catch (\Exception $exception) {
-            // Log the error details for debugging
+            // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
-
-            // Return a generic error message as JSON
-            return response()->json(['error' => 'An error occurred while fetching the employee details.'], 500);
+            // Return a general error message
+            return response()->json(['error' => $exception->getMessage()], 500);
         }
     }
 
@@ -157,11 +160,10 @@ class EmployeeController extends Controller
             // Return the main view with user data if it's not an AJAX request
             return view('portal.employee.edit', compact('user'));
         } catch (\Exception $exception) {
-            // Log the error details for debugging
+            // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
-
-            // Return a generic error message as JSON
-            return response()->json(['error' => 'An error occurred while fetching the employee details.'], 500);
+            // Return a general error message
+            return response()->json(['error' => $exception->getMessage()], 500);
         }
     }
 
