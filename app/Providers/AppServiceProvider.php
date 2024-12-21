@@ -2,14 +2,16 @@
 
 namespace App\Providers;
 
-use App\Models\County;
-use App\Models\Constituency;
-use App\Models\Ward;
-use App\Models\Location;
 use App\Models\Branch;
-use App\Models\Role;
 use App\Models\Catalogue;
 use App\Models\Company;
+use App\Models\Constituency;
+use App\Models\County;
+use App\Models\Location;
+use App\Models\Role;
+use App\Models\User;
+use App\Models\Ward;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
@@ -20,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Register application services, if needed.
     }
 
     /**
@@ -45,6 +47,7 @@ class AppServiceProvider extends ServiceProvider
             'locations' => Location::all(),
             'branches' => Branch::all(),
             'catalogue' => Catalogue::all(),
+            'employees' => User::all(),
         ]);
     }
 }

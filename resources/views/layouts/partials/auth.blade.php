@@ -7,7 +7,7 @@
                 <!-- Logo -->
                 <div class="d-flex justify-content-center">
                     <img src="{{ asset(getImage($company_info->logo,'logo.png')) }}" class="img-fluid"
-                        alt="{{ $company_info->name }}" style="max-width: 150px; max-height: auto;">
+                        alt="{{ $company_info->name }}" style="max-width: 100px; max-height: 100px;">
                 </div>
 
                 <!-- content -->

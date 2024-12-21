@@ -98,6 +98,9 @@ class LoginController extends Controller
         }
     }
 
+    /**
+     * Send an OTP to the user via email or phone.
+     */
     public function sendOtp(Request $request)
     {
         try {
@@ -107,47 +110,51 @@ class LoginController extends Controller
             ]);
 
             $userId = Session::get('otp_user_id'); // Get the user ID from the session
-            $user = User::findOrFail($userId); // Retrieve the user
+            $user = User::findOrFail($userId);    // Retrieve the user
 
             // Generate OTP
             $otp = rand(100000, 999999); // Generate a 6-digit OTP
-            $user->otp = $otp; // Assuming you have an 'otp' column in your User model
+            $user->otp = $otp;          // Assuming 'otp' is a column in the User model
             $user->save();
 
-            // Retrieve verification methods from session
+            // Retrieve verification methods from the session
             $verify_methods = Session::get('verify_methods');
-
-            // Now you can access verifyPhone and verifyEmail
             $verifyPhone = $verify_methods['verifyPhone'] ?? null;
             $verifyEmail = $verify_methods['verifyEmail'] ?? null;
 
-            // Create the SMS
-            $message = "Dear " . strtoupper($user->sur_name) . ",\nYour login OTP is " . $otp . ".\nPlease don't share it with anyone.";
+            // Create the SMS message
+            $message = "Dear " . strtoupper($user->name) . ",\nYour login OTP is " . $otp . ".\nPlease don't share it with anyone.";
 
             // Send OTP based on the selected method
             if ($request->method === 'email') {
                 $this->mailService->sendOtpEmail($user, $otp);
-                // Optionally: add a success message
-                return redirect()->route('otp.verify-otp')->with('status', 'OTP sent to your email ' . $verifyEmail);
+
+                return redirect()->route('otp.verify-otp')
+                    ->with('status', 'OTP sent to your email ' . $verifyEmail);
             } elseif ($request->method === 'phone') {
-                $this->smsService->sendSms($user->phone, $message);
-                // Optionally: add a success message
-                return redirect()->route('otp.verify-otp')->with('status', 'OTP sent to your phone number ' . $verifyPhone);
+                $response = $this->smsService->sendSms($user->phone, $message);
+
+                if ($response && $response->getStatusCode() === 200) {
+                    return redirect()->route('otp.verify-otp')
+                        ->with('status', 'OTP sent to your phone number ' . $verifyPhone);
+                } else {
+                    Log::error('SMS sending failed', ['response' => $response]);
+                    return redirect()->back()
+                        ->with('error', 'Error encountered while sending SMS. Please try again or use another verification method.');
+                }
             }
         } catch (\Throwable $th) {
             Log::error('Error: ' . $th->getMessage(), [
                 'file' => $th->getFile(),
                 'line' => $th->getLine()
             ]);
-            return redirect()->back()->with('error', 'Error ' . $th->getMessage());
+
+            return redirect()->back()->with('error', 'Error: ' . $th->getMessage());
         }
     }
 
     /**
      * Verify the OTP entered by the user.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function verifyOtp(Request $request)
     {
@@ -171,7 +178,8 @@ class LoginController extends Controller
                 // Send login confirmation email
                 $this->mailService->sendLoginEmail($user);
 
-                return redirect()->intended($this->redirectPath())->with('status', 'Login successful.');
+                return redirect()->intended($this->redirectPath())
+                    ->with('status', 'Login successful.');
             }
 
             return redirect()->back()->withErrors(['otp' => 'Invalid OTP. Please try again.']);
@@ -180,22 +188,18 @@ class LoginController extends Controller
                 'file' => $th->getFile(),
                 'line' => $th->getLine()
             ]);
-            return redirect()->back()->with('error', 'Error ' . $th->getMessage());
+
+            return redirect()->back()->with('error', 'Error: ' . $th->getMessage());
         }
     }
 
     /**
-     * Summary of showOtpSendForm
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\Contracts\View\View|\Illuminate\Http\RedirectResponse
+     * Display the form to send OTP via email or phone.
      */
     public function showOtpSendForm(Request $request)
     {
         try {
-            // Retrieve verification methods from session
             $verify_methods = Session::get('verify_methods', []);
-
-            // Define the verification options
             $options = [
                 [
                     'method' => 'email',
@@ -211,94 +215,85 @@ class LoginController extends Controller
                 ],
             ];
 
-            // Proceed with your logic (e.g., display the OTP form)
             return view('auth.otp.send-otp', compact('options'));
         } catch (\Throwable $th) {
             Log::error('Error: ' . $th->getMessage(), [
                 'file' => $th->getFile(),
                 'line' => $th->getLine()
             ]);
-            return redirect()->back()->with('error', 'Error ' . $th->getMessage());
+
+            return redirect()->back()->with('error', 'Error: ' . $th->getMessage());
         }
     }
 
     /**
      * Show the OTP verification form.
-     *
-     * @return \Illuminate\View\View
      */
     public function showOtpVerificationForm()
     {
         return view('auth.otp.verify-otp');
     }
 
+    /**
+     * Send an email verification link.
+     */
     public function sendVerificationLink(Request $request)
     {
         try {
-            // Validate the email input
             $request->validate([
                 'email' => 'required|email|exists:users,email',
             ]);
 
-            // Retrieve the user using the email address
             $user = User::where('email', $request->email)->first();
 
-            // Check if the user exists and if their email is not already verified
             if ($user && !$user->email_verified_at) {
-                // Call the mailService to send the verification email
                 $this->mailService->sendVerificationEmail($user);
 
-                // Return a success message to the user
                 return back()->with('status', 'A verification link has been sent to your email address. Please check your inbox.');
             }
 
-            // If the user does not exist or is already verified
             return back()->withErrors(['email' => 'No unverified account found with that email address.']);
         } catch (\Throwable $th) {
             Log::error('Error sending verification link: ' . $th->getMessage(), [
                 'file' => $th->getFile(),
                 'line' => $th->getLine()
             ]);
+
             return back()->with('error', 'Error sending verification link. Please try again.');
         }
     }
 
     /**
-     * Summary of activateAccount
-     * @param mixed $email
-     * @return mixed|\Illuminate\Http\RedirectResponse
+     * Activate a user account via email verification.
      */
     public function activateAccount($email)
     {
         try {
-            // Retrieve the user by email
             $user = User::where('email', $email)->first();
 
-            // If the user does not exist, redirect with an error
             if (!$user) {
-                return redirect()->intended($this->redirectPath())->with('status', 'Invalid activation link.');
+                return redirect()->intended($this->redirectPath())
+                    ->with('status', 'Invalid activation link.');
             }
 
-            // If the user is already verified, inform them
             if ($user->email_verified_at) {
-                return redirect()->intended($this->redirectPath())->with('success', 'Your account has been activated. You can now log in.');
+                return redirect()->intended($this->redirectPath())
+                    ->with('success', 'Your account has already been activated. You can now log in.');
             }
 
-            // Mark the account as activated by setting the `email_verified_at` field
             $user->email_verified_at = now();
             $user->save();
 
-            // Redirect with a success message
-            return redirect()->intended($this->redirectPath())->with('success', 'Your account has been activated. You can now log in.');
+            return redirect()->intended($this->redirectPath())
+                ->with('success', 'Your account has been activated. You can now log in.');
         } catch (\Throwable $th) {
-            // Log the error in case of any failure
             Log::error('Error: ' . $th->getMessage(), [
                 'file' => $th->getFile(),
                 'line' => $th->getLine()
             ]);
 
-            // Return an error message to the user
-            return redirect()->intended($this->redirectPath())->with('status', 'Failed to activate your account. Please try again.');
+            return redirect()->intended($this->redirectPath())
+                ->with('status', 'Failed to activate your account. Please try again.');
         }
     }
 }

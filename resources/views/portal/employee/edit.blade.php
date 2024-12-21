@@ -24,13 +24,14 @@
                                 class="img-fluid profile-picture mb-3 p-1 shadow-sm"
                                 style="max-height: 150px; border: 1px solid #ddd;">
 
-                            <!-- Hidden file input -->
-                            <input type="file" name="passport" id="passport" class="d-none" accept="image/*">
-
-                            <!-- Button to trigger file input -->
-                            <button type="button" id="changePassportBtn" class="btn btn-sm btn-info rounded-pill">
-                                <i class="fas fa-image"></i> Change Passport
-                            </button>
+                            <div class="">
+                                <!-- Hidden file input -->
+                                <input type="file" name="passport" id="passport" class="d-none" accept="image/*">
+                                <!-- Button to trigger file input -->
+                                <button type="button" id="changePassportBtn" class="btn btn-sm btn-info rounded-pill">
+                                    <i class="fas fa-image"></i> Change Passport
+                                </button>
+                            </div>
                         </div>
                         <div class="col-md-9">
                             <div class="row">
@@ -59,6 +60,7 @@
                         </div>
                     </div>
 
+                    @if (in_array(Auth::user()->role?->role,[3]))
                     <!-- Section: Contact Details -->
                     <h5 class="bg-light p-1 rounded mb-3">Contact Details</h5>
                     <div class="row">
@@ -124,8 +126,15 @@
                             </div>
                         </div>
                     </div>
+                    @endif
 
-                    <button type="submit" class="btn btn-primary">Update User</button>
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-12 text-end">
+                            <button type="submit" class="btn btn-primary">Update User</button>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

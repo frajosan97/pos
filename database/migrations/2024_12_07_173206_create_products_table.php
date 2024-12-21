@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('branch_id')->constrained('branches')->cascadeOnDelete();
-            $table->foreignId('catalogue_id')->constrained('catalogues')->cascadeOnDelete();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('catalogue_id')->constrained()->cascadeOnDelete();
             $table->string('barcode')->unique()->nullable();
             $table->string('name');
             $table->decimal('buying_price', 10, 2)->default(0.00);

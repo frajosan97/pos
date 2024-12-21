@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
-use App\Models\School;
 use Illuminate\Support\Facades\Log;
 
 class SmsService
@@ -14,8 +13,13 @@ class SmsService
     |--------------------------------------------------------------------------
     |
     | These properties hold the configuration values needed to send SMS messages
-    | using the SMS service provider. The values are loaded from the `services.php`
+    | using the SMS service provider. The values are loaded from the `smsservice.php`
     | configuration file. The properties include:
+    | - Partner ID
+    | - API Key
+    | - Sender ID
+    | - API URL
+    | - Guzzle HTTP Client
     |
     */
     protected $partnerId;
@@ -31,53 +35,60 @@ class SmsService
     |
     | The constructor method is used to initialize the SMS service with the
     | necessary configuration settings. It retrieves the values from the 
-    | `smsservice.php` configuration file:
-    |
-    | It also initializes the Guzzle HTTP client for making requests.
+    | `smsservice.php` configuration file and initializes the Guzzle HTTP client.
     |
     */
     public function __construct()
     {
-        $this->partnerId = config('smsservice.sms.partner_id');
-        $this->apiKey = config('smsservice.sms.api_key');
-        $this->senderId = config('smsservice.sms.sender_id');
-        $this->apiUrl = config('smsservice.sms.api_url');  // New API URL
-        $this->client = new Client();  // Initialize Guzzle client
+        $this->partnerId = config('sms.partner_id');
+        $this->apiKey = config('sms.api_key');
+        $this->senderId = config('sms.sender_id');
+        $this->apiUrl = rtrim(config('sms.api_url'), '/'); // Ensure no trailing slash
+        $this->client = new Client(); // Initialize Guzzle client
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Send SMS Method
+    |--------------------------------------------------------------------------
+    |
+    | This method sends an SMS message to a given recipient. It constructs a
+    | JSON payload and sends a POST request to the SMS service provider's API.
+    |
+    | Parameters:
+    | - $recipient: The recipient's phone number.
+    | - $message: The message text to be sent.
+    |
+    | Returns:
+    | - true: If the SMS was sent successfully.
+    | - false: If the SMS failed to send.
+    |
+    */
     public function sendSms($recipient, $message)
     {
         try {
             // Construct the JSON payload
-            $payload = json_encode([
+            $payload = [
                 'apikey' => $this->apiKey,
                 'partnerID' => $this->partnerId,
                 'message' => $message,
                 'shortcode' => $this->senderId,
-                'mobile' => formatPhoneNumber($recipient), 
-            ]);
+                'mobile' => formatPhoneNumber($recipient),
+            ];
 
             // Construct the full API endpoint URL for sending SMS
-            $url = rtrim($this->apiUrl, '/') . '/sendsms';
+            $url = $this->apiUrl . '/sendsms';
 
             // Send the POST request using Guzzle
             $response = $this->client->post($url, [
-                'body' => $payload,
+                'json' => $payload,
                 'headers' => [
                     'Content-Type' => 'application/json',
                 ],
             ]);
 
-            // Check the response status code
-            if ($response->getStatusCode() === 200) {
-                // Log the successful response
-                Log::info('SMS sent successfully', ['response' => $response->getBody()->getContents()]);
-                return true;  // SMS sent successfully
-            } else {
-                // Log the error response if SMS sending fails
-                Log::error('SMS sending failed', ['response' => $response->getBody()->getContents()]);
-                return false;
-            }
+            // Return response
+            return $response;
         } catch (\Exception $e) {
             // Log any exceptions that occur during the process
             Log::error('Error while sending SMS', ['error' => $e->getMessage()]);

@@ -11,6 +11,7 @@ class Sale extends Model
 
     // Mass assignable attributes
     protected $fillable = [
+        'branch_id',
         'customer_id',
         'sale_type',
         'total_amount',

@@ -38,6 +38,7 @@
     </ul>
 </li>
 
+@if (in_array(Auth::user()->role?->role,[2,3]))
 <!-- Reports -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -68,6 +69,7 @@
         </li>
     </ul>
 </li>
+@endif
 
 <!-- Customers -->
 <!-- <li class="nav-item">
@@ -94,6 +96,7 @@
     </ul>
 </li> -->
 
+@if (in_array(Auth::user()->role?->role,[3]))
 <!-- Employees -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -144,7 +147,6 @@
     </ul>
 </li>
 
-@if (Auth::user()->getRoleInfo()->role > 2)
 <!-- Settings -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -199,6 +201,7 @@
         </li>
     </ul>
 </li>
+
 @endif
 
 <!-- Logout -->

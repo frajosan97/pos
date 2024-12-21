@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{{ asset('assets/libs/adminlte/css/adminlte.css') }}">
     <style>
         :root {
-            --primary-color: {{ $company_info->color ?? 'rgb(201, 40, 0)' }};
+            --primary-color: <?php echo $company_info->color ?? 'rgb(201, 40, 0)'; ?>;
         }
     </style>
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
@@ -62,21 +62,6 @@
                         </a>
                     </li>
                 </ul>
-
-                <!-- Right navbar links -->
-                <ul class="navbar-nav ml-auto">
-                    <!-- <li class="nav-item dropdown">
-                        <a class="nav-link" data-bs-toggle="dropdown" href="#">
-                            <i class="far fa-bell"></i>
-                            <span class="badge badge-warning navbar-badge">15</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <a href="">
-                                My profile
-                            </a>
-                        </div>
-                    </li> -->
-                </ul>
             </nav>
             <!-- /.navbar -->
 
@@ -96,7 +81,7 @@
                             <img src="{{ asset('assets/images/defaults/passport.png') }}" class="img-circle elevation-2" alt="User Image">
                         </div>
                         <div class="info">
-                            <a href="/" class="d-block text-color fw-bolder text-capitalize">
+                            <a href="{{ route('employee.show',Auth::user()->id) }}" class="d-block text-color fw-bolder text-capitalize">
                                 <h6 class="m-0 fw-bold">{{ Auth::user()->name }}</h6>
                                 <small>{{ Auth::user()->getRoleInfo()->name }}</small>
                             </a>

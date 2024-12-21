@@ -3,8 +3,8 @@
 @section('content')
 
 <div class="text-center mb-4">
-    <h2><span>OTP Verification</span></h2>
-    <p class="text-muted">Select where you would like to receive a verification code</p>
+    <h2 class="m-0"><span>OTP Verification</span></h2>
+    <small class="text-muted m-0">Chose where to receive a verification code</small>
 </div>
 
 @include('auth.partials.alerts')

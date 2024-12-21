@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageTitle', 'Employee Management')
+@section('pageTitle', ucwords($user->name))
 
 @section('content')
 

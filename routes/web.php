@@ -44,6 +44,7 @@ Route::prefix('/verify')->group(function () {
  * API routes for data fetching and external integrations.
  */
 Route::prefix('/api/fetch-data')->group(function () {
+    Route::get('/analytics', [ApiController::class, 'analytics']);
     Route::get('/constituency/{county_id}', [ApiController::class, 'constituency']);
     Route::get('/ward/{constituency_id}', [ApiController::class, 'ward']);
     Route::get('/location/{ward_id}', [ApiController::class, 'location']);
@@ -61,7 +62,6 @@ Route::group(['middleware' => ['auth']], function () {
      */
     Route::get('/', [SaleController::class, 'create'])->name('/');
     Route::get('/analytics', [DashboardController::class, 'index'])->name('analytics.index');
-    Route::get('/analytics-grapgh', [DashboardController::class, 'index'])->name('analytics.graph');
 
     /**
      * Route for the application employees.

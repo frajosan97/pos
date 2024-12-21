@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('sale_id')->constrained('sales')->cascadeOnDelete();
             $table->foreignId('payment_method')->constrained('payment_methods')->cascadeOnDelete();
             $table->decimal('amount', 10, 2);

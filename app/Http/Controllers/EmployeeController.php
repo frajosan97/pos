@@ -73,34 +73,38 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'branch' => 'required|exists:branches,id', // Ensure branch exists in the DB
-                'role' => 'required|exists:roles,id', // Ensure role exists in the DB
-                'user_name' => 'required|string|max:255|unique:users',
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'phone' => 'required|string|max:15|unique:users|regex:/^(\+?[\d\s\-()]){10,15}$/', // Improve phone validation with regex
-                'id_number' => 'required|string|max:255|unique:users',
-            ]);
+            if (in_array(Auth::user()->role?->role, [3])) {
+                $request->validate([
+                    'branch' => 'required|exists:branches,id', // Ensure branch exists in the DB
+                    'role' => 'required|exists:roles,id', // Ensure role exists in the DB
+                    'user_name' => 'required|string|max:255|unique:users',
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|string|email|max:255|unique:users',
+                    'phone' => 'required|string|max:15|unique:users|regex:/^(\+?[\d\s\-()]){10,15}$/', // Improve phone validation with regex
+                    'id_number' => 'required|string|max:255|unique:users',
+                ]);
 
-            $user = User::create([
-                'branch_id' => $request->input('branch'),
-                'role_id' => $request->input('role'),
-                'user_name' => $request->input('user_name'),
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'phone' => $request->input('phone'),
-                'id_number' => $request->input('id_number'),
-                'password' => Hash::make('12345678'),
-                'created_by' => Auth::user()->id ?? null,
-                'updated_by' => Auth::user()->id ?? null,
-            ]);
+                $user = User::create([
+                    'branch_id' => $request->input('branch'),
+                    'role_id' => $request->input('role'),
+                    'user_name' => $request->input('user_name'),
+                    'name' => $request->input('name'),
+                    'email' => $request->input('email'),
+                    'phone' => $request->input('phone'),
+                    'id_number' => $request->input('id_number'),
+                    'password' => Hash::make('12345678'),
+                    'created_by' => Auth::user()->id ?? null,
+                    'updated_by' => Auth::user()->id ?? null,
+                ]);
 
-            // Send account registration email
-            $this->mailService->sendAccRegEmail($user);
+                // Send account registration email
+                $this->mailService->sendAccRegEmail($user);
 
-            // Success response
-            return response()->json(['success' => 'Employee registered successfully and activation email sent to the provided email address']);
+                // Success response
+                return response()->json(['success' => 'Employee registered successfully and activation email sent to the provided email address']);
+            } else {
+                return response()->json(['error' => 'You have no permission to create a employee!'], 500);
+            }
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
@@ -179,10 +183,10 @@ class EmployeeController extends Controller
                 'user_name' => 'required|string|max:255',
                 'name' => 'required|string|max:255',
                 'gender' => 'required|in:Male,Female',
-                'phone' => 'required|string|max:15',
-                'branch_id' => 'required|exists:branches,id',
-                'role_id' => 'required|exists:roles,id',
-                'status' => 'required|boolean',
+                'phone' => 'nullable|string|max:15',
+                'branch_id' => 'nullable|exists:branches,id',
+                'role_id' => 'nullable|exists:roles,id',
+                'status' => 'nullable|boolean',
                 'id_number' => 'nullable|string|max:20',
                 'passport' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ]);
@@ -207,16 +211,52 @@ class EmployeeController extends Controller
                 'user_name' => $request->input('user_name'),
                 'name' => $request->input('name'),
                 'gender' => $request->input('gender'),
-                'phone' => $request->input('phone'),
-                'branch_id' => $request->input('branch_id'),
-                'role_id' => $request->input('role_id'),
-                'status' => $request->input('status'),
-                'id_number' => $request->input('id_number'),
+                'phone' => $request->input('phone') ?? $user->phone,
+                'branch_id' => $request->input('branch_id') ?? $user->branch_id,
+                'role_id' => $request->input('role_id') ?? $user->role_id,
+                'status' => $request->input('status') ?? $user->status,
+                'id_number' => $request->input('id_number') ?? $user->id_number,
                 'passport' => $passportPath ?? $user->passport,
             ]);
 
             // Return a success message
-            return response()->json(['success' => 'E,ployee profile updated successfully'], 200);
+            return response()->json(['success' => 'Employee profile updated successfully'], 200);
+        } catch (\Exception $exception) {
+            // Log the exception details
+            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+            // Return a general error message
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
+    }
+
+    public function destroy(Request $request, string $id)
+    {
+        try {
+            if (in_array(Auth::user()->role?->role, [3])) {
+                // Validate the request
+                $request->validate([
+                    'password' => 'required|string',
+                ]);
+
+                // Verify the user's password
+                if (!Hash::check($request->password, Auth::user()->password)) {
+                    return response()->json(['error' => 'The password you entered is incorrect.'], 403);
+                }
+
+                // Find the user by key
+                $user = User::findOrFail($id);
+
+                if (!$user) {
+                    return response()->json(['error' => 'user not found.'], 404);
+                }
+
+                // Delete the user
+                $user->delete();
+
+                return response()->json(['success' => 'Employee has been deleted successfully.'], 200);
+            } else {
+                return response()->json(['error' => 'You have no permission to delete employee!'], 500);
+            }
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
