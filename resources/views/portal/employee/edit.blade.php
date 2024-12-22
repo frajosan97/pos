@@ -200,8 +200,7 @@
                                     text: response.success,
                                     icon: 'success',
                                 }).then((result) => {
-                                    window.location.href =
-                                        "{{ route('employee.index') }}";
+                                    window.location.reload();
                                 });
                             },
                             error: function(xhr) {

@@ -11,8 +11,6 @@ use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Ward;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,13 +28,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        try {
-            // Check if the database connection works
-            DB::connection()->getPdo();
-        } catch (\Exception $e) {
-            die('Database does not exist or connection failed.');
-        }
-
         // Proceed with sharing data if checks pass
         view()->share([
             'company_info' => Company::first(),

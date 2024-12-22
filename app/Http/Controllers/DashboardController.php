@@ -25,7 +25,7 @@ class DashboardController extends Controller
                 '2' => [
                     'title' => 'Branch Analytics',
                     'type' => 'branch',
-                    'value' => Auth::user()->branch_id,
+                    'value' => Auth::user()->branch?->id,
                 ],
             ];
 

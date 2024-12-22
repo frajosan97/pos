@@ -6,6 +6,7 @@ use App\Models\Products;
 use App\Models\User;
 use App\Models\Sale;
 use App\Models\Branch;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
@@ -134,6 +135,23 @@ class PdfController extends Controller
         $invoice = Sale::with(['saleItems.product', 'payments.paymentMethod', 'customer'])->findOrFail($id);
         $html = View::make('portal.pdf.invoice', compact('invoice'))->render();
         $fileName = 'invoice';
+
+        // Generate and return the PDF
+        return $this->generatePDF($html, $fileName, 'S', 'P');
+    }
+
+    /**
+     * Generate an company PDF.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function company(Request $request)
+    {
+        // Fetch company data and render it to HTML
+        $company = Company::first();
+        $html = View::make('portal.pdf.company', compact('company'))->render();
+        $fileName = 'company';
 
         // Generate and return the PDF
         return $this->generatePDF($html, $fileName, 'S', 'P');

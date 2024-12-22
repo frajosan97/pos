@@ -11,6 +11,7 @@ class Payment extends Model
 
     // Mass assignable attributes
     protected $fillable = [
+        'branch_id',
         'sale_id',
         'amount',
         'payment_method',

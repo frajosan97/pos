@@ -24,24 +24,32 @@
 
                 <!-- Sale setups -->
                 <div class="row">
-                    <!-- <div class="col-md-4 input-group mb-3">
-                        <input type="text" class="form-control" placeholder="Add customer to sale" aria-label="Recipient's username" aria-describedby="button-addon2">
+                    <div class="col-md-4 input-group mb-3">
+                        <input type="text" id="customer_id" class="form-control" placeholder="Add customer to sale" aria-label="Recipient's username" aria-describedby="button-addon2">
                         <button class="btn btn-primary" type="button" id="button-addon2">
                             <i class="fas fa-user-plus"></i>
                         </button>
-                    </div> -->
-                    <div class="col-md-4 mb-2">
-                        <select name="sale_type" id="sale_type" class="form-control">
-                            <option value="normal_price">Normal Customer</option>
-                            <option value="whole_sale_price">Whole Salers</option>
-                            <option value="agent_price">Agents</option>
-                        </select>
                     </div>
                     <div class="col-md-4 mb-2">
                         <select name="sale_type" id="sale_type" class="form-control">
+                            <option value="normal_price">Normal Price</option>
+                            @if (in_array(Auth::user()->role?->role,[2,3]))
+                            <option value="whole_sale_price">Whole Salers Price</option>
+                            @endif
+                            @if (in_array(Auth::user()->role?->role,[3]))
+                            <option value="agent_price">Agents Price</option>
+                            @endif
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-2">
+                        <select name="branch_id" id="branch_id" class="form-control">
+                            @if (in_array(Auth::user()->role?->role,[3]))
                             @foreach ($branches as $key => $value)
                             <option value="{{ $value->id }}">{{ $value->name }}</option>
                             @endforeach
+                            @else
+                            <option value="{{ Auth::user()->branch?->id }}">{{ Auth::user()->branch?->name }}</option>
+                            @endif
                         </select>
                     </div>
                 </div>
@@ -58,31 +66,31 @@
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="cart-table">
-                            <thead class="thead-dark">
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Item</th>
-                                    <th>Price</th>
-                                    <th>Qty</th>
-                                    <th>Total</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cart-items">
-                                <tr>
-                                    <td colspan="6" class="text-center empty-cart text-muted">
-                                        <img src="{{ asset('assets/images/icons/cart.png') }}" alt="">
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr class="font-weight-bold">
-                                    <th colspan="4" class="text-end">Totals:</th>
-                                    <th colspan="2">Ksh <span id="total-price">0.00</span></th>
-                                </tr>
-                            </tfoot>
-                        </table>
+                            <table class="table table-bordered table-hover" id="cart-table">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Item</th>
+                                        <th>Price</th>
+                                        <th>Qty</th>
+                                        <th>Total</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart-items">
+                                    <tr>
+                                        <td colspan="6" class="text-center empty-cart text-muted">
+                                            <img src="{{ asset('assets/images/icons/cart.png') }}" alt="">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="font-weight-bold">
+                                        <th colspan="4" class="text-end">Totals:</th>
+                                        <th colspan="2">Ksh <span id="total-price">0.00</span></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
                     <div class="col-md-12 text-end">
@@ -469,6 +477,9 @@
 
         // Finalise the sale
         function finalizeSale(data) {
+            var customer_id = $('#customer_id').val();
+            var branch_id = $('#branch_id').val();
+
             Swal.fire({
                 title: 'Sale submission',
                 text: 'Are you sure you want to submit this sale?',
@@ -494,7 +505,9 @@
                         method: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}',
+                            customer_id: customer_id,
                             sale_type: getCookie('sale_type') || 'normal_price',
+                            branch_id: branch_id,
                             data
                         },
                         success: function(response) {

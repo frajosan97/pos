@@ -12,7 +12,7 @@
         </a>
         <ul class="dropdown-menu rounded-0 border-0 shadow-sm p-0">
             <li>
-                <a href="{{ route('branch.pdf') }}" target="_blank" class="dropdown-item">
+                <a href="{{ route('company.pdf') }}" target="_blank" class="dropdown-item">
                     <i class="fas fa-file-pdf text-danger"></i> PDF
                 </a>
             </li>
@@ -134,6 +134,8 @@
                                 value="{{ old('sms_partner_name', $company->sms_partner_name) }}">
                         </div>
                     </div>
+
+                    <hr>
 
                     <!-- Submit Button -->
                     <div class="row">

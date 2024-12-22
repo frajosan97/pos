@@ -4,6 +4,7 @@
 
 @section('content')
 
+@if (in_array(Auth::user()->role?->role,[2,3]))
 <!-- control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
     <li class="nav-item">
@@ -13,6 +14,7 @@
     </li>
 </ul>
 <!-- / end control buttons -->
+@endif
 
 <div class="row">
     <div class="col-12">

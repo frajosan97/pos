@@ -7,6 +7,7 @@
         <span class="d-none d-sm-inline-block">Manage</span>
     </a>
 
+    @if (in_array(Auth::user()->role?->role,[2,3]))
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-outline-danger delete-product"
@@ -15,4 +16,5 @@
         <i class="fas fa-trash-alt"></i>
         <span class="d-none d-sm-inline-block">Delete</span>
     </button>
+    @endif
 </div>

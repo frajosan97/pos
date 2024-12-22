@@ -41,19 +41,6 @@ Route::prefix('/verify')->group(function () {
 });
 
 /**
- * API routes for data fetching and external integrations.
- */
-Route::prefix('/api/fetch-data')->group(function () {
-    Route::get('/analytics', [ApiController::class, 'analytics']);
-    Route::get('/constituency/{county_id}', [ApiController::class, 'constituency']);
-    Route::get('/ward/{constituency_id}', [ApiController::class, 'ward']);
-    Route::get('/location/{ward_id}', [ApiController::class, 'location']);
-    Route::get('/product/{barcode}', [ApiController::class, 'product']);
-    Route::get('/payment-methods', [ApiController::class, 'paymentMethods']);
-    Route::get('/mpesa-payments', [ApiController::class, 'mpesaPaymants']);
-});
-
-/**
  * Group routes requiring user authentication.
  */
 Route::group(['middleware' => ['auth']], function () {
@@ -89,6 +76,19 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('customer', CustomerController::class);
 
     /**
+     * API routes for data fetching and external integrations.
+     */
+    Route::prefix('/api/fetch-data')->group(function () {
+        Route::get('/analytics', [ApiController::class, 'analytics']);
+        Route::get('/constituency/{county_id}', [ApiController::class, 'constituency']);
+        Route::get('/ward/{constituency_id}', [ApiController::class, 'ward']);
+        Route::get('/location/{ward_id}', [ApiController::class, 'location']);
+        Route::get('/product/{barcode}', [ApiController::class, 'product']);
+        Route::get('/payment-methods', [ApiController::class, 'paymentMethods']);
+        Route::get('/mpesa-payments', [ApiController::class, 'mpesaPaymants']);
+    });
+
+    /**
      * PDF Generators
      */
     Route::prefix('/pdf')->group(function () {
@@ -97,6 +97,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/sales', [PdfController::class, 'sales'])->name('sales.pdf');
         Route::get('/invoice/{invoice_id}', [PdfController::class, 'invoice'])->name('invoice.pdf');
         Route::get('/branch', [PdfController::class, 'branch'])->name('branch.pdf');
+        Route::get('/company', [PdfController::class, 'company'])->name('company.pdf');
     });
 
     /**

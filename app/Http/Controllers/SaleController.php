@@ -76,7 +76,9 @@ class SaleController extends Controller
         try {
             // Validate the incoming request
             $validated = $request->validate([
+                'customer_id' => 'nullable|string',
                 'sale_type' => 'required|string',
+                'branch_id' => 'required|string',
                 'data.total' => 'required|numeric|min:0',
                 'data.paid' => 'required|numeric|min:0',
                 'data.payment_reference_id' => 'string',
@@ -91,8 +93,6 @@ class SaleController extends Controller
             // Transaction to ensure data integrity
             DB::beginTransaction();
 
-            $customer_id = ($request->input('data.customer_id'))
-                ? $request->input('data.customer_id') : null;
             $reference_id = (!($validated['data']['payment_reference_id'] == '0'))
                 ? $validated['data']['payment_reference_id'] : null;
             $created_by = (Auth::user()->id)
@@ -100,7 +100,8 @@ class SaleController extends Controller
 
             // Store the sale
             $sale = Sale::create([
-                'customer_id' => $customer_id,
+                'branch_id' => $validated['branch_id'],
+                'customer_id' => $validated['customer_id'],
                 'sale_type' => $validated['sale_type'],
                 'total_amount' => $validated['data']['total'],
                 'status' => $validated['data']['paid'] >= $validated['data']['total'] ? 'paid' : 'pending',
@@ -129,6 +130,7 @@ class SaleController extends Controller
 
             // Record the payment
             $payment = Payment::create([
+                'branch_id' => $validated['branch_id'],
                 'sale_id' => $sale->id,
                 'amount' => $validated['data']['paid'],
                 'payment_method' => $validated['data']['payment_method'],

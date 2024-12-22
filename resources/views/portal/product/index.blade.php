@@ -6,11 +6,13 @@
 
 <!-- control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
+    @if (in_array(Auth::user()->role?->role,[2,3]))
     <li class="nav-item">
         <a href="{{ route('product.create') }}" class="nav-link">
             <i class="fas fa-plus-circle"></i> Create/Update product
         </a>
     </li>
+    @endif
     <li class="nav-item dropdown">
         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-print"></i> Print
