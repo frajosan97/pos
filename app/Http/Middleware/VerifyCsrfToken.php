@@ -12,10 +12,10 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        '/transactions/callback',
-        '/transactions/confirmation',
-        '/transactions/validation',
-        '/transactions/timeout',
-        '/transactions/result',
+        '/payments/callback',
+        '/payments/confirmation',
+        '/payments/validation',
+        '/payments/timeout',
+        '/payments/result',
     ];
 }
