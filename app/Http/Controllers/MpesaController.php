@@ -20,8 +20,12 @@ class MpesaController extends Controller
         try {
             $response = $this->mpesaService->register();
 
-            if ($response['status'] === 'success') {
-                return response()->json(['success' => 'URLs registered successfully']);
+            $response = json_decode($response, true);
+
+            if (isset($response['ResponseCode'])) {
+                return response()->json(['success' => 'URLs registered successfully'], 200);
+            } else {
+                return response()->json(['error' => $response['errorMessage']], 500);
             }
         } catch (\Exception $exception) {
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
