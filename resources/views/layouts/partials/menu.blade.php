@@ -174,15 +174,16 @@
                 <p>Company Information</p>
             </a>
         </li>
-        <li class="nav-item">
-            <a href="{{ route('clear-cache.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-trash-alt"></i> <!-- Updated Icon -->
-                <p>Clear Cache</p>
-            </a>
-        </li>
     </ul>
 </li>
 @endif
+
+<li class="nav-item">
+    <a href="{{ route('clear-cache.form') }}" class="nav-link">
+        <i class="nav-icon fas fa-trash-alt"></i> <!-- Updated Icon -->
+        <p>Clear Cache</p>
+    </a>
+</li>
 
 <!-- Logout -->
 <li class="nav-item">
