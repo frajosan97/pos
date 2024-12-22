@@ -12,6 +12,7 @@ use App\Models\Company;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Artisan;
 
 class SettingController extends Controller
 {
@@ -609,6 +610,58 @@ class SettingController extends Controller
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
             // Return a general error message
             return response()->json(['error' => $exception->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Clear and optimize the system cache.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function clearCache()
+    {
+        try {
+            // Clear application cache
+            Artisan::call('cache:clear');
+            // Clear route cache
+            Artisan::call('route:clear');
+            // Clear config cache
+            Artisan::call('config:clear');
+            // Clear view cache
+            Artisan::call('view:clear');
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Application cache cleared successfully!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to clear cache: ' . $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Optimize the system.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function optimize()
+    {
+        try {
+            // Optimize the application
+            Artisan::call('optimize');
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Application optimized successfully!',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to optimize application: ' . $e->getMessage(),
+            ]);
         }
     }
 }

@@ -150,4 +150,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/company', [SettingController::class, 'company'])->name('setting.company');
         Route::put('/company/update/{id}', [SettingController::class, 'updateCompany'])->name('setting.company.update');
     });
+
+    // CACHE
+    Route::get('/clear-cache', function () {
+        return view('portal.setting.clear-cache');
+    })->name('clear-cache.form');
+    Route::post('/clear-cache', [SettingController::class, 'clearCache'])->name('cache.clear');
+    Route::post('/optimize', [SettingController::class, 'optimize'])->name('cache.optimize');
 });

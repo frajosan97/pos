@@ -1,14 +1,14 @@
 <!-- POS Menu -->
 <li class="nav-item">
     <a href="/" class="nav-link">
-        <i class="nav-icon fas fa-cash-register"></i>
+        <i class="nav-icon fas fa-credit-card"></i> <!-- Updated Icon -->
         <p>Point of Sale</p>
     </a>
 </li>
 
 <li class="nav-item">
     <a href="{{ route('analytics.index') }}" class="nav-link">
-        <i class="nav-icon fas fa-chart-line"></i>
+        <i class="nav-icon fas fa-chart-pie"></i> <!-- Updated Icon -->
         <p>Analytics</p>
     </a>
 </li>
@@ -71,33 +71,8 @@
 </li>
 @endif
 
-<!-- Customers -->
-<!-- <li class="nav-item">
-    <a class="nav-link" href="javascript:void(0)">
-        <i class="nav-icon fas fa-users"></i>
-        <p>
-            Customers
-            <i class="right fas fa-angle-left"></i>
-        </p>
-    </a>
-    <ul class="nav nav-treeview">
-        <li class="nav-item">
-            <a href="{{ route('customer.index') }}" class="nav-link">
-                <i class="nav-icon fas fa-address-book"></i>
-                <p>Customer List</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('customer.create') }}" class="nav-link">
-                <i class="nav-icon fas fa-user-plus"></i>
-                <p>Add Customer</p>
-            </a>
-        </li>
-    </ul>
-</li> -->
-
-@if (in_array(Auth::user()->role?->role,[3]))
 <!-- Employees -->
+@if (in_array(Auth::user()->role?->role,[3]))
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-users-cog"></i>
@@ -199,9 +174,14 @@
                 <p>Company Information</p>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('clear-cache.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-trash-alt"></i> <!-- Updated Icon -->
+                <p>Clear Cache</p>
+            </a>
+        </li>
     </ul>
 </li>
-
 @endif
 
 <!-- Logout -->
