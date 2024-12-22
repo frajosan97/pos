@@ -58,8 +58,8 @@ h6 {
 }
 
 .letterhead .logo img {
-    max-width: 100px;
-    height: auto;
+    max-width: 80px;
+    max-height: 80px;
 }
 
 .letterhead .business-info {
