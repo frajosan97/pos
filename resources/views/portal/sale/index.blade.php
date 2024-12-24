@@ -11,13 +11,52 @@
             <i class="fas fa-plus-circle"></i> Make New sale
         </a>
     </li>
+    @if (Auth::user()->role?->role == 2)
+    <li class="nav-item dropdown d-flex align-items-center">
+        <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
+        <select name="employee" id="employee" class="form-control border-0">
+            <option value="">Filter by Employee</option>
+            @foreach ($employees as $employee)
+            @if ($employee->branch_id == Auth::user()->branch_id)
+            <option value="{{ $employee->id }}">{{ ucwords($employee->name) }}</option>
+            @endif
+            @endforeach
+        </select>
+    </li>
+    @endif
+    @if (Auth::user()->role?->role == 3)
+    <li class="nav-item dropdown d-flex align-items-center">
+        <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
+        <select name="employee" id="employee" class="form-control border-0">
+            <option value="">Filter by Employee</option>
+            @foreach ($employees as $employee)
+            <option value="{{ $employee->id }}">{{ ucwords($employee->name) }}</option>
+            @endforeach
+        </select>
+    </li>
+    <li class="nav-item dropdown d-flex align-items-center">
+        <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
+        <select name="branch" id="branch" class="form-control border-0">
+            <option value="">Filter by Branch</option>
+            @foreach ($branches as $branch)
+            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
+            @endforeach
+        </select>
+    </li>
+    @endif
+    <li class="nav-item dropdown d-flex align-items-center">
+        <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
+        <select name="branch" id="branch" class="form-control border-0">
+            <option value="">Filter by Brand</option>
+        </select>
+    </li>
     <li class="nav-item dropdown">
         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-print"></i> Print
         </a>
         <ul class="dropdown-menu rounded-0 border-0 shadow-sm p-0">
             <li><a href="{{ route('sales.pdf') }}" target="_blank" class="dropdown-item"><i class="fas fa-file-pdf text-danger"></i> PDF</a></li>
-            <li><a href="#" class="dropdown-item"><i class="fas fa-file-excel text-success"></i> Excel</a></li>
+            <!-- <li><a href="#" class="dropdown-item"><i class="fas fa-file-excel text-success"></i> Excel</a></li> -->
         </ul>
     </li>
 </ul>

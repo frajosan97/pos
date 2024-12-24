@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('pageTitle', ucwords($title))
+@section('pageTitle', 'Analytics')
 
 @section('content')
 

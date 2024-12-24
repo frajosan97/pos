@@ -24,12 +24,13 @@
 
                 <!-- Sale setups -->
                 <div class="row">
-                    <div class="col-md-4 input-group mb-3">
+                    <!-- <div class="col-md-4 input-group mb-3">
                         <input type="text" id="customer_id" class="form-control" placeholder="Add customer to sale" aria-label="Recipient's username" aria-describedby="button-addon2">
                         <button class="btn btn-primary" type="button" id="button-addon2">
                             <i class="fas fa-user-plus"></i>
                         </button>
-                    </div>
+                    </div> -->
+                    <input type="hidden" id="customer_id">
                     <div class="col-md-4 mb-2">
                         <select name="sale_type" id="sale_type" class="form-control">
                             <option value="normal_price">Normal Price</option>
@@ -518,6 +519,7 @@
                             }).then((result) => {
                                 cart = [];
                                 updateCart();
+                                window.location.href = "{{ route('sale.show', ':sale_id') }}".replace(':sale_id', response.sale_id);
                             });
                         },
                         error: function(xhr) {

@@ -97,31 +97,6 @@
     </ul>
 </li>
 
-<!-- M-Pesa API -->
-<li class="nav-item">
-    <a class="nav-link" href="javascript:void(0)">
-        <i class="nav-icon fas fa-wallet"></i>
-        <p>
-            M-Pesa API
-            <i class="right fas fa-angle-left"></i>
-        </p>
-    </a>
-    <ul class="nav nav-treeview">
-        <li class="nav-item">
-            <a href="{{ route('mpesa.simulate.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-mobile-alt"></i>
-                <p>C2B Simulation</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('mpesa.stkpush.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-receipt"></i>
-                <p>STK Push</p>
-            </a>
-        </li>
-    </ul>
-</li>
-
 <!-- Settings -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -172,6 +147,18 @@
             <a href="{{ route('setting.company') }}" class="nav-link">
                 <i class="nav-icon fas fa-university"></i>
                 <p>Company Information</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mpesa.simulate.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-mobile-alt"></i>
+                <p>Register Urls</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('mpesa.stkpush.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-receipt"></i>
+                <p>STK Push</p>
             </a>
         </li>
     </ul>

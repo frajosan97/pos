@@ -152,7 +152,7 @@ class SaleController extends Controller
 
             DB::commit();
 
-            return response()->json(['success' => 'Sale and payment recorded successfully'], 201);
+            return response()->json(['success' => 'Sale and payment recorded successfully', 'sale_id' => $sale->id], 201);
         } catch (\Exception $exception) {
             DB::rollBack();
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
