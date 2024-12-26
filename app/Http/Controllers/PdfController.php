@@ -31,10 +31,6 @@ class PdfController extends Controller
                 'orientation' => $orientation,
             ]);
 
-            // Load Bootstrap CSS using an absolute file path
-            $css = file_get_contents(public_path('assets/css/bootstrap.css'));
-            $mpdf->WriteHTML($css, \Mpdf\HTMLParserMode::HEADER_CSS);
-
             $mpdf->SetBasePath(public_path()); // Set base path for assets
             $mpdf->WriteHTML($html); // Write HTML content to the PDF
 

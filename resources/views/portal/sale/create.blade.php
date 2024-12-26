@@ -1,8 +1,10 @@
 @extends('layouts.app')
 
-@section('pageTitle', 'Sell')
+@section('pageTitle', 'sale')
 
 @section('content')
+
+@if(auth()->user()->hasPermission('sale_create'))
 
 <style>
     .table th,
@@ -34,22 +36,20 @@
                     <div class="col-md-4 mb-2">
                         <select name="sale_type" id="sale_type" class="form-control">
                             <option value="normal_price">Normal Price</option>
-                            @if (in_array(Auth::user()->role?->role,[2,3]))
                             <option value="whole_sale_price">Whole Salers Price</option>
-                            @endif
-                            @if (in_array(Auth::user()->role?->role,[3]))
+                            @if(auth()->user()->hasPermission('data_manager_general'))
                             <option value="agent_price">Agents Price</option>
                             @endif
                         </select>
                     </div>
                     <div class="col-md-4 mb-2">
                         <select name="branch_id" id="branch_id" class="form-control">
-                            @if (in_array(Auth::user()->role?->role,[3]))
+                            @if(auth()->user()->hasPermission('data_manager_general'))
                             @foreach ($branches as $key => $value)
                             <option value="{{ $value->id }}">{{ $value->name }}</option>
                             @endforeach
                             @else
-                            <option value="{{ Auth::user()->branch?->id }}">{{ Auth::user()->branch?->name }}</option>
+                            <option value="{{ auth()->user()->branch?->id }}">{{ auth()->user()->branch?->name }}</option>
                             @endif
                         </select>
                     </div>
@@ -96,7 +96,7 @@
                     </div>
                     <div class="col-md-12 text-end">
                         <button class="btn btn-success px-5 py-2" id="complete-sale">
-                            <i class="bi bi-check-circle"></i> Complete Sale
+                            <i class="fas fa-check-circle"></i> Complete Sale
                         </button>
                     </div>
                 </div>
@@ -104,6 +104,10 @@
         </div>
     </div>
 </div>
+
+@else
+@include('layouts.partials.no_permission')
+@endif
 
 @endsection
 
@@ -182,21 +186,21 @@
                     const total = price * item.quantity;
 
                     const row = `
-                <tr>
-                    <td><img src="{{ asset('') }}${item.product.photo}" alt="" width="50"></td>
-                    <td>${item.product.name}</td>
-                    <td>Ksh ${price}</td>
-                    <td>
-                        <input type="number" value="${item.quantity}" min="1" class="form-control quantity-input" data-id="${item.product.id}">
-                    </td>
-                    <td>Ksh ${total}</td>
-                    <td>
-                        <button class="btn btn-outline-danger remove-item w-100" data-id="${item.product.id}">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+                        <tr>
+                            <td><img src="{{ asset('') }}${item.product.photo}" alt="" width="50"></td>
+                            <td>${item.product.name}</td>
+                            <td>Ksh ${price}</td>
+                            <td>
+                                <input type="number" value="${item.quantity}" min="1" class="form-control quantity-input" data-id="${item.product.id}">
+                            </td>
+                            <td>Ksh ${total}</td>
+                            <td>
+                                <button class="btn btn-outline-danger remove-item w-100" data-id="${item.product.id}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
 
                     $('#cart-items').append(row);
                     totalPrice += total;
@@ -204,12 +208,12 @@
             } else {
                 // Show empty cart message if no items
                 $('#cart-items').append(`
-            <tr>
-                <td colspan="6" class="text-center empty-cart text-muted">
-                    <img src="{{ asset('assets/images/icons/cart.png') }}" alt="Empty Cart">
-                </td>
-            </tr>
-        `);
+                    <tr>
+                        <td colspan="6" class="text-center empty-cart text-muted">
+                            <img src="{{ asset('assets/images/icons/cart.png') }}" alt="Empty Cart">
+                        </td>
+                    </tr>
+                `);
             }
 
             // Update total price display
@@ -252,15 +256,15 @@
                         // Loop through the fetched payment methods and create buttons
                         data.forEach(paymentMethod => {
                             content += `
-                        <div class="col">
-                            <button class="btn btn-lg w-100 border selected-payment-method"
-                                data-pay-id="${paymentMethod.id}" 
-                                data-pay-name="${paymentMethod.name}">
-                                    <h6>${paymentMethod.name}</h6>
-                                    <img src="{{ asset('') }}${paymentMethod.image}" width="100">
-                            </button>
-                        </div>
-                    `;
+                                <div class="col">
+                                    <button class="btn btn-lg w-100 border selected-payment-method"
+                                        data-pay-id="${paymentMethod.id}" 
+                                        data-pay-name="${paymentMethod.name}">
+                                            <h6>${paymentMethod.name}</h6>
+                                            <img src="{{ asset('') }}${paymentMethod.image}" width="100">
+                                    </button>
+                                </div>
+                            `;
                         });
                         // close div
                         content += `</div>`;
@@ -295,15 +299,15 @@
                     title: 'Enter amount given by customer',
                     icon: 'info',
                     html: `
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <input type="number" id="amountPaid" class="form-control form-control-lg" placeholder="Enter amount given by customer" required />
-                    </div>
-                    <div class="col-md-12 text-end cash-display mb-3">
-                        Change: <span id="total-change">0.00</span>
-                    </div>
-                </div>
-            `,
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <input type="number" id="amountPaid" class="form-control form-control-lg" placeholder="Enter amount given by customer" required />
+                            </div>
+                            <div class="col-md-12 text-end cash-display mb-3">
+                                Change: <span id="total-change">0.00</span>
+                            </div>
+                        </div>
+                    `,
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
@@ -354,24 +358,24 @@
                 Swal.fire({
                     title: 'Select M-Pesa Transaction',
                     html: `
-                <div class="col-md-12">
-                    <table class="table table-sm table-bordered table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>TransId</th>
-                                <th>TransName</th>
-                                <th>TransAmnt</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="mpesa-transactions-body">
-                            <tr>
-                                <td colspan="4" class="text-center">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `,
+                        <div class="col-md-12">
+                            <table class="table table-sm table-bordered table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>TransId</th>
+                                        <th>TransName</th>
+                                        <th>TransAmnt</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mpesa-transactions-body">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `,
                     showCancelButton: true,
                     showConfirmButton: false,
                     cancelButtonColor: '#d33',
@@ -389,21 +393,21 @@
                                 if (response.length > 0) {
                                     response.forEach(transaction => {
                                         tableBody.append(`
-                                    <tr>
-                                        <td>${transaction.transaction_id}</td>
-                                        <td>${transaction.name}</td>
-                                        <td>${transaction.amount}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary select-transaction" 
-                                                    data-id="${transaction.id}" 
-                                                    data-transaction_id="${transaction.transaction_id}" 
-                                                    data-name="${transaction.name}" 
-                                                    data-amount="${transaction.amount}">
-                                                Select
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `);
+                                            <tr>
+                                                <td>${transaction.transaction_id}</td>
+                                                <td>${transaction.name}</td>
+                                                <td>${transaction.amount}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary select-transaction" 
+                                                            data-id="${transaction.id}" 
+                                                            data-transaction_id="${transaction.transaction_id}" 
+                                                            data-name="${transaction.name}" 
+                                                            data-amount="${transaction.amount}">
+                                                        Select
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `);
                                     });
 
                                     // Bind click event to dynamically added buttons
@@ -416,16 +420,16 @@
                                         };
 
                                         const transactionDetailsHtml = `
-                                    <div class="alert alert-success mt-3" role="alert">
-                                        <h5>Selected Transaction Details</h5>
-                                        <p><strong>Transaction ID:</strong>
-                                        <br>${selectedTransaction.transaction_id}</p>
-                                        <p><strong>Transaction Name:</strong>
-                                        <br>${selectedTransaction.name}</p>
-                                        <p><strong>Transaction Amount:</strong>
-                                        <br>Ksh ${selectedTransaction.amount}</p>
-                                    </div>
-                                `;
+                                            <div class="alert alert-success mt-3" role="alert">
+                                                <h5>Selected Transaction Details</h5>
+                                                <p><strong>Transaction ID:</strong>
+                                                <br>${selectedTransaction.transaction_id}</p>
+                                                <p><strong>Transaction Name:</strong>
+                                                <br>${selectedTransaction.name}</p>
+                                                <p><strong>Transaction Amount:</strong>
+                                                <br>Ksh ${selectedTransaction.amount}</p>
+                                            </div>
+                                        `;
 
                                         // Update SweetAlert with the new content
                                         Swal.fire({
@@ -458,10 +462,10 @@
                                     });
                                 } else {
                                     tableBody.append(`
-                                <tr>
-                                    <td colspan="4" class="text-center">No recent payment made</td>
-                                </tr>
-                            `);
+                                        <tr>
+                                            <td colspan="4" class="text-center">No recent payment made</td>
+                                        </tr>
+                                    `);
                                 }
                             },
                             error: function(xhr) {

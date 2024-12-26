@@ -6,19 +6,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $fillable = [
         'branch_id',
-        'role_id',
         'user_name',
         'name',
         'passport',
@@ -26,18 +26,18 @@ class User extends Authenticatable
         'phone',
         'id_number',
         'email',
-        'email_verified_at',
         'status',
         'otp',
+        'otp_expires_at',
         'password',
         'created_by',
         'updated_by',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
+     * The attributes that should be hidden for arrays.
      *
-     * @var array<int, string>
+     * @var array
      */
     protected $hidden = [
         'password',
@@ -47,12 +47,11 @@ class User extends Authenticatable
     /**
      * The attributes that should be cast to native types.
      *
-     * @var array<string, string>
+     * @var array
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'otp_expires_at' => 'datetime',
-        'password' => 'hashed',
+        'otp_expires_at'    => 'datetime',
     ];
 
     /**
@@ -66,6 +65,27 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship with the Role model through the pivot table.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(Role::class, 'role_user', 'user_id', 'role_id');
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     *
+     * @param string $permission
+     * @return bool
+     */
+    public function hasPermission(string $permission): bool
+    {
+        return $this->roles->flatMap->permissions->contains('slug', $permission);
+    }
+
+    /**
      * Relationship with the Role model.
      *
      * @return BelongsTo
@@ -73,26 +93,6 @@ class User extends Authenticatable
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
-    }
-
-    /**
-     * Get the role information for the user.
-     *
-     * @return Role|null
-     */
-    public function getRoleInfo(): ?Role
-    {
-        return $this->role;
-    }
-
-    /**
-     * Get the branch information for the user.
-     *
-     * @return Branch|null
-     */
-    public function getBranchInfo(): ?Branch
-    {
-        return $this->branch;
     }
 
     /**
@@ -124,17 +124,5 @@ class User extends Authenticatable
     public function scopeActive($query)
     {
         return $query->where('status', 1);
-    }
-
-    /**
-     * Scope a query to filter by role.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param int $roleId
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public function scopeByRole($query, int $roleId)
-    {
-        return $query->where('role_id', $roleId);
     }
 }

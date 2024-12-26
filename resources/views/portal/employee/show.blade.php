@@ -16,7 +16,9 @@
                         <img src="{{ asset(getImage($user->passport,'passport.png')) }}"
                             alt="Profile Picture" class="rounded-circle img-fluid profile-picture mb-3 p-1 shadow-sm">
                         <h3 class="fw-bold">{{ $user->name }}</h3>
-                        <p class="text-muted">{{ $user->role->name ?? 'Role not assigned' }}</p>
+                        @foreach ($user->roles as $role)
+                        <p class="text-muted">{{ $role->name }}</p>
+                        @endforeach
                         <a href="{{ route('employee.edit', $user->id) }}" class="btn btn-primary">
                             <i class="fas fa-pencil"></i> Edit Profile
                         </a>
@@ -58,74 +60,4 @@
 
     </div>
 </div>
-
-<!-- Employee Sales Data Section -->
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <h4 class="mb-3">Employee Sales Data</h4>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped" id="salesDataTable">
-                        <thead>
-                            <tr>
-                                <th class="text-muted">Sale Date</th>
-                                <th class="text-muted">Customer Name</th>
-                                <th class="text-muted">Amount</th>
-                                <th class="text-muted">Status</th>
-                                <th class="text-muted">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Sales data will be dynamically populated by AJAX -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
 @endsection
-
-@push('script')
-<script>
-    $(document).ready(function() {
-        var table = $('#salesDataTable').DataTable({
-            processing: true,
-            serverSide: true,
-            order: [
-                [0, 'asc']
-            ], // Default sorting by sale date
-            ajax: "{{ route('employee.show', $user->id) }}", // Route to fetch sales data
-            columns: [{
-                    data: 'sale_date',
-                    name: 'sale_date'
-                },
-                {
-                    data: 'customer_name',
-                    name: 'customer_name'
-                },
-                {
-                    data: 'amount',
-                    name: 'amount'
-                },
-                {
-                    data: 'status',
-                    name: 'status'
-                },
-                {
-                    data: 'action',
-                    name: 'action'
-                }
-            ]
-        });
-
-        // Optional: Search functionality for mobile view (if search input exists)
-        $('#search-input').on('keyup', function() {
-            table.search(this.value).draw();
-        });
-    });
-</script>
-@endpush

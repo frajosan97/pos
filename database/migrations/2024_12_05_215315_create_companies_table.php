@@ -20,9 +20,10 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('color')->default('red');
             $table->string('sms_mode')->default('online');
+            $table->string('sms_partner_id')->nullable();
             $table->string('sms_api_key')->nullable();
             $table->string('sms_sender_id')->nullable();
-            $table->string('sms_partner_name')->nullable();
+            $table->string('sms_api_url')->nullable();
             $table->string('status')->default('active');
             $table->timestamps();
         });

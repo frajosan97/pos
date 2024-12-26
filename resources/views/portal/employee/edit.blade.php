@@ -60,7 +60,7 @@
                         </div>
                     </div>
 
-                    @if (in_array(Auth::user()->role?->role,[3]))
+                    @if(auth()->user()->hasPermission('user_edit'))
                     <!-- Section: Contact Details -->
                     <h5 class="bg-light p-1 rounded mb-3">Contact Details</h5>
                     <div class="row">
@@ -87,7 +87,7 @@
                                 <select id="branch_id" name="branch_id" class="form-select">
                                     @foreach ($branches as $branch)
                                     <option value="{{ $branch->id }}" {{ $user->branch_id == $branch->id ? 'selected' : '' }}>
-                                        {{ $branch->name }}
+                                        {{ ucwords($branch->name) }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -95,11 +95,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="role_id" class="form-label">Role</label>
-                                <select id="role_id" name="role_id" class="form-select">
+                                <label for="role" class="form-label">Role</label>
+                                <select id="role" name="role" class="form-select">
                                     @foreach ($roles as $role)
-                                    <option value="{{ $role->id }}" {{ $user->role_id == $role->id ? 'selected' : '' }}>
-                                        {{ $role->name }}
+                                    <option value="{{ $role->id }}">
+                                        {{ ucwords($role->name) }}
                                     </option>
                                     @endforeach
                                 </select>

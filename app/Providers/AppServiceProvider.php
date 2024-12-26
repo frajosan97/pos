@@ -11,6 +11,7 @@ use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Ward;
+use App\Services\RoleFetchService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,12 +27,14 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+    public function boot(RoleFetchService $roleFetchService): void
     {
-        // Proceed with sharing data if checks pass
-        view()->share([
+        // Get fetchType data using the service
+        $fetchTypeData = $roleFetchService->getFetchData();
+
+        // Share data with views
+        view()->share(array_merge($fetchTypeData, [
             'company_info' => Company::first(),
-            'roles' => Role::all(),
             'counties' => County::all(),
             'constituencies' => Constituency::all(),
             'wards' => Ward::all(),
@@ -39,6 +42,7 @@ class AppServiceProvider extends ServiceProvider
             'branches' => Branch::all(),
             'catalogue' => Catalogue::all(),
             'employees' => User::all(),
-        ]);
+            'roles' => Role::all(),
+        ]));
     }
 }

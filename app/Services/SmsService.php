@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Company;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
@@ -40,10 +41,11 @@ class SmsService
     */
     public function __construct()
     {
-        $this->partnerId = config('sms.partner_id');
-        $this->apiKey = config('sms.api_key');
-        $this->senderId = config('sms.sender_id');
-        $this->apiUrl = rtrim(config('sms.api_url'), '/'); // Ensure no trailing slash
+        $company_info = Company::first();
+        $this->partnerId = $company_info->sms_partner_id;
+        $this->apiKey = $company_info->sms_api_key;
+        $this->senderId = $company_info->sms_sender_id;
+        $this->apiUrl = rtrim($company_info->sms_api_url, '/'); // Ensure no trailing slash
         $this->client = new Client(); // Initialize Guzzle client
     }
 

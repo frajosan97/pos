@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\Role;
 use App\Models\Ward;
 use App\Models\Company;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
@@ -409,6 +410,7 @@ class SettingController extends Controller
 
             // Create the branch
             $branch = Branch::create([
+                'company_id' => 1,
                 'county_id' => $request->input('county'),
                 'constituency_id' => $request->input('constituency'),
                 'ward_id' => $request->input('ward'),
@@ -469,7 +471,6 @@ class SettingController extends Controller
                 $roleData = Role::all()
                     ->map(function ($role) {
                         return [
-                            'role' => ucwords($role->role),
                             'name' => ucwords($role->name),
                             'description' => ucwords($role->description),
                             'action' => view('portal.setting.partials.role_actions', compact('role'))->render(),
@@ -488,19 +489,25 @@ class SettingController extends Controller
         }
     }
 
+    public function showRole(string $id)
+    {
+        $role = Role::with('permissions')->find($id);
+        $all_permissions = Permission::all();
+        return view('portal.setting.role_show', compact(['role', 'all_permissions']));
+    }
+
     public function storeRole(Request $request)
     {
         try {
             // Validate the request data
             $request->validate([
-                'role' => 'required|string|max:255',
                 'name' => 'required|string|max:255',
                 'description' => 'required|string|max:255',
             ]);
 
             // Create the role
             $role = Role::create([
-                'role' => $request->input('role'),
+                'slug' => my_slug($request->input('name')),
                 'name' => $request->input('name'),
                 'description' => $request->input('description'),
             ]);
@@ -525,7 +532,6 @@ class SettingController extends Controller
         try {
             // Validate the request data
             $request->validate([
-                'role' => 'required|string|max:255',
                 'name' => 'required|string|max:255',
                 'description' => 'required|string|max:255',
             ]);
@@ -535,7 +541,7 @@ class SettingController extends Controller
 
             // Update the role name
             $role->update([
-                'role' => $request->input('role'),
+                'slug' => my_slug($request->input('name')),
                 'name' => $request->input('name'),
                 'description' => $request->input('description'),
             ]);
@@ -547,6 +553,32 @@ class SettingController extends Controller
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
             // Return a general error message
             return response()->json(['error' => $exception->getMessage()], 500);
+        }
+    }
+
+    public function updatePermission(Request $request, string $id)
+    {
+        try {
+            // Validate the request data
+            $request->validate([
+                'permissions' => 'array|nullable|exists:permissions,id', // Ensure 'permissions' is an array of valid IDs or null
+            ]);
+
+            // Find the role by ID or fail if not found
+            $role = Role::findOrFail($id);
+
+            // Sync the permissions for the role
+            // This will add the new permissions and remove any not in the array
+            $role->permissions()->sync($request->permissions ?? []);
+
+            // Return a success message
+            return response()->json(['success' => 'Permissions updated successfully'], 200);
+        } catch (\Exception $exception) {
+            // Log the exception details
+            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+
+            // Return a general error message
+            return response()->json(['error' => 'An error occurred while updating permissions.'], 500);
         }
     }
 
@@ -568,9 +600,10 @@ class SettingController extends Controller
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'color' => 'nullable|string|max:7',
                 'sms_mode' => 'required|in:online,offline',
+                'sms_partner_id' => 'nullable|string|max:255',
                 'sms_api_key' => 'nullable|string|max:255',
                 'sms_sender_id' => 'nullable|string|max:255',
-                'sms_partner_name' => 'nullable|string|max:255',
+                'sms_api_url' => 'nullable|string|max:255',
             ]);
 
             // Find the company record
@@ -598,9 +631,10 @@ class SettingController extends Controller
                 'color' => $request->input('color'),
                 'logo' => $logoPath ?? $company->logo,
                 'sms_mode' => $request->input('sms_mode'),
+                'sms_partner_id' => $request->input('sms_partner_id'),
                 'sms_api_key' => $request->input('sms_api_key'),
                 'sms_sender_id' => $request->input('sms_sender_id'),
-                'sms_partner_name' => $request->input('sms_partner_name'),
+                'sms_api_url' => $request->input('sms_api_url'),
             ]);
 
             // Return a success message

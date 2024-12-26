@@ -70,6 +70,7 @@
 
         Swal.fire({
             title: 'Processing...',
+            text: 'Please wait while we process your request.',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();

@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use App\Http\Middleware\CheckPermission;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -22,8 +23,8 @@ class RouteServiceProvider extends ServiceProvider
         parent::boot();
 
         $this->routes(function () {
-            // Load web routes
-            Route::middleware('web')
+            // Apply the CheckPermission middleware to web routes
+            Route::middleware(['web'])  // Apply the permission check here
                 ->group(base_path('routes/web.php'));
 
             // Load API routes

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Products;
+use App\Services\RoleFetchService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -16,31 +18,45 @@ class ProductController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $products = Products::where('status', 'active')
-                    ->get()
-                    ->map(function ($product) {
-                        // Add a threshold check for stock balance
+                // Get ajax request filters parameters
+                $filters = [
+                    'created_by' => $request->get('employee'),
+                    'branch_id' => $request->get('branch'),
+                    'catalogue_id' => $request->get('catalogue'),
+                ];
 
-                        return [
-                            'image' => $product->photo
-                                ? '<img src="' . asset($product->photo) . '" alt="' . htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8') . '" width="50" height="50" class="rounded">'
-                                : '<img src="' . asset('/assets/images/defaults/product.png') . '" alt="No Image" width="50" height="50" class="rounded">',
-                            'name' => ucwords($product->name),
-                            'quantity' => ucwords($product->quantity),
-                            'normal_price' => number_format($product->normal_price, 2),
-                            'whole_sale_price' => number_format($product->whole_sale_price, 2),
-                            'agent_price' => number_format($product->agent_price, 2),
-                            'stock_balance' => $product->quantity,
-                            'status' => $product->status == 'active'
-                                ? '<span class="text-nowrap btn btn-success"><i class="bi bi-check-circle"></i> Active</span>'
-                                : '<span class="text-nowrap btn btn-danger"><i class="bi bi-x-circle"></i> Inactive</span>',
-                            'stock_alert_class' => $product->quantity < $product->threshold
-                                ? 'text-danger'
-                                : 'text-success',
-                            'action' => view('portal.product.partials.actions', compact('product'))->render(),
-                            'created_at' => $product->created_at->format('Y-m-d H:i:s'),
-                        ];
-                    });
+                // Build the query
+                $productsQuery = Products::with(['catalogue']);
+
+                // Apply filters dynamically
+                foreach ($filters as $key => $value) {
+                    if (!empty($value)) {
+                        $productsQuery->where($key, $value);
+                    }
+                }
+
+                // Execute the query
+                $products = $productsQuery->get()->map(function ($product) {
+                    return [
+                        'image' => $product->photo
+                            ? '<img src="' . asset($product->photo) . '" alt="' . htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8') . '" width="50" height="50" class="rounded">'
+                            : '<img src="' . asset('/assets/images/defaults/product.png') . '" alt="No Image" width="50" height="50" class="rounded">',
+                        'name' => ucwords($product->name),
+                        'quantity' => ucwords($product->quantity),
+                        'normal_price' => number_format($product->normal_price, 2),
+                        'whole_sale_price' => number_format($product->whole_sale_price, 2),
+                        'agent_price' => number_format($product->agent_price, 2),
+                        'stock_balance' => $product->quantity,
+                        'status' => $product->status == 'active'
+                            ? '<span class="text-nowrap btn btn-success"><i class="bi bi-check-circle"></i> Active</span>'
+                            : '<span class="text-nowrap btn btn-danger"><i class="bi bi-x-circle"></i> Inactive</span>',
+                        'stock_alert_class' => $product->quantity < $product->threshold
+                            ? 'text-danger'
+                            : 'text-success',
+                        'action' => view('portal.product.partials.actions', compact('product'))->render(),
+                        'created_at' => $product->created_at->format('Y-m-d H:i:s'),
+                    ];
+                });
 
                 // Return the data formatted for DataTables
                 return DataTables::of($products)
@@ -116,7 +132,8 @@ class ProductController extends Controller
                     'agent_price' => $request->input('agent_price'),
                     'quantity' => $request->input('quantity'),
                     'sku' => $request->input('sku'),
-                    'photo' => $imagePath ?? $product->photo, // Retain the existing photo if none is uploaded
+                    'photo' => $imagePath ?? $product->photo,
+                    'created_by' => Auth::user()->id
                 ]);
 
                 // Success response for update
@@ -136,6 +153,7 @@ class ProductController extends Controller
                     'quantity' => $request->input('quantity'),
                     'sku' => $request->input('sku'),
                     'photo' => $imagePath,
+                    'updated_by' => Auth::user()->id
                 ]);
 
                 // Success response for create

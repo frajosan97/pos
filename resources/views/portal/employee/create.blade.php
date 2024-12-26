@@ -4,79 +4,87 @@
 
 @section('content')
 
-<form id="create-employee-form" action="{{ route('employee.store') }}" method="post">
-    <!-- CSRF Token for form security -->
-    @csrf
+@if(auth()->user()->hasPermission('user_create'))
 
-    <!-- Employee Creation Form Card -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3">
-                <!-- Branch Selection -->
-                <div class="col-md-6">
-                    <label for="branch">Branch</label>
-                    <select class="form-control" id="branch" name="branch" required>
-                        <option value="">Select Branch</option>
-                        @foreach ($branches as $branch)
-                        <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-                        @endforeach
-                    </select>
-                </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <form id="create-employee-form" action="{{ route('employee.store') }}" method="post">
+                    <!-- CSRF Token for form security -->
+                    @csrf
 
-                <!-- Role Selection -->
-                <div class="col-md-6">
-                    <label for="role">Role</label>
-                    <select class="form-control" id="role" name="role" required>
-                        <option value="">Select Role</option>
-                        @foreach ($roles as $role)
-                        <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>
-                            {{ ucwords($role->name) }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="row g-3">
+                        <!-- Branch Selection -->
+                        <div class="col-md-6">
+                            <label for="branch">Branch</label>
+                            <select class="form-control" id="branch" name="branch" required>
+                                <option value="">Select Branch</option>
+                                @foreach ($branches as $branch)
+                                <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                <!-- Username Field -->
-                <div class="col-md-6">
-                    <label for="user_name">Username</label>
-                    <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Username" required />
-                </div>
+                        <!-- Role Selection -->
+                        <div class="col-md-6">
+                            <label for="role">Role</label>
+                            <select class="form-control" id="role" name="role" required>
+                                <option value="">Select Role</option>
+                                @foreach ($roles as $role)
+                                <option value="{{ $role->id }}" {{ old('role') == $role->id ? 'selected' : '' }}>
+                                    {{ ucwords($role->name) }}
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                <!-- Full Name Field -->
-                <div class="col-md-6">
-                    <label for="name">Full Name</label>
-                    <input type="text" class="form-control" id="name" name="name" placeholder="Full Name" required />
-                </div>
+                        <!-- Username Field -->
+                        <div class="col-md-6">
+                            <label for="user_name">Username</label>
+                            <input type="text" class="form-control" id="user_name" name="user_name" placeholder="Username" required />
+                        </div>
 
-                <!-- Email Address Field -->
-                <div class="col-md-6">
-                    <label for="email">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required />
-                </div>
+                        <!-- Full Name Field -->
+                        <div class="col-md-6">
+                            <label for="name">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Full Name" required />
+                        </div>
 
-                <!-- Phone Number Field -->
-                <div class="col-md-6">
-                    <label for="phone">Phone Number</label>
-                    <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone Number" required />
-                </div>
+                        <!-- Email Address Field -->
+                        <div class="col-md-6">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Email Address" required />
+                        </div>
 
-                <div class="col-md-6">
-                    <label for="id_number">Id Number</label>
-                    <input type="text" class="form-control" id="id_number" name="id_number" placeholder="ID Number" required />
-                </div>
+                        <!-- Phone Number Field -->
+                        <div class="col-md-6">
+                            <label for="phone">Phone Number</label>
+                            <input type="text" class="form-control" id="phone" name="phone" placeholder="Phone Number" required />
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="id_number">Id Number</label>
+                            <input type="text" class="form-control" id="id_number" name="id_number" placeholder="ID Number" required />
+                        </div>
+
+                        <div class="col-md-12 text-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus-circle"></i> Create New Employee
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
 
             </div>
         </div>
-
-        <!-- Submit Button -->
-        <div class="card-footer bg-light text-end">
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-plus-circle"></i> Create New Employee
-            </button>
-        </div>
     </div>
+</div>
 
-</form>
+@else
+@include('layouts.partials.no_permission')
+@endif
 
 @endsection
 

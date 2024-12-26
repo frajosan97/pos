@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('pageTitle', 'system roles')
+@section('pageTitle', 'System Roles and Permissions')
 
 @section('content')
 
-<!-- control buttons -->
+<!-- Control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
     <li class="nav-item">
         <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#roleModal">
@@ -12,7 +12,7 @@
         </a>
     </li>
 </ul>
-<!-- / end control buttons -->
+<!-- / End control buttons -->
 
 <div class="row">
     <div class="col-12">
@@ -20,12 +20,11 @@
         <div class="card border-0 shadow-sm d-none d-md-block">
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle text-nowrap" id="counties-table">
+                    <table class="table table-striped table-hover align-middle text-nowrap" id="roles-table">
                         <thead class="table-dark text-center text-capitalize">
                             <tr>
-                                <th>role id</th>
-                                <th>name</th>
-                                <th>description</th>
+                                <th>Name</th>
+                                <th>Description</th>
                                 <th class="pw-5">Action</th>
                             </tr>
                         </thead>
@@ -45,7 +44,7 @@
                     <i class="fas fa-search"></i>
                 </span>
             </div>
-            <div class="list-group" id="counties-list">
+            <div class="list-group" id="roles-list">
                 <!-- Mobile list data will be appended here -->
             </div>
         </div>
@@ -58,7 +57,7 @@
         <div class="modal-content">
             <form id="role-form" action="{{ route('setting.role.store') }}" method="post">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="roleModalLabel">Add New role</h1>
+                    <h1 class="modal-title fs-5" id="roleModalLabel">Add New Role</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-capitalize">
@@ -68,20 +67,14 @@
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label for="role">role</label>
-                                <input type="text" name="role" id="role" placeholder="role" class="form-control" />
+                                <label for="name">Name</label>
+                                <input type="text" name="name" id="name" placeholder="Name" class="form-control" />
                             </div>
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label for="name">name</label>
-                                <input type="text" name="name" id="name" placeholder="name" class="form-control" />
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="description">description</label>
-                                <textarea name="description" id="description" placeholder="description" class="form-control"></textarea>
+                                <label for="description">Description</label>
+                                <textarea name="description" id="description" placeholder="Description" class="form-control"></textarea>
                             </div>
                         </div>
                     </div>
@@ -100,7 +93,7 @@
 @push('script')
 <script>
     $(document).ready(function() {
-        var table = $('#counties-table').DataTable({
+        var table = $('#roles-table').DataTable({
             processing: true,
             serverSide: true,
             order: [
@@ -108,10 +101,6 @@
             ],
             ajax: "{{ route('setting.role') }}",
             columns: [{
-                    data: 'role',
-                    name: 'role'
-                },
-                {
                     data: 'name',
                     name: 'name'
                 },
@@ -130,7 +119,7 @@
                 var data = this.api().rows({
                     page: 'current'
                 }).data();
-                var listGroup = $('#counties-list');
+                var listGroup = $('#roles-list');
                 listGroup.empty();
 
                 if (data.length === 0) {
@@ -145,7 +134,8 @@
                             <div class="list-group-item border rounded shadow-sm mb-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="m-0 text-capitalize">${value.name} ( ${value.role} )</h6>
+                                        <h6 class="m-0 text-capitalize">${value.name}</h6>
+                                        <p class="m-0">${value.description}</p>
                                     </div>
                                    <div>
                                         ${value.action}
@@ -160,36 +150,32 @@
 
         // Open modal to create new role
         $('#role-add').on('click', function() {
-            // Set the modal content for creating a new role
-            $('#roleModalLabel').text('Add New role');
+            $('#roleModalLabel').text('Add New Role');
             $('#role-form')[0].reset(); // Reset the form fields
             $('#role-form').attr('action', "{{ route('setting.role.store') }}"); // Set the action URL for creating
-            $('#role-form').find('input[name="_method"]').remove(); // Remove any existing method override
             $('#save-button').text('Save Changes'); // Update the button text
-            // Show the modal
             $('#roleModal').modal('show');
         });
 
         // Open modal to edit role
         $(document).on('click', '.edit-role', function() {
             var roleId = $(this).data('role-id');
-            var role = $(this).data('role-role');
             var roleName = $(this).data('role-name');
             var roleDescription = $(this).data('role-description');
+
             // Set the modal content for editing an existing role
-            $('#roleModalLabel').text('Edit role');
-            $('#role').val(role);
+            $('#roleModalLabel').text('Edit Role');
             $('#name').val(roleName);
             $('#description').val(roleDescription);
-            // Dynamically set the action URL for the form
+
             var actionUrl = "{{ route('setting.role.update', ':id') }}".replace(':id', roleId);
             $('#role-form').attr('action', actionUrl);
-            // Add the _method hidden input for PUT if it doesn't already exist
+
             if (!$('#role-form').find('input[name="_method"]').length) {
                 $('#role-form').append('<input type="hidden" name="_method" value="PUT">');
             }
-            $('#save-button').text('Update role'); // Update the button text
-            // Show the modal
+
+            $('#save-button').text('Update Role');
             $('#roleModal').modal('show');
         });
 
@@ -199,7 +185,7 @@
                 event.preventDefault();
 
                 Swal.fire({
-                    title: 'role Action',
+                    title: 'Role Action',
                     text: 'Are you sure you want to proceed?',
                     icon: 'warning',
                     showCancelButton: true,
@@ -245,9 +231,10 @@
         // Delete role
         $(document).on('click', '.delete-role', function() {
             var roleKey = $(this).data('role-id');
+            var roleName = $(this).data('role-name');
 
             Swal.fire({
-                title: 'Are you sure you want to delete the role?',
+                title: 'Are you sure you want to delete ' + roleName + '?',
                 text: "You won't be able to revert this!",
                 icon: 'warning',
                 showCancelButton: true,
@@ -285,29 +272,29 @@
                         url: `{{ route('setting.role.destroy', '') }}/${roleKey}`,
                         method: 'DELETE',
                         data: {
-                            _token: '{{ csrf_token() }}',
                             password: result.value
                         },
                         success: function(response) {
                             Swal.fire({
-                                title: 'Success',
-                                text: response.success,
+                                title: 'Role deleted',
+                                text: response.message,
                                 icon: 'success'
-                            }).then(() => {
-                                table.ajax.reload(null, true);
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    table.ajax.reload();
+                                }
                             });
                         },
                         error: function(xhr) {
-                            Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message, 'error');
+                            Swal.fire({
+                                title: 'Error',
+                                text: xhr.responseJSON.message || 'An error occurred',
+                                icon: 'error'
+                            });
                         }
                     });
                 }
             });
-        });
-
-        // Search in mobile view
-        $('#search-input').on('keyup', function() {
-            table.search(this.value).draw();
         });
     });
 </script>

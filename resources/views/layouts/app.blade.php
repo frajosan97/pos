@@ -58,7 +58,7 @@
                     </li>
                     <li class="nav-item d-none d-sm-inline-block">
                         <a href="/" class="nav-link">
-                            Branch: {{ Auth::user()->getBranchInfo()->name }}
+                            Branch: {{ auth()->user()->branch?->name }}
                         </a>
                     </li>
                 </ul>
@@ -81,9 +81,11 @@
                             <img src="{{ asset('assets/images/defaults/passport.png') }}" class="img-circle elevation-2" alt="User Image">
                         </div>
                         <div class="info">
-                            <a href="{{ route('employee.show',Auth::user()->id) }}" class="d-block text-color fw-bolder text-capitalize">
-                                <h6 class="m-0 fw-bold">{{ Auth::user()->name }}</h6>
-                                <small>{{ Auth::user()->getRoleInfo()->name }}</small>
+                            <a href="{{ route('employee.show',auth()->user()->id) }}" class="d-block text-color fw-bolder text-capitalize">
+                                <h6 class="m-0 fw-bold">{{ auth()->user()->name }}</h6>
+                                @foreach (auth()->user()->roles as $role)
+                                <small>{{ $role->name }}</small>
+                                @endforeach
                             </a>
                         </div>
                     </div>

@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('catalogues', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('branch_id')->constrained('branches')->cascadeOnDelete();
             $table->string('name');
-            $table->text('description')->nullable();
+            $table->string('status')->default('active')->nullable();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();

@@ -4,7 +4,8 @@
 
 @section('content')
 
-@if (in_array(Auth::user()->role?->role,[2,3]))
+@if(auth()->user()->hasPermission('catalogue_view'))
+@if(auth()->user()->hasPermission('catalogue_create'))
 <!-- control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
     <li class="nav-item">
@@ -67,7 +68,7 @@
                             @csrf
                         </div>
                         <div class="col-md-12">
-                            <input type="hidden" name="branch_id" value="{{ Auth::user()->branch_id }}">
+                            <input type="hidden" name="branch_id" value="{{ auth()->user()->branch_id }}">
                         </div>
                         <div class="col-md-12">
                             <div class="form-group">
@@ -85,6 +86,10 @@
         </div>
     </div>
 </div>
+
+@else
+@include('layouts.partials.no_permission')
+@endif
 
 @endsection
 

@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('phone')->nullable();
             $table->string('id_number')->nullable();
-            $table->foreignId('county_id')->constrained('counties')->cascadeOnDelete();
-            $table->foreignId('constituency_id')->constrained('constituencies')->cascadeOnDelete();
-            $table->foreignId('ward_id')->constrained('wards')->cascadeOnDelete();
-            $table->foreignId('location_id')->constrained('locations')->cascadeOnDelete();
+            $table->foreignId('county_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('constituency_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('ward_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('location_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
     }

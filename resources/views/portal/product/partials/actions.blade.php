@@ -1,4 +1,5 @@
 <div class="btn-group ms-2 d-flex w-100 justify-content-end text-nowrap" role="group">
+    @if(auth()->user()->hasPermission('product_view'))
     <!-- Manage Button -->
     <a href="{{ route('product.show', $product->id) }}"
         class="btn btn-outline-primary"
@@ -6,8 +7,9 @@
         <i class="fas fa-briefcase"></i>
         <span class="d-none d-sm-inline-block">Manage</span>
     </a>
+    @endif
 
-    @if (in_array(Auth::user()->role?->role,[2,3]))
+    @if(auth()->user()->hasPermission('product_delete'))
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-outline-danger delete-product"

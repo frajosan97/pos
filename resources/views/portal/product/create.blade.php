@@ -4,6 +4,8 @@
 
 @section('content')
 
+@if(auth()->user()->hasPermission('product_create'))
+
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card border-0 shadow-sm">
@@ -16,7 +18,18 @@
                         <span class="mx-2 text-muted">
                             <i class="fas fa-search"></i>
                         </span>
-                        <input type="search" class="form-control border-0" placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode" name="barcode" autofocus required />
+                        <input
+                            type="search"
+                            class="form-control border-0"
+                            placeholder="Search for product by Barcode (Scan or Enter Manually)"
+                            id="barcode"
+                            name="barcode"
+                            autofocus
+                            required />
+                        <!-- Button to generate barcode -->
+                        <span class="mx-2 text-muted cursor-pointer" id="generateBarcode" title="Generate Barcode">
+                            <i class="fas fa-random"></i>
+                        </span>
                     </div>
 
                     <div class="row mt-3 product-data d-none">
@@ -40,8 +53,11 @@
                                     <label class="mb-0 text-capitalize" for="branch">Branch</label>
                                     <select class="form-control" id="branch" name="branch_id" required>
                                         <option value="">Select Branch</option>
-                                        @foreach ($branches as $branch)
-                                        <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
+                                        @foreach ($branches as $key => $value)
+                                        <option value="{{ $value->id }}"
+                                            {{ ($value->id == auth()->user()->branch?->id) ? 'selected' : '' }}>
+                                            {{ ucwords($value->name) }}
+                                        </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -110,13 +126,32 @@
         </div>
     </div>
 </div>
+
+@else
+@include('layouts.partials.no_permission')
+@endif
+
 @endsection
 
 @push('script')
 <script>
     $(document).ready(function() {
+        $('#generateBarcode').on('click', function() {
+            // Generate a barcode using the current timestamp
+            const timestamp = Date.now(); // Get current time in milliseconds
+            const generatedBarcode = `${timestamp}`; // Prefix 'BAR' for distinction
+            // Insert the generated barcode into the input field
+            $('#barcode').val(generatedBarcode).focus();
+            search_product(generatedBarcode);
+        });
+
         $('#barcode').on('keyup', function() {
             var barcode = $(this).val();
+            search_product(barcode);
+        });
+
+        function search_product(barcode) {
+            barcode = barcode;
 
             function resetFields() {
                 $('#name, #buying_price, #normal_price, #whole_sale_price, #agent_price, #quantity, #sku, #description, #branch, #catalogue').val('');
@@ -159,7 +194,7 @@
             } else {
                 resetFields();
             }
-        });
+        }
 
         $("#create-product-form").validate({
             submitHandler: function(form, event) {

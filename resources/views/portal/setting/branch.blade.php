@@ -32,11 +32,11 @@
                     <table class="table table-striped table-hover align-middle text-nowrap" id="branches-table">
                         <thead class="table-dark text-center text-capitalize">
                             <tr>
+                                <th>branch</th>
                                 <th>county</th>
                                 <th>constituency</th>
                                 <th>ward</th>
                                 <th>location</th>
-                                <th>branch</th>
                                 <th class="pw-5">Action</th>
                             </tr>
                         </thead>
@@ -151,6 +151,10 @@
             ],
             ajax: "{{ route('setting.branch') }}",
             columns: [{
+                    data: 'branch',
+                    name: 'branch'
+                },
+                {
                     data: 'county',
                     name: 'county'
                 },
@@ -165,10 +169,6 @@
                 {
                     data: 'location',
                     name: 'location'
-                },
-                {
-                    data: 'branch',
-                    name: 'branch'
                 },
                 {
                     data: 'action',

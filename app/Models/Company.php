@@ -29,9 +29,10 @@ class Company extends Model
         'logo',
         'color',
         'sms_mode',
+        'sms_partner_id',
         'sms_api_key',
         'sms_sender_id',
-        'sms_partner_name',
+        'sms_api_url',
         'status',
     ];
 

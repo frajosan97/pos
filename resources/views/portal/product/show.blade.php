@@ -4,6 +4,8 @@
 
 @section('content')
 
+@if(auth()->user()->hasPermission('catalogue_view'))
+
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -69,5 +71,9 @@
         </div>
     </div>
 </div>
+
+@else
+@include('layouts.partials.no_permission')
+@endif
 
 @endsection

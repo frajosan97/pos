@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Sale;
 use App\Services\MailService;
@@ -32,15 +33,16 @@ class EmployeeController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $users = User::with(['branch', 'role'])
+                $users = User::with(['branch', 'roles'])
                     ->get()
                     ->map(function ($user) {
                         return [
                             'name' => ucwords($user->name),
                             'email' => $user->email,
                             'phone' => $user->phone,
-                            'role' => ucwords($user->role->name),
-                            'branch' => ucwords($user->branch->name),
+                            // Handle only the first role
+                            'role' => optional($user->roles->first())->name ? ucwords($user->roles->first()->name) : 'No Role Assigned',
+                            'branch' => ucwords(optional($user->branch)->name), // Use optional() to avoid null errors
                             'status' => $user->email_verified_at ? 'Active' : 'Inactive',
                             'action' => view('portal.employee.partials.actions', compact('user'))->render(),
                             'created_at' => $user->created_at->format('Y-m-d H:i:s'),
@@ -73,38 +75,46 @@ class EmployeeController extends Controller
     public function store(Request $request)
     {
         try {
-            if (in_array(Auth::user()->role?->role, [3])) {
-                $request->validate([
-                    'branch' => 'required|exists:branches,id', // Ensure branch exists in the DB
-                    'role' => 'required|exists:roles,id', // Ensure role exists in the DB
-                    'user_name' => 'required|string|max:255|unique:users',
-                    'name' => 'required|string|max:255',
-                    'email' => 'required|string|email|max:255|unique:users',
-                    'phone' => 'required|string|max:15|unique:users|regex:/^(\+?[\d\s\-()]){10,15}$/', // Improve phone validation with regex
-                    'id_number' => 'required|string|max:255|unique:users',
-                ]);
+            $request->validate([
+                'branch' => 'required|exists:branches,id', // Ensure branch exists in the DB
+                'role' => 'required|exists:roles,id', // Ensure role exists in the DB
+                'user_name' => 'required|string|max:255|unique:users',
+                'name' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'phone' => 'required|string|max:15|unique:users|regex:/^(\+?[\d\s\-()]){10,15}$/', // Improve phone validation with regex
+                'id_number' => 'required|string|max:255|unique:users',
+            ]);
 
-                $user = User::create([
-                    'branch_id' => $request->input('branch'),
-                    'role_id' => $request->input('role'),
-                    'user_name' => $request->input('user_name'),
-                    'name' => $request->input('name'),
-                    'email' => $request->input('email'),
-                    'phone' => $request->input('phone'),
-                    'id_number' => $request->input('id_number'),
-                    'password' => Hash::make('12345678'),
-                    'created_by' => Auth::user()->id ?? null,
-                    'updated_by' => Auth::user()->id ?? null,
-                ]);
+            $user = User::create([
+                'branch_id' => $request->input('branch'),
+                'user_name' => $request->input('user_name'),
+                'name' => $request->input('name'),
+                'email' => $request->input('email'),
+                'phone' => $request->input('phone'),
+                'id_number' => $request->input('id_number'),
+                'password' => Hash::make('12345678'),
+                'created_by' => Auth::user()->id ?? null,
+                'updated_by' => Auth::user()->id ?? null,
+            ]);
 
-                // Send account registration email
-                $this->mailService->sendAccRegEmail($user);
+            if ($user) {
+                // Attach role to the user
+                $roleId = $request->input('role'); // Assuming role ID is sent in the request
+                $role = Role::find($roleId);
 
-                // Success response
-                return response()->json(['success' => 'Employee registered successfully and activation email sent to the provided email address']);
-            } else {
-                return response()->json(['error' => 'You have no permission to create a employee!'], 500);
+                if ($role) {
+                    $user->roles()->attach($roleId);
+                } else {
+                    // Handle case where role does not exist
+                    return response()->json(['error' => 'Role not found'], 404);
+                }
             }
+
+            // Send account registration email
+            $this->mailService->sendAccRegEmail($user);
+
+            // Success response
+            return response()->json(['success' => 'Employee registered successfully and activation email sent to the provided email address']);
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
@@ -213,11 +223,23 @@ class EmployeeController extends Controller
                 'gender' => $request->input('gender'),
                 'phone' => $request->input('phone') ?? $user->phone,
                 'branch_id' => $request->input('branch_id') ?? $user->branch_id,
-                'role_id' => $request->input('role_id') ?? $user->role_id,
                 'status' => $request->input('status') ?? $user->status,
                 'id_number' => $request->input('id_number') ?? $user->id_number,
                 'passport' => $passportPath ?? $user->passport,
             ]);
+
+            if ($user) {
+                // Attach role to the user
+                $roleId = $request->input('role'); // Assuming role ID is sent in the request
+                $role = Role::find($roleId);
+
+                if ($role) {
+                    $user->roles()->attach($roleId);
+                } else {
+                    // Handle case where role does not exist
+                    return response()->json(['error' => 'Role not found'], 404);
+                }
+            }
 
             // Return a success message
             return response()->json(['success' => 'Employee profile updated successfully'], 200);
@@ -232,31 +254,27 @@ class EmployeeController extends Controller
     public function destroy(Request $request, string $id)
     {
         try {
-            if (in_array(Auth::user()->role?->role, [3])) {
-                // Validate the request
-                $request->validate([
-                    'password' => 'required|string',
-                ]);
+            // Validate the request
+            $request->validate([
+                'password' => 'required|string',
+            ]);
 
-                // Verify the user's password
-                if (!Hash::check($request->password, Auth::user()->password)) {
-                    return response()->json(['error' => 'The password you entered is incorrect.'], 403);
-                }
-
-                // Find the user by key
-                $user = User::findOrFail($id);
-
-                if (!$user) {
-                    return response()->json(['error' => 'user not found.'], 404);
-                }
-
-                // Delete the user
-                $user->delete();
-
-                return response()->json(['success' => 'Employee has been deleted successfully.'], 200);
-            } else {
-                return response()->json(['error' => 'You have no permission to delete employee!'], 500);
+            // Verify the user's password
+            if (!Hash::check($request->password, Auth::user()->password)) {
+                return response()->json(['error' => 'The password you entered is incorrect.'], 403);
             }
+
+            // Find the user by key
+            $user = User::findOrFail($id);
+
+            if (!$user) {
+                return response()->json(['error' => 'user not found.'], 404);
+            }
+
+            // Delete the user
+            $user->delete();
+
+            return response()->json(['success' => 'Employee has been deleted successfully.'], 200);
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());

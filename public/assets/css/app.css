@@ -45,3 +45,18 @@ body {
 select {
     cursor: pointer;
 }
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Add margin to sub-navigation items */
+.nav-treeview .nav-item {
+    margin-right: 20px;
+}
+
+/* Optional: Make sub-navigation items slightly smaller */
+.nav-treeview .nav-link {
+    /* font-size: 0.9rem; */
+    padding-left: 30px;
+}

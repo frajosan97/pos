@@ -5,17 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Catalogue extends Model
+class Permission extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'name',
-        'status',
+        'slug',
+        'description',
     ];
 
-    public function products()
+    // Relationships
+    public function roles()
     {
-        return $this->hasMany(Products::class);
+        return $this->belongsToMany(Role::class, 'permission_role');
     }
 }

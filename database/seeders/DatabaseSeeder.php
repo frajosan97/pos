@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             WardSeeder::class,
             LocationSeeder::class,
             BranchSeeder::class,
-            RoleSeeder::class,
             UserSeeder::class,
             PaymentMethodSeeder::class,
         ]);

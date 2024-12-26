@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Catalogue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Yajra\DataTables\Facades\DataTables;
 
 class CatalogueController extends Controller
@@ -22,7 +24,6 @@ class CatalogueController extends Controller
                         return [
                             'name' => ucwords($catalogue->name),  // Capitalize catalogue name
                             'action' => view('portal.catalogue.partials.actions', compact('catalogue'))->render(),
-                            'created_at' => $catalogue->created_at->format('Y-m-d H:i:s'),
                         ];
                     });
 
@@ -63,15 +64,14 @@ class CatalogueController extends Controller
         // Validation
         $request->validate([
             'catalogue' => 'required|string|max:255',
-            'branch_id' => 'required|string|max:255',
         ]);
 
         try {
             // Create a new catalogue
-            $catalogue = new Catalogue();
-            $catalogue->branch_id = $request->branch_id;
-            $catalogue->name = $request->catalogue;
-            $catalogue->save();
+            $catalogue = Catalogue::create([
+                'name' => $request->input('catalogue'),
+                'created_by' => Auth::user()->id ?? null,
+            ]);
 
             // Return success response
             return response()->json('Catalogue created successfully.', 200);
@@ -94,8 +94,11 @@ class CatalogueController extends Controller
         try {
             // Fetch the catalogue to update
             $catalogue = Catalogue::findOrFail($id);
-            $catalogue->name = $request->catalogue;  // Capitalize the name
-            $catalogue->save();
+
+            $catalogue->update([
+                'name' => $request->input('catalogue'),
+                'updated_by' => Auth::user()->id ?? null,
+            ]);
 
             // Return success response
             return response()->json('Catalogue updated successfully.', 200);
@@ -108,17 +111,34 @@ class CatalogueController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
         try {
-            // Fetch and delete the catalogue
+            // Validate the request
+            $request->validate([
+                'password' => 'required|string',
+            ]);
+
+            // Verify the user's password
+            if (!Hash::check($request->password, Auth::user()->password)) {
+                return response()->json(['error' => 'The password you entered is incorrect.'], 403);
+            }
+
+            // Find the catalogue by key
             $catalogue = Catalogue::findOrFail($id);
+
+            if (!$catalogue) {
+                return response()->json(['error' => 'catalogue not found.'], 404);
+            }
+
+            // Delete the catalogue
             $catalogue->delete();
 
-            // Return success response
-            return response()->json('Catalogue deleted successfully.', 200);
+            return response()->json(['success' => 'Catalogue has been deleted successfully.'], 200);
         } catch (\Exception $exception) {
+            // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+            // Return a general error message
             return response()->json(['error' => $exception->getMessage()], 500);
         }
     }

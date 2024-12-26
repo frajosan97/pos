@@ -1,19 +1,25 @@
+@if(auth()->user()->hasPermission('sale_create'))
 <!-- POS Menu -->
 <li class="nav-item">
     <a href="/" class="nav-link">
-        <i class="nav-icon fas fa-credit-card"></i> <!-- Updated Icon -->
+        <i class="nav-icon fas fa-credit-card"></i>
         <p>Point of Sale</p>
     </a>
 </li>
+@endif
 
+@if(auth()->user()->hasPermission('analytics'))
+<!-- Analytics -->
 <li class="nav-item">
     <a href="{{ route('analytics.index') }}" class="nav-link">
-        <i class="nav-icon fas fa-chart-pie"></i> <!-- Updated Icon -->
+        <i class="nav-icon fas fa-chart-pie"></i>
         <p>Analytics</p>
     </a>
 </li>
+@endif
 
 <!-- Products -->
+@if(auth()->user()->hasPermission('product_view'))
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-box"></i>
@@ -23,22 +29,26 @@
         </p>
     </a>
     <ul class="nav nav-treeview">
+        @if(auth()->user()->hasPermission('catalogue_view'))
         <li class="nav-item">
             <a href="{{ route('catalogue.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
                 <p>Catalogue</p>
             </a>
         </li>
+        @endif
+        @if(auth()->user()->hasPermission('product_view'))
         <li class="nav-item">
             <a href="{{ route('product.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-th-list"></i>
                 <p>Products List</p>
             </a>
         </li>
+        @endif
     </ul>
 </li>
+@endif
 
-@if (in_array(Auth::user()->role?->role,[2,3]))
 <!-- Reports -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -49,30 +59,27 @@
         </p>
     </a>
     <ul class="nav nav-treeview">
+        @if(auth()->user()->hasPermission('reports_inventory'))
         <li class="nav-item">
-            <a href="{{ route('product.index') }}" class="nav-link">
+            <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-list"></i>
                 <p>Inventory</p>
             </a>
         </li>
+        @endif
+        @if(auth()->user()->hasPermission('reports_sales'))
         <li class="nav-item">
             <a href="{{ route('sale.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-shopping-basket"></i>
                 <p>Sales</p>
             </a>
         </li>
-        <li class="nav-item">
-            <a href="#" class="nav-link">
-                <i class="nav-icon fas fa-credit-card"></i>
-                <p>Payments</p>
-            </a>
-        </li>
+        @endif
     </ul>
 </li>
-@endif
 
+@if(auth()->user()->hasPermission('user_view'))
 <!-- Employees -->
-@if (in_array(Auth::user()->role?->role,[3]))
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-users-cog"></i>
@@ -96,8 +103,9 @@
         </li>
     </ul>
 </li>
+@endif
 
-<!-- Settings -->
+@if(auth()->user()->hasPermission('settings'))
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-tools"></i>
@@ -144,12 +152,6 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('setting.company') }}" class="nav-link">
-                <i class="nav-icon fas fa-university"></i>
-                <p>Company Information</p>
-            </a>
-        </li>
-        <li class="nav-item">
             <a href="{{ route('mpesa.simulate.form') }}" class="nav-link">
                 <i class="nav-icon fas fa-mobile-alt"></i>
                 <p>Register Urls</p>
@@ -161,16 +163,25 @@
                 <p>STK Push</p>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('setting.company') }}" class="nav-link">
+                <i class="nav-icon fas fa-university"></i>
+                <p>Company Information</p>
+            </a>
+        </li>
     </ul>
 </li>
 @endif
 
+@if(auth()->user()->hasPermission('clear_cache'))
+<!-- Clear Cache -->
 <li class="nav-item">
     <a href="{{ route('clear-cache.form') }}" class="nav-link">
-        <i class="nav-icon fas fa-trash-alt"></i> <!-- Updated Icon -->
+        <i class="nav-icon fas fa-trash-alt"></i>
         <p>Clear Cache</p>
     </a>
 </li>
+@endif
 
 <!-- Logout -->
 <li class="nav-item">

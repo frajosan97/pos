@@ -4,32 +4,20 @@
 
 @section('content')
 
+@if(auth()->user()->hasPermission('product_view'))
+
 <!-- control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
-    @if (in_array(Auth::user()->role?->role,[2,3]))
+    @if(auth()->user()->hasPermission('product_create'))
     <li class="nav-item">
         <a href="{{ route('product.create') }}" class="nav-link">
             <i class="fas fa-plus-circle"></i> Create / Update product
         </a>
     </li>
     @endif
-    @if (Auth::user()->role?->role == 3)
-    <li class="nav-item dropdown d-flex align-items-center">
-        <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-        <select name="branch" id="branch" class="form-control border-0">
-            <option value="">Filter by Branch</option>
-            @foreach ($branches as $branch)
-            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-            @endforeach
-        </select>
-    </li>
-    @endif
-    <li class="nav-item dropdown d-flex align-items-center">
-        <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-        <select name="branch" id="branch" class="form-control border-0">
-            <option value="">Filter by Brand</option>
-        </select>
-    </li>
+
+    @include('layouts.partials.filters')
+
     <li class="nav-item dropdown">
         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-print"></i> Print
@@ -85,18 +73,27 @@
     </div>
 </div>
 
+@else
+@include('layouts.partials.no_permission')
+@endif
+
 @endsection
 
 @push('script')
 <script>
     $(document).ready(function() {
+        // Initialize DataTable
         var table = $('#products-table').DataTable({
             processing: true,
             serverSide: true,
-            order: [
-                [0, 'asc']
-            ],
-            ajax: "{{ route('product.index') }}",
+            ajax: {
+                url: "{{ route('product.index') }}",
+                data: function(d) {
+                    d.branch = $('#branch').val();
+                    d.catalogue = $('#catalogue').val();
+                    d.employee = $('#employee').val();
+                }
+            },
             columns: [{
                     data: 'image',
                     name: 'image'
@@ -123,7 +120,7 @@
                 },
                 {
                     data: 'stock_balance',
-                    name: 'stock_balance',
+                    name: 'stock_balance'
                 },
                 {
                     data: 'status',
@@ -136,7 +133,11 @@
                     searchable: false
                 }
             ],
+            order: [
+                [1, 'asc']
+            ],
             drawCallback: function(settings) {
+                // Handle custom rendering for mobile list view
                 var data = this.api().rows({
                     page: 'current'
                 }).data();
@@ -145,104 +146,40 @@
 
                 if (data.length === 0) {
                     listGroup.append(`
-                    <div class="list-group-item text-center border-0 bg-light">
-                        <p class="text-muted mb-0">No products available</p>
-                    </div>
-                `);
+                        <div class="list-group-item text-center border-0 bg-light">
+                            <p class="text-muted mb-0">No data available</p>
+                        </div>
+                    `);
                 } else {
                     $.each(data, function(index, value) {
                         listGroup.append(`
-                        <div class="list-group-item border rounded shadow-sm mb-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="col-2">
-                                    ${value.image}
-                                </div>
-                                <div class="col-8">
-                                    <h6 class="m-0 text-capitalize">${value.name}</h6>
-                                    <small class="p-0 text-muted">N Price: ${value.normal_price}</small>
-                                    <small class="p-0 text-muted">W Price: ${value.whole_sale_price}</small>
-                                    <small class="p-0 text-muted">A Price: ${value.agent_price}</small><br>
-                                    <small class="p-0 text-muted">Quantity: ${value.quantity}</small>
-                                </div>
-                                <div class="col-2 text-end">
-                                    <p class="m-0">${value.action}</p>
+                            <div class="list-group-item border rounded shadow-sm mb-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="col-2">${value.image}</div>
+                                    <div class="col-8">
+                                        <h6 class="m-0 text-capitalize">${value.name}</h6>
+                                        <small class="p-0 text-muted">N Price: ${value.normal_price}</small>
+                                        <small class="p-0 text-muted">W Price: ${value.whole_sale_price}</small>
+                                        <small class="p-0 text-muted">A Price: ${value.agent_price}</small><br>
+                                        <small class="p-0 text-muted">Quantity: ${value.quantity}</small>
+                                    </div>
+                                    <div class="col-2 text-end">
+                                        <p class="m-0">${value.action}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    `);
+                        `);
                     });
                 }
             }
         });
 
-        // Delete product
-        $(document).on('click', '.delete-product', function() {
-            var productId = $(this).data('product-id');
-
-            Swal.fire({
-                title: 'Are you sure you want to delete the product?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!',
-                input: 'password',
-                inputPlaceholder: 'Enter your password',
-                inputAttributes: {
-                    autocapitalize: 'off',
-                    autocomplete: 'new-password', // Prevent autofill
-                    required: true
-                },
-                preConfirm: (password) => {
-                    return new Promise((resolve) => {
-                        if (password) {
-                            resolve(password);
-                        } else {
-                            Swal.showValidationMessage('Please enter your password');
-                        }
-                    });
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Processing...',
-                        text: 'Please wait while the product is being deleted.',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
-
-                    $.ajax({
-                        url: `{{ route('product.destroy', '') }}/${productId}`,
-                        method: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}',
-                            password: result.value
-                        },
-                        success: function(response) {
-                            Swal.fire({
-                                title: 'Success',
-                                text: response.success,
-                                icon: 'success'
-                            }).then(() => {
-                                table.ajax.reload(null, true);
-                            });
-                        },
-                        error: function(xhr) {
-                            Swal.fire(
-                                'Error!',
-                                xhr.responseJSON.error || xhr.responseJSON.message,
-                                'error'
-                            );
-                        }
-                    });
-                }
-            });
+        // Trigger DataTable reload on filter change
+        $('#employee, #branch, #catalogue').on('change', function() {
+            table.ajax.reload();
         });
 
-        // Search in mobile view
+        // Search functionality for mobile view
         $('#search-input').on('keyup', function() {
             table.search(this.value).draw();
         });

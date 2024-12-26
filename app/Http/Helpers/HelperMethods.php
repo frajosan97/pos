@@ -39,6 +39,21 @@ if (!function_exists('smart_key')) {
 }
 
 /**
+ * Convert a given string into a URL-friendly slug.
+ *
+ * @param string $string The string to be converted.
+ * @return string The slugified version of the string.
+ */
+if (!function_exists('my_slug')) {
+    function my_slug($string)
+    {
+        $slug = Str::slug($string);
+        $slug = str_replace('-', '_', $slug);
+        return Str::lower($slug);
+    }
+}
+
+/**
  * Get the URL of an image from storage, or a default image if not found.
  *
  * @param string $imagePath

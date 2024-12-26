@@ -4,42 +4,18 @@
 
 @section('content')
 
-@if (in_array(Auth::user()->role?->role, [2, 3]))
-<div class="row">
-    @if (Auth::user()->role?->role == 2)
-    <div class="col-md-3 mb-3">
-        <select name="employee" id="employee" class="form-control border-0 shadow-sm">
-            <option value="">Branch Analytics</option>
-            @foreach ($employees as $employee)
-            @if ($employee->branch_id == Auth::user()->branch_id)
-            <option value="{{ $employee->id }}">{{ ucwords($employee->name) }}</option>
-            @endif
-            @endforeach
-        </select>
-    </div>
-    @endif
+@if(auth()->user()->hasPermission('analytics'))
 
-    @if (Auth::user()->role?->role == 3)
-    <div class="col-md-3 mb-3">
-        <select name="employee" id="employee" class="form-control border-0 shadow-sm">
-            <option value="">Company Analytics</option>
-            @foreach ($employees as $employee)
-            <option value="{{ $employee->id }}">{{ ucwords($employee->name) }}</option>
-            @endforeach
-        </select>
-    </div>
-
-    <div class="col-md-3 mb-3">
-        <select name="branch" id="branch" class="form-control border-0 shadow-sm">
-            <option value="">Company Analytics</option>
-            @foreach ($branches as $branch)
-            <option value="{{ $branch->id }}">{{ ucwords($branch->name) }}</option>
-            @endforeach
-        </select>
-    </div>
-    @endif
-</div>
-@endif
+<!-- control buttons -->
+<ul class="nav nav-pills rounded bg-white mb-3">
+    <li class="nav-item">
+        <a href="#" class="nav-link">
+            <i class="fas fa-chart-pie"></i> Analytics
+        </a>
+    </li>
+    @include('layouts.partials.filters')
+</ul>
+<!-- / end control buttons -->
 
 <div id="dashboard-cards" class="row g-4">
     <!-- Skeleton loaders for the analytics cards -->
@@ -78,6 +54,10 @@
     </div>
 </div>
 
+@else
+@include('layouts.partials.no_permission')
+@endif
+
 @endsection
 
 @push('script')
@@ -87,22 +67,21 @@
         const dashboardCards = $('#dashboard-cards');
         let barChartInstance = null; // Store chart instance
 
-        // Initial data fetch
-        fetchAnalyticsData('{{ $fetchType }}', '{{ $fetchTypeValue }}');
+        fetchAnalyticsData();
 
-        $('#employee, #branch').on('change', function() {
-            const fetchType = $(this).attr('id');
-            const fetchTypeValue = $(this).val();
-            fetchAnalyticsData(fetchType, fetchTypeValue);
+        // Trigger DataTable reload on filter change
+        $('#employee, #branch, #catalogue').on('change', function() {
+            fetchAnalyticsData();
         });
 
-        function fetchAnalyticsData(fetchType, fetchTypeValue) {
+        function fetchAnalyticsData() {
             $.ajax({
-                url: '/api/fetch-data/analytics',
+                url: "{{ route('analytics.index') }}",
                 type: 'GET',
                 data: {
-                    fetchType,
-                    fetchTypeValue
+                    branch: $('#branch').val(),
+                    catalogue: $('#catalogue').val(),
+                    employee: $('#employee').val(),
                 },
                 headers: {
                     'X-CSRF-TOKEN': csrfToken

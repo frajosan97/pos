@@ -79,7 +79,6 @@ Route::group(['middleware' => ['auth']], function () {
      * API routes for data fetching and external integrations.
      */
     Route::prefix('/api/fetch-data')->group(function () {
-        Route::get('/analytics', [ApiController::class, 'analytics']);
         Route::get('/constituency/{county_id}', [ApiController::class, 'constituency']);
         Route::get('/ward/{constituency_id}', [ApiController::class, 'ward']);
         Route::get('/location/{ward_id}', [ApiController::class, 'location']);
@@ -144,7 +143,9 @@ Route::group(['middleware' => ['auth']], function () {
 
         Route::get('/role', [SettingController::class, 'role'])->name('setting.role');
         Route::post('/role/store', [SettingController::class, 'storeRole'])->name('setting.role.store');
+        Route::get('/role/show/{id}', [SettingController::class, 'showRole'])->name('setting.role.show');
         Route::put('/role/update/{id}', [SettingController::class, 'updateRole'])->name('setting.role.update');
+        Route::put('/role/update-permission/{id}', [SettingController::class, 'updatePermission'])->name('setting.roles.updatePermissions');
         Route::post('/role/destroy', [SettingController::class, 'destroyRole'])->name('setting.role.destroy');
 
         Route::get('/company', [SettingController::class, 'company'])->name('setting.company');

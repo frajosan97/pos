@@ -12,6 +12,7 @@ class SaleItem extends Model
     // Mass assignable attributes
     protected $fillable = [
         'sale_id',
+        'catalogue_id',
         'product_id',
         'quantity',
         'price',

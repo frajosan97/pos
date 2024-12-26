@@ -105,6 +105,17 @@
                             </select>
                         </div>
                         <div class="col-md-6">
+                            <label for="sms_partner_id" class="form-label">SMS Partner ID</label>
+                            <input
+                                type="text"
+                                name="sms_partner_id"
+                                id="sms_partner_id"
+                                class="form-control"
+                                value="{{ old('sms_partner_id', $company->sms_partner_id) }}">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
                             <label for="sms_api_key" class="form-label">SMS API Key</label>
                             <input
                                 type="text"
@@ -113,8 +124,6 @@
                                 class="form-control"
                                 value="{{ old('sms_api_key', $company->sms_api_key) }}">
                         </div>
-                    </div>
-                    <div class="row mb-3">
                         <div class="col-md-6">
                             <label for="sms_sender_id" class="form-label">SMS Sender ID</label>
                             <input
@@ -124,17 +133,19 @@
                                 class="form-control"
                                 value="{{ old('sms_sender_id', $company->sms_sender_id) }}">
                         </div>
+                    </div>
+                    <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="sms_partner_name" class="form-label">SMS Partner Name</label>
+                            <label for="sms_api_url" class="form-label">SMS API Url</label>
                             <input
                                 type="text"
-                                name="sms_partner_name"
-                                id="sms_partner_name"
+                                name="sms_api_url"
+                                id="sms_api_url"
                                 class="form-control"
-                                value="{{ old('sms_partner_name', $company->sms_partner_name) }}">
+                                value="{{ old('sms_api_url', $company->sms_api_url) }}">
                         </div>
                     </div>
-
+                    
                     <hr>
 
                     <!-- Submit Button -->

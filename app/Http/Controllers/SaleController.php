@@ -23,31 +23,58 @@ class SaleController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $sales = Sale::with(['payments.paymentMethod']) // Eager load payments and their payment methods
-                    ->get()
-                    ->map(function ($sale) {
-                        // Bill calculations
-                        $total_billed = $sale->total_amount;
-                        $total_paid = $sale->payments->sum('amount');
-                        $total_balance = $total_billed - $total_paid;
-                        // Status btn
-                        $statusBtn = ($sale->status == 'paid')
-                            ? '<strong class="text-success text-capitalize"><i class="fas fa-check-circle"></i> ' . $sale->status . '</strong>'
-                            : '<strong class="text-danger text-capitalize"><i class="fas fa-times-circle"></i> ' . $sale->status . '</strong>';
+                // Get ajax request filters parameters
+                $filters = [
+                    'created_by' => $request->get('employee'),
+                    'branch_id' => $request->get('branch'),
+                ];
 
-                        return [
-                            'invoice_number' => str_pad($sale->id, 6, '0', STR_PAD_LEFT),
-                            'total_billed' => '<div class="text-end">' . number_format($total_billed, 2) . '</div>',
-                            'total_paid' => '<div class="text-end">' . number_format($total_paid, 2) . '</div>',
-                            'total_balance' => '<div class="text-end">' . number_format($total_balance, 2) . '</div>',
-                            'pay_method' => ucwords($sale->payments->first()->paymentMethod->name) ?? 'Unknown Method', // Access the payment method name
-                            'cashier' => User::where('id', $sale->created_by)->value('name') ?? 'Unknown Cashier',
-                            'status' => $statusBtn,
-                            'action' => view('portal.sale.partials.sale_actions', compact('sale'))->render(),
-                            'created_at' => $sale->created_at->format('Y-m-d H:i:s'),
-                        ];
+                // Fetch by catalogue
+                $catalogueFilter = $request->get('catalogue');
+
+                // Build the query
+                $salesQuery = Sale::query();
+
+                // Apply filters dynamically using 'when' to avoid explicit checks
+                foreach ($filters as $key => $value) {
+                    $salesQuery->when(!empty($value), function ($query) use ($key, $value) {
+                        $query->where($key, $value);
                     });
+                }
 
+                // Filter by catalogue if provided
+                if (!empty($catalogueFilter)) {
+                    $salesQuery->whereHas('saleItems', function ($query) use ($catalogueFilter) {
+                        $query->where('catalogue_id', $catalogueFilter);
+                    });
+                }
+
+                // Fetch the sales and map the data
+                $sales = $salesQuery->get()->map(function ($sale) {
+                    // Bill calculations
+                    $total_billed = $sale->total_amount;
+                    $total_paid = $sale->payments->sum('amount');
+                    $total_balance = $total_billed - $total_paid;
+
+                    // Status button
+                    $statusBtn = ($sale->status == 'paid')
+                        ? '<strong class="text-success text-capitalize"><i class="fas fa-check-circle"></i> ' . $sale->status . '</strong>'
+                        : '<strong class="text-danger text-capitalize"><i class="fas fa-times-circle"></i> ' . $sale->status . '</strong>';
+
+                    return [
+                        'invoice_number' => str_pad($sale->id, 6, '0', STR_PAD_LEFT),
+                        'total_billed' => '<div class="text-end">' . number_format($total_billed, 2) . '</div>',
+                        'total_paid' => '<div class="text-end">' . number_format($total_paid, 2) . '</div>',
+                        'total_balance' => '<div class="text-end">' . number_format($total_balance, 2) . '</div>',
+                        'pay_method' => ucwords($sale->payments->first()->paymentMethod->name) ?? 'Unknown Method',
+                        'cashier' => User::where('id', $sale->created_by)->value('name') ?? 'Unknown Cashier',
+                        'status' => $statusBtn,
+                        'action' => view('portal.sale.partials.sale_actions', compact('sale'))->render(),
+                        'created_at' => $sale->created_at->format('Y-m-d H:i:s'),
+                    ];
+                });
+
+                // Return the sales data to DataTables
                 return DataTables::of($sales)
                     ->rawColumns(['total_billed', 'total_paid', 'total_balance', 'status', 'action'])
                     ->make(true);
@@ -113,6 +140,7 @@ class SaleController extends Controller
                 // Create the sale item record
                 SaleItem::create([
                     'sale_id' => $sale->id,
+                    'catalogue_id' => $item['product']['catalogue_id'],
                     'product_id' => $item['product']['id'],
                     'quantity' => $item['quantity'],
                     'price' => $item['product'][$validated['sale_type']],

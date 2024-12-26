@@ -4,6 +4,8 @@
 
 @section('content')
 
+@if(auth()->user()->hasPermission('user_view'))
+
 <!-- control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
     <li class="nav-item">
@@ -62,6 +64,11 @@
         </div>
     </div>
 </div>
+
+@else
+@include('layouts.partials.no_permission')
+@endif
+
 @endsection
 
 @push('script')
