@@ -2,25 +2,19 @@
 
 namespace App\Services;
 
-use App\Models\Company;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
 
 class SmsService
 {
     /*
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
     | SMS Service Properties
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
     |
     | These properties hold the configuration values needed to send SMS messages
-    | using the SMS service provider. The values are loaded from the `smsservice.php`
-    | configuration file. The properties include:
-    | - Partner ID
-    | - API Key
-    | - Sender ID
-    | - API URL
-    | - Guzzle HTTP Client
+    | using the SMS service provider. The values are loaded from the 
+    | `sms.php` configuration file.
     |
     */
     protected $partnerId;
@@ -30,32 +24,30 @@ class SmsService
     protected $client;
 
     /*
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
     | Constructor Method
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
     |
-    | The constructor method is used to initialize the SMS service with the
-    | necessary configuration settings. It retrieves the values from the 
-    | `smsservice.php` configuration file and initializes the Guzzle HTTP client.
+    | The constructor method initializes the SMS service with the configuration 
+    | settings from the `sms.php` configuration file.
     |
     */
     public function __construct()
     {
-        $company_info = Company::first();
-        $this->partnerId = $company_info->sms_partner_id;
-        $this->apiKey = $company_info->sms_api_key;
-        $this->senderId = $company_info->sms_sender_id;
-        $this->apiUrl = rtrim($company_info->sms_api_url, '/'); // Ensure no trailing slash
+        $this->partnerId = config('sms.partner_id');
+        $this->apiKey = config('sms.api_key');
+        $this->senderId = config('sms.sender_id');
+        $this->apiUrl = rtrim(config('sms.api_url'), '/'); // Ensure no trailing slash
         $this->client = new Client(); // Initialize Guzzle client
     }
 
     /*
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
     | Send SMS Method
-    |--------------------------------------------------------------------------
+    |-------------------------------------------------------------------------- 
     |
-    | This method sends an SMS message to a given recipient. It constructs a
-    | JSON payload and sends a POST request to the SMS service provider's API.
+    | This method sends an SMS message to a given recipient. It constructs a JSON
+    | payload and sends a POST request to the SMS service provider's API.
     |
     | Parameters:
     | - $recipient: The recipient's phone number.
@@ -75,7 +67,7 @@ class SmsService
                 'partnerID' => $this->partnerId,
                 'message' => $message,
                 'shortcode' => $this->senderId,
-                'mobile' => formatPhoneNumber($recipient),
+                'mobile' => $this->formatPhoneNumber($recipient),
             ];
 
             // Construct the full API endpoint URL for sending SMS
@@ -96,5 +88,25 @@ class SmsService
             Log::error('Error while sending SMS', ['error' => $e->getMessage()]);
             return false;
         }
+    }
+
+    /*
+    |-------------------------------------------------------------------------- 
+    | Format Phone Number Method
+    |-------------------------------------------------------------------------- 
+    |
+    | This method formats the phone number to match the required international
+    | format (e.g., 254XXXXXXXXX).
+    |
+    */
+    private function formatPhoneNumber(string $phoneNumber): string
+    {
+        $phoneNumber = preg_replace('/\D/', '', $phoneNumber);
+
+        if (substr($phoneNumber, 0, 1) == '0') {
+            $phoneNumber = '254' . substr($phoneNumber, 1);
+        }
+
+        return $phoneNumber;
     }
 }

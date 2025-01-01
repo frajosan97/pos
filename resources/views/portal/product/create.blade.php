@@ -109,8 +109,13 @@
                             </div>
                         </div>
 
-                        <!-- Description -->
                         <div class="col-md-12 my-3">
+                            <label for="commission_on_sale">Commission On Unit Sale</label>
+                            <input type="text" name="commission_on_sale" id="commission_on_sale" placeholder="Commission On Unit Sale" class="form-control" required>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="col-md-12 mb-3">
                             <label for="description">Description</label>
                             <textarea name="description" id="description" placeholder="Product Description" rows="3" class="form-control"></textarea>
                         </div>

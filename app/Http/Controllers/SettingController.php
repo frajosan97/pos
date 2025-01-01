@@ -599,11 +599,11 @@ class SettingController extends Controller
                 'email' => 'required|email|max:255',
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'color' => 'nullable|string|max:7',
-                'sms_mode' => 'required|in:online,offline',
-                'sms_partner_id' => 'nullable|string|max:255',
-                'sms_api_key' => 'nullable|string|max:255',
-                'sms_sender_id' => 'nullable|string|max:255',
-                'sms_api_url' => 'nullable|string|max:255',
+                // 'sms_mode' => 'required|in:online,offline',
+                // 'sms_partner_id' => 'nullable|string|max:255',
+                // 'sms_api_key' => 'nullable|string|max:255',
+                // 'sms_sender_id' => 'nullable|string|max:255',
+                // 'sms_api_url' => 'nullable|string|max:255',
             ]);
 
             // Find the company record
@@ -630,11 +630,11 @@ class SettingController extends Controller
                 'email' => $request->input('email'),
                 'color' => $request->input('color'),
                 'logo' => $logoPath ?? $company->logo,
-                'sms_mode' => $request->input('sms_mode'),
-                'sms_partner_id' => $request->input('sms_partner_id'),
-                'sms_api_key' => $request->input('sms_api_key'),
-                'sms_sender_id' => $request->input('sms_sender_id'),
-                'sms_api_url' => $request->input('sms_api_url'),
+                // 'sms_mode' => $request->input('sms_mode'),
+                // 'sms_partner_id' => $request->input('sms_partner_id'),
+                // 'sms_api_key' => $request->input('sms_api_key'),
+                // 'sms_sender_id' => $request->input('sms_sender_id'),
+                // 'sms_api_url' => $request->input('sms_api_url'),
             ]);
 
             // Return a success message

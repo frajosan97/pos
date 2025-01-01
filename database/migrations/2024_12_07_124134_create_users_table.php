@@ -14,7 +14,7 @@ return new class extends Migration
         // Users Table
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('user_name')->unique();
             $table->string('name');
             $table->string('passport')->default('passport.png');
@@ -33,37 +33,24 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Roles Table
-        Schema::create('roles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->string('slug')->unique();
-            $table->string('description')->nullable();
-            $table->timestamps();
-        });
-
         // Permissions Table
         Schema::create('permissions', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
-            $table->string('slug')->unique();
-            $table->string('description')->nullable();
+            $table->string('name')->unique(); // Permission name (e.g., 'manage_branch')
+            $table->string('slug')->unique(); // Slug for the permission
+            $table->string('description')->nullable(); // Description of the permission
             $table->timestamps();
+            $table->index('slug'); // Index for fast lookups by slug
         });
 
-        // Role_User Pivot Table
-        Schema::create('role_user', function (Blueprint $table) {
+        // User_Permission Pivot Table (with dynamic permissions)
+        Schema::create('user_permissions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
-            $table->timestamps();
-        });
-
-        // Permission_Role Pivot Table
-        Schema::create('permission_role', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('role_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('permission_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // Link to user
+            $table->foreignId('permission_id')->constrained()->cascadeOnDelete(); // Link to permission
+            $table->json('selected_branches')->nullable(); // Store specific branches for "manage_branch"
+            $table->json('selected_products')->nullable(); // Store specific products for "manage_product"
+            $table->json('selected_catalogues')->nullable(); // Store specific catalogues for "manage_catalogue"
             $table->timestamps();
         });
 
@@ -93,10 +80,8 @@ return new class extends Migration
     {
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('permission_role');
-        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('user_permissions');
         Schema::dropIfExists('permissions');
-        Schema::dropIfExists('roles');
         Schema::dropIfExists('users');
     }
 };

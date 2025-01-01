@@ -28,6 +28,7 @@ class Products extends Model
         'photo',
         'unit',
         'weight',
+        'commission_on_sale',
         'status',
         'description',
         'created_by',
@@ -48,6 +49,15 @@ class Products extends Model
     public function branch()
     {
         return $this->belongsTo(Branch::class);
+    }
+
+    /**
+     * Relationship with Commission model.
+     * A product can have many commissions.
+     */
+    public function commissions()
+    {
+        return $this->hasMany(Commission::class);
     }
 
     /**

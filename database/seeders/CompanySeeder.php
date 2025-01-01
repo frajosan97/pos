@@ -19,7 +19,7 @@ class CompanySeeder extends Seeder
             'phone' => '+254796594366',
             'email' => 'info@frajosantech.co.ke',
             'logo' => 'logo.png',
-            'color' => 'blue',
+            'color' => '#990000',
             'sms_mode' => 'online',
             'status' => 'active',
             'created_at' => now(),

@@ -128,7 +128,7 @@ if (!function_exists('userRoleBind')) {
 }
 
 /**
- * Obfuscate email address.
+ * Obfuscate email address for display.
  *
  * @param string $email
  * @return string
@@ -136,13 +136,12 @@ if (!function_exists('userRoleBind')) {
 if (!function_exists('obfuscateEmail')) {
     function obfuscateEmail(string $email): string
     {
-        [$localPart, $domainPart] = explode('@', $email, 2);
-        return Str::limit($localPart, 3, '***') . '@' . $domainPart;
+        return preg_replace('/(?<=.).(?=.*@)/', '*', $email);
     }
 }
 
 /**
- * Obfuscate phone number.
+ * Obfuscate phone number for display.
  *
  * @param string $phone
  * @return string
@@ -150,9 +149,7 @@ if (!function_exists('obfuscateEmail')) {
 if (!function_exists('obfuscatePhone')) {
     function obfuscatePhone(string $phone): string
     {
-        $start = substr($phone, 0, 5);
-        $end = substr($phone, -2);
-        return $start . '****' . $end;
+        return substr($phone, 0, 3) . str_repeat('*', strlen($phone) - 6) . substr($phone, -3);
     }
 }
 
@@ -209,5 +206,13 @@ if (!function_exists('storeLog')) {
         $existingData[] = $data;
 
         Storage::disk('public')->put($filePath, json_encode($existingData, JSON_PRETTY_PRINT));
+    }
+}
+
+if (!function_exists('genPassword')) {
+    function genPassword($length = 12)
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=';
+        return substr(str_shuffle($chars), 0, $length);
     }
 }

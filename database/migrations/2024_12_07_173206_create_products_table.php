@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('photo')->nullable();
             $table->string('unit')->default('piece'); // Unit of measure
             $table->decimal('weight', 8, 2)->nullable(); // Weight or volume for measurement
+            $table->decimal('commission_on_sale', 10, 2)->default(0.00);
             $table->string('status')->default('active'); // active or inactive
             $table->text('description')->nullable();
             $table->string('created_by')->nullable();

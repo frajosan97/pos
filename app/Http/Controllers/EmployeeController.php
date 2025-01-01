@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
+use App\Models\Permission;
 use App\Models\User;
-use App\Models\Sale;
 use App\Services\MailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Yajra\DataTables\Facades\DataTables;
 
 class EmployeeController extends Controller
@@ -33,16 +33,14 @@ class EmployeeController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $users = User::with(['branch', 'roles'])
+                $users = User::with(['branch'])
                     ->get()
                     ->map(function ($user) {
                         return [
                             'name' => ucwords($user->name),
                             'email' => $user->email,
                             'phone' => $user->phone,
-                            // Handle only the first role
-                            'role' => optional($user->roles->first())->name ? ucwords($user->roles->first()->name) : 'No Role Assigned',
-                            'branch' => ucwords(optional($user->branch)->name), // Use optional() to avoid null errors
+                            'branch' => ucwords(optional($user->branch)->name),
                             'status' => $user->email_verified_at ? 'Active' : 'Inactive',
                             'action' => view('portal.employee.partials.actions', compact('user'))->render(),
                             'created_at' => $user->created_at->format('Y-m-d H:i:s'),
@@ -66,60 +64,86 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        return view('portal.employee.create');
+        return view('portal.employee.create',);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created employee in storage.
      */
     public function store(Request $request)
     {
+        // Validate the input data
+        $validatedData = $request->validate([
+            'branch' => 'required|exists:branches,id',
+            'user_name' => 'required|string|unique:users,user_name',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'phone' => 'nullable|string|max:15|unique:users,phone',
+            'id_number' => 'required|string|max:20|unique:users,id_number',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,id',
+            'viewable_branches' => 'nullable|array',
+            'viewable_branches.*' => 'exists:branches,id',
+            'viewable_catalogues' => 'nullable|array',
+            'viewable_catalogues.*' => 'exists:catalogues,id',
+            'viewable_products' => 'nullable|array',
+            'viewable_products.*' => 'exists:products,id',
+        ]);
+
+        $password = genPassword();
+
+        // Use a database transaction
+        DB::beginTransaction();
+
         try {
-            $request->validate([
-                'branch' => 'required|exists:branches,id', // Ensure branch exists in the DB
-                'role' => 'required|exists:roles,id', // Ensure role exists in the DB
-                'user_name' => 'required|string|max:255|unique:users',
-                'name' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',
-                'phone' => 'required|string|max:15|unique:users|regex:/^(\+?[\d\s\-()]){10,15}$/', // Improve phone validation with regex
-                'id_number' => 'required|string|max:255|unique:users',
-            ]);
-
+            // Create the user
             $user = User::create([
-                'branch_id' => $request->input('branch'),
-                'user_name' => $request->input('user_name'),
-                'name' => $request->input('name'),
-                'email' => $request->input('email'),
-                'phone' => $request->input('phone'),
-                'id_number' => $request->input('id_number'),
-                'password' => Hash::make('12345678'),
-                'created_by' => Auth::user()->id ?? null,
-                'updated_by' => Auth::user()->id ?? null,
+                'branch_id' => $validatedData['branch'],
+                'user_name' => $validatedData['user_name'],
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'phone' => $validatedData['phone'],
+                'id_number' => $validatedData['id_number'],
+                'password' => Hash::make($password),
+                'created_by' => Auth::user()->id,
             ]);
 
-            if ($user) {
-                // Attach role to the user
-                $roleId = $request->input('role'); // Assuming role ID is sent in the request
-                $role = Role::find($roleId);
+            // Attach permissions
+            if (!empty($validatedData['permissions'])) {
+                foreach ($validatedData['permissions'] as $permissionId) {
+                    $permissionData = [
+                        'permission_id' => $permissionId,
+                        'selected_branches' => $permissionId == Permission::where('slug', 'manager_branch')->value('id')
+                            ? json_encode($validatedData['viewable_branches'] ?? [])
+                            : null,
+                        'selected_products' => $permissionId == Permission::where('slug', 'product_view')->value('id')
+                            ? json_encode($validatedData['viewable_products'] ?? [])
+                            : null,
+                        'selected_catalogues' => $permissionId == Permission::where('slug', 'catalogue_view')->value('id')
+                            ? json_encode($validatedData['viewable_catalogues'] ?? [])
+                            : null,
+                    ];
 
-                if ($role) {
-                    $user->roles()->attach($roleId);
-                } else {
-                    // Handle case where role does not exist
-                    return response()->json(['error' => 'Role not found'], 404);
+                    $user->permissions()->attach($permissionId, $permissionData);
                 }
             }
 
-            // Send account registration email
-            $this->mailService->sendAccRegEmail($user);
+            // Commit the transaction
+            DB::commit();
 
-            // Success response
-            return response()->json(['success' => 'Employee registered successfully and activation email sent to the provided email address']);
-        } catch (\Exception $exception) {
-            // Log the exception details
-            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
-            // Return a general error message
-            return response()->json(['error' => $exception->getMessage()], 500);
+            // Send account registration email
+            $this->mailService->sendAccRegEmail($user, $password);
+
+            return response()->json([
+                'success' => 'Employee created successfully.',
+            ]);
+        } catch (\Exception $e) {
+            // Rollback the transaction on error
+            DB::rollBack();
+
+            return response()->json([
+                'error' => 'Failed to create employee. Please try again later.',
+            ], 500);
         }
     }
 
@@ -129,41 +153,24 @@ class EmployeeController extends Controller
     public function show(Request $request, string $id)
     {
         try {
-            // Fetch User with related data (branch and role)
-            $user = User::with(['branch', 'role'])->findOrFail($id);
+            // Fetch User with related data (branch and permissions)
+            $user = User::with(['branch', 'permissions'])->findOrFail($id);
 
-            // If the request is AJAX, fetch and return sales data for the user
-            if ($request->ajax()) {
-                // Fetch sales data related to the user, with saleItems and customer
-                $salesData = Sale::where('created_by', $user->id)
-                    ->with(['customer']) // Eager load customer relation (no need to load saleItems unless needed)
-                    ->get()
-                    ->map(function ($sale) {
-                        $customerName = ucwords($sale->customer->name ?? 'No customer attached'); // Use the customer relation
-                        $statusBtn = ($sale->status == 'paid')
-                            ? '<strong class="text-success text-capitalize"><i class="fas fa-check-circle"></i> ' . $sale->status . '</strong>'
-                            : '<strong class="text-danger text-capitalize"><i class="fas fa-times-circle"></i> ' . $sale->status . '</strong>';
+            // Calculate total commission (all-time commission)
+            $allTimeCommission = $user->commissions()->sum('commission_amount');
 
-                        return [
-                            'sale_date' => $sale->created_at->format('Y-m-d H:i:s'), // Format sale date
-                            'customer_name' => $customerName,
-                            'amount' => '<div class="text-end">' . number_format($sale->total_amount, 2) . '</div>', // Format amount
-                            'status' => $statusBtn, // Sale status
-                            'action' => view('portal.sale.partials.sale_actions', compact('sale'))->render(), // View with action buttons
-                        ];
-                    });
+            // Calculate month-to-date commission
+            $currentMonth = now()->month;
+            $monthToDateCommission = $user->commissions()
+                ->whereMonth('created_at', $currentMonth)
+                ->sum('commission_amount');
 
-                // Return sales data to DataTables
-                return DataTables::of($salesData)
-                    ->rawColumns(['amount', 'status', 'action'])
-                    ->make(true);
-            }
-
-            // Return the main view with user data if it's not an AJAX request
-            return view('portal.employee.show', compact('user'));
+            // Return the main view with user data and commissions if it's not an AJAX request
+            return view('portal.employee.show', compact('user', 'allTimeCommission', 'monthToDateCommission'));
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+
             // Return a general error message
             return response()->json(['error' => $exception->getMessage()], 500);
         }
@@ -172,10 +179,10 @@ class EmployeeController extends Controller
     public function edit(string $id)
     {
         try {
-            // Fetch User with related data (branch and role)
-            $user = User::with(['branch', 'role'])->findOrFail($id);
+            // Fetch User with related data (branch and permissions)
+            $user = User::with(['branch', 'permissions'])->findOrFail($id);
 
-            // Return the main view with user data if it's not an AJAX request
+            // Return the main view with user data and other necessary data
             return view('portal.employee.edit', compact('user'));
         } catch (\Exception $exception) {
             // Log the exception details
@@ -185,69 +192,78 @@ class EmployeeController extends Controller
         }
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
+        // Validate the input data
+        $validatedData = $request->validate([
+            'branch' => 'required|exists:branches,id',
+            'user_name' => 'required|string|unique:users,user_name,' . $id,
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'phone' => 'nullable|string|max:15|unique:users,phone,' . $id,
+            'id_number' => 'required|string|max:20|unique:users,id_number,' . $id,
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,id',
+            'viewable_branches' => 'nullable|array',
+            'viewable_branches.*' => 'exists:branches,id',
+            'viewable_catalogues' => 'nullable|array',
+            'viewable_catalogues.*' => 'exists:catalogues,id',
+            'viewable_products' => 'nullable|array',
+            'viewable_products.*' => 'exists:products,id',
+        ]);
+
+        // Get the user to be updated
+        $user = User::findOrFail($id);
+
+        // Use a database transaction
+        DB::beginTransaction();
+
         try {
-            // Validate request data
-            $request->validate([
-                'user_name' => 'required|string|max:255',
-                'name' => 'required|string|max:255',
-                'gender' => 'required|in:Male,Female',
-                'phone' => 'nullable|string|max:15',
-                'branch_id' => 'nullable|exists:branches,id',
-                'role_id' => 'nullable|exists:roles,id',
-                'status' => 'nullable|boolean',
-                'id_number' => 'nullable|string|max:20',
-                'passport' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            ]);
-
-            $user = User::findOrFail($id);
-
-            // Handle the product image upload if present
-            $passportPath = null;
-            if ($request->hasFile('passport')) {
-                $file = $request->file('passport');
-                $destinationPath = public_path('assets/images/profiles');
-                // Generate a unique name for the image
-                $fileName = uniqid() . '_' . $file->getClientOriginalName();
-                // Move the file to the desired location
-                $file->move($destinationPath, $fileName);
-                // Save the relative path
-                $passportPath = 'assets/images/profiles/' . $fileName;
-            }
-
-            // Update the user name
+            // Update the user data
             $user->update([
-                'user_name' => $request->input('user_name'),
-                'name' => $request->input('name'),
-                'gender' => $request->input('gender'),
-                'phone' => $request->input('phone') ?? $user->phone,
-                'branch_id' => $request->input('branch_id') ?? $user->branch_id,
-                'status' => $request->input('status') ?? $user->status,
-                'id_number' => $request->input('id_number') ?? $user->id_number,
-                'passport' => $passportPath ?? $user->passport,
+                'branch_id' => $validatedData['branch'],
+                'user_name' => $validatedData['user_name'],
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'phone' => $validatedData['phone'],
+                'id_number' => $validatedData['id_number'],
+                'updated_by' => Auth::user()->id,
             ]);
 
-            if ($user) {
-                // Attach role to the user
-                $roleId = $request->input('role'); // Assuming role ID is sent in the request
-                $role = Role::find($roleId);
+            // Sync permissions
+            if (!empty($validatedData['permissions'])) {
+                $user->permissions()->sync([]);
+                foreach ($validatedData['permissions'] as $permissionId) {
+                    $permissionData = [
+                        'permission_id' => $permissionId,
+                        'selected_branches' => $permissionId == Permission::where('slug', 'manager_branch')->value('id')
+                            ? json_encode($validatedData['viewable_branches'] ?? [])
+                            : null,
+                        'selected_products' => $permissionId == Permission::where('slug', 'product_view')->value('id')
+                            ? json_encode($validatedData['viewable_products'] ?? [])
+                            : null,
+                        'selected_catalogues' => $permissionId == Permission::where('slug', 'catalogue_view')->value('id')
+                            ? json_encode($validatedData['viewable_catalogues'] ?? [])
+                            : null,
+                    ];
 
-                if ($role) {
-                    $user->roles()->attach($roleId);
-                } else {
-                    // Handle case where role does not exist
-                    return response()->json(['error' => 'Role not found'], 404);
+                    $user->permissions()->attach($permissionId, $permissionData);
                 }
             }
 
-            // Return a success message
-            return response()->json(['success' => 'Employee profile updated successfully'], 200);
-        } catch (\Exception $exception) {
-            // Log the exception details
-            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
-            // Return a general error message
-            return response()->json(['error' => $exception->getMessage()], 500);
+            // Commit the transaction
+            DB::commit();
+
+            return response()->json([
+                'success' => 'Employee updated successfully.',
+            ]);
+        } catch (\Exception $e) {
+            // Rollback the transaction on error
+            DB::rollBack();
+
+            return response()->json([
+                'error' => 'Failed to update employee. Please try again later.',
+            ], 500);
         }
     }
 

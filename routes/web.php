@@ -29,21 +29,28 @@ Auth::routes();
  * Routes for handling account verification and OTP-based authentication.
  */
 Route::prefix('/verify')->group(function () {
-    Route::get('/send-otp-form', [LoginController::class, 'showOtpSendForm'])->name('otp.send-otp');
+    Route::get('/send-otp-form', function () {
+        $verifyMethods = session('verify_methods', []);  // Get the session data
+        return view('auth.otp.send-otp', compact('verifyMethods'));
+    })->name('otp.send-otp');
     Route::post('/send-otp', [LoginController::class, 'sendOtp'])->name('otp.send');
-    Route::get('/verify-otp-form', [LoginController::class, 'showOtpVerificationForm'])->name('otp.verify-otp');
+
+    Route::view('/verify-otp-form', 'auth.otp.verify-otp')->name('otp.verify-otp');
     Route::post('/verify-otp', [LoginController::class, 'verifyOtp'])->name('otp.verify');
-    Route::get('/resend-activation-link', function () {
-        return view('auth.verify');
-    })->name('verify.resend-activation-link');
+
+    Route::view('/resend-activation-link', 'auth.verify')->name('verify.resend-activation-link');
     Route::post('/verify-link', [LoginController::class, 'sendVerificationLink'])->name('verify-link.send');
-    Route::get('/activate/{email}', [LoginController::class, 'activateAccount'])->name('verify.activate');
+
+    Route::get('/activate/{email}', function ($email) {
+        return view('auth.activate', compact('email'));
+    })->name('verify.activate');
+    Route::post('/activate-account/{email}', [LoginController::class, 'activateAccount'])->name('account.activate');
 });
 
 /**
  * Group routes requiring user authentication.
  */
-Route::group(['middleware' => ['auth']], function () {
+Route::middleware('auth')->group(function () {
     /**
      * Route for the application dashboard.
      */
@@ -69,6 +76,9 @@ Route::group(['middleware' => ['auth']], function () {
      * Route for the sale.
      */
     Route::resource('sale', SaleController::class);
+    Route::get('/brand-sales', [SaleController::class, 'catalogue'])->name('sale.catalogue');
+    Route::get('/product-sales', [SaleController::class, 'product'])->name('sale.product');
+    Route::get('/category-product-sales', [SaleController::class, 'catProFetch'])->name('sale.cat_pro_fetch');
 
     /**
      * Route for the customers.
@@ -84,7 +94,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/location/{ward_id}', [ApiController::class, 'location']);
         Route::get('/product/{barcode}', [ApiController::class, 'product']);
         Route::get('/payment-methods', [ApiController::class, 'paymentMethods']);
-        Route::get('/mpesa-payments', [ApiController::class, 'mpesaPaymants']);
+        Route::get('/mpesa-payments', [ApiController::class, 'mpesaPayments']);
     });
 
     /**
@@ -116,46 +126,20 @@ Route::group(['middleware' => ['auth']], function () {
      * Routes for application settings.
      */
     Route::prefix('/settings')->group(function () {
-        Route::get('/county', [SettingController::class, 'county'])->name('setting.county');
-        Route::post('/county/store', [SettingController::class, 'storeCounty'])->name('setting.county.store');
-        Route::put('/county/update/{id}', [SettingController::class, 'updateCounty'])->name('setting.county.update');
-        Route::post('/county/destroy', [SettingController::class, 'destroyCounty'])->name('setting.county.destroy');
+        $entities = ['county', 'constituency', 'ward', 'location', 'branch', 'role', 'company'];
+        foreach ($entities as $entity) {
+            Route::get("/$entity", [SettingController::class, "$entity"])->name("setting.$entity");
+            Route::post("/$entity/store", [SettingController::class, "store" . ucfirst($entity)])->name("setting.$entity.store");
+            Route::put("/$entity/update/{id}", [SettingController::class, "update" . ucfirst($entity)])->name("setting.$entity.update");
+            Route::post("/$entity/destroy", [SettingController::class, "destroy" . ucfirst($entity)])->name("setting.$entity.destroy");
+        }
 
-        Route::get('/constituency', [SettingController::class, 'constituency'])->name('setting.constituency');
-        Route::post('/constituency/store', [SettingController::class, 'storeConstituency'])->name('setting.constituency.store');
-        Route::put('/constituency/update/{id}', [SettingController::class, 'updateConstituency'])->name('setting.constituency.update');
-        Route::post('/constituency/destroy', [SettingController::class, 'destroyConstituency'])->name('setting.constituency.destroy');
-
-        Route::get('/ward', [SettingController::class, 'ward'])->name('setting.ward');
-        Route::post('/ward/store', [SettingController::class, 'storeWard'])->name('setting.ward.store');
-        Route::put('/ward/update/{id}', [SettingController::class, 'updateWard'])->name('setting.ward.update');
-        Route::post('/ward/destroy', [SettingController::class, 'destroyWard'])->name('setting.ward.destroy');
-
-        Route::get('/location', [SettingController::class, 'location'])->name('setting.location');
-        Route::post('/location/store', [SettingController::class, 'storeLocation'])->name('setting.location.store');
-        Route::put('/location/update/{id}', [SettingController::class, 'updateLocation'])->name('setting.location.update');
-        Route::post('/location/destroy', [SettingController::class, 'destroyLocation'])->name('setting.location.destroy');
-
-        Route::get('/branch', [SettingController::class, 'branch'])->name('setting.branch');
-        Route::post('/branch/store', [SettingController::class, 'storeBranch'])->name('setting.branch.store');
-        Route::put('/branch/update/{id}', [SettingController::class, 'updateBranch'])->name('setting.branch.update');
-        Route::post('/branch/destroy', [SettingController::class, 'destroyBranch'])->name('setting.branch.destroy');
-
-        Route::get('/role', [SettingController::class, 'role'])->name('setting.role');
-        Route::post('/role/store', [SettingController::class, 'storeRole'])->name('setting.role.store');
-        Route::get('/role/show/{id}', [SettingController::class, 'showRole'])->name('setting.role.show');
-        Route::put('/role/update/{id}', [SettingController::class, 'updateRole'])->name('setting.role.update');
         Route::put('/role/update-permission/{id}', [SettingController::class, 'updatePermission'])->name('setting.roles.updatePermissions');
-        Route::post('/role/destroy', [SettingController::class, 'destroyRole'])->name('setting.role.destroy');
-
-        Route::get('/company', [SettingController::class, 'company'])->name('setting.company');
         Route::put('/company/update/{id}', [SettingController::class, 'updateCompany'])->name('setting.company.update');
     });
 
     // CACHE
-    Route::get('/clear-cache', function () {
-        return view('portal.setting.clear-cache');
-    })->name('clear-cache.form');
+    Route::view('/clear-cache', 'portal.setting.clear-cache')->name('clear-cache.form');
     Route::post('/clear-cache', [SettingController::class, 'clearCache'])->name('cache.clear');
     Route::post('/optimize', [SettingController::class, 'optimize'])->name('cache.optimize');
 });

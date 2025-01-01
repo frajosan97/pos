@@ -4,15 +4,16 @@
 
 <div class="text-center mb-4">
     <h2 class="m-0"><span>OTP Verification</span></h2>
-    <small class="text-muted m-0">Chose where to receive a verification code</small>
+    <small class="text-muted m-0">Choose where to receive a verification code</small>
 </div>
 
 @include('auth.partials.alerts')
 
 <form action="{{ route('otp.send') }}" method="POST" class="mt-4">
     @csrf
+
     <ul class="list-group">
-        @foreach ($options as $option)
+        @foreach ($verifyMethods as $option)
         @if ($option['value'])
         <li class="list-group-item border-0 rounded-4 shadow-sm p-1 mb-3 bg-light">
             <button type="submit" name="method" value="{{ $option['method'] }}"

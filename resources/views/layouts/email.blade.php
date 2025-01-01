@@ -25,7 +25,6 @@
 
             <!-- Additional Information -->
             @if(isset($details['more_info']) && !empty($details['more_info']))
-            <p style="margin: 15px 0;">More Information:</p>
             <ul style="padding-left: 20px; margin: 15px 0;">
                 @foreach($details['more_info'] as $key => $info)
                 <li style="margin: 10px 0;"><strong>{{ $key }}:</strong> {!! $info !!}</li>

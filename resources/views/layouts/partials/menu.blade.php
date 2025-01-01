@@ -8,7 +8,6 @@
 </li>
 @endif
 
-@if(auth()->user()->hasPermission('analytics'))
 <!-- Analytics -->
 <li class="nav-item">
     <a href="{{ route('analytics.index') }}" class="nav-link">
@@ -16,7 +15,6 @@
         <p>Analytics</p>
     </a>
 </li>
-@endif
 
 <!-- Products -->
 @if(auth()->user()->hasPermission('product_view'))
@@ -59,19 +57,37 @@
         </p>
     </a>
     <ul class="nav nav-treeview">
-        @if(auth()->user()->hasPermission('reports_inventory'))
+        <!-- @if(auth()->user()->hasPermission('reports_inventory'))
         <li class="nav-item">
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-list"></i>
                 <p>Inventory</p>
             </a>
         </li>
-        @endif
+        @endif -->
         @if(auth()->user()->hasPermission('reports_sales'))
         <li class="nav-item">
             <a href="{{ route('sale.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-shopping-basket"></i>
                 <p>Sales</p>
+            </a>
+        </li>
+        @endif
+
+        @if(auth()->user()->hasPermission('manager_catalogue'))
+        <li class="nav-item">
+            <a href="{{ route('sale.catalogue') }}" class="nav-link">
+                <i class="nav-icon fas fa-shopping-basket"></i>
+                <p>Brand Sales</p>
+            </a>
+        </li>
+        @endif
+
+        @if(auth()->user()->hasPermission('manager_product'))
+        <li class="nav-item">
+            <a href="{{ route('sale.product') }}" class="nav-link">
+                <i class="nav-icon fas fa-shopping-basket"></i>
+                <p>Product Sales</p>
             </a>
         </li>
         @endif
@@ -105,7 +121,7 @@
 </li>
 @endif
 
-@if(auth()->user()->hasPermission('settings'))
+@if(auth()->user()->hasPermission('system_setting'))
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-tools"></i>
@@ -145,7 +161,7 @@
                 <p>Branches / Shops</p>
             </a>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
             <a href="{{ route('setting.role') }}" class="nav-link">
                 <i class="nav-icon fas fa-user-shield"></i>
                 <p>System Roles</p>
@@ -162,7 +178,7 @@
                 <i class="nav-icon fas fa-receipt"></i>
                 <p>STK Push</p>
             </a>
-        </li>
+        </li> -->
         <li class="nav-item">
             <a href="{{ route('setting.company') }}" class="nav-link">
                 <i class="nav-icon fas fa-university"></i>
@@ -173,7 +189,7 @@
 </li>
 @endif
 
-@if(auth()->user()->hasPermission('clear_cache'))
+@if(auth()->user()->hasPermission('system_cache'))
 <!-- Clear Cache -->
 <li class="nav-item">
     <a href="{{ route('clear-cache.form') }}" class="nav-link">

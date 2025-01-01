@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Products;
-use App\Services\RoleFetchService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -98,6 +97,7 @@ class ProductController extends Controller
             'agent_price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:0',
             'sku' => 'required|string|max:255',
+            'commission_on_sale' => 'required|numeric|min:0',
             'product_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -132,6 +132,7 @@ class ProductController extends Controller
                     'agent_price' => $request->input('agent_price'),
                     'quantity' => $request->input('quantity'),
                     'sku' => $request->input('sku'),
+                    'commission_on_sale' => $request->input('commission_on_sale'),
                     'photo' => $imagePath ?? $product->photo,
                     'created_by' => Auth::user()->id
                 ]);
@@ -152,6 +153,7 @@ class ProductController extends Controller
                     'agent_price' => $request->input('agent_price'),
                     'quantity' => $request->input('quantity'),
                     'sku' => $request->input('sku'),
+                    'commission_on_sale' => $request->input('commission_on_sale'),
                     'photo' => $imagePath,
                     'updated_by' => Auth::user()->id
                 ]);

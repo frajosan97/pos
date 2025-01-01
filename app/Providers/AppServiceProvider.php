@@ -3,12 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Branch;
+use App\Models\Permission;
 use App\Models\Catalogue;
 use App\Models\Company;
 use App\Models\Constituency;
 use App\Models\County;
 use App\Models\Location;
-use App\Models\Role;
+use App\Models\Products;
 use App\Models\User;
 use App\Models\Ward;
 use App\Services\RoleFetchService;
@@ -40,9 +41,10 @@ class AppServiceProvider extends ServiceProvider
             'wards' => Ward::all(),
             'locations' => Location::all(),
             'branches' => Branch::all(),
+            'permissions' => Permission::all(),
             'catalogue' => Catalogue::all(),
+            'products' => Products::all(),
             'employees' => User::all(),
-            'roles' => Role::all(),
         ]));
     }
 }

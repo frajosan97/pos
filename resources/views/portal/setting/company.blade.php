@@ -94,7 +94,7 @@
                         </div>
                     </div>
 
-                    <!-- SMS Settings -->
+                    <!-- SMS Settings
                     <h5 class="bg-light p-2 mb-3">SMS Settings</h5>
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -144,8 +144,8 @@
                                 class="form-control"
                                 value="{{ old('sms_api_url', $company->sms_api_url) }}">
                         </div>
-                    </div>
-                    
+                    </div> -->
+
                     <hr>
 
                     <!-- Submit Button -->

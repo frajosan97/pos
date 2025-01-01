@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MpesaPayment;
 use App\Models\Payment;
 use App\Models\Products;
+use App\Models\Commission;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\User;
@@ -29,9 +30,6 @@ class SaleController extends Controller
                     'branch_id' => $request->get('branch'),
                 ];
 
-                // Fetch by catalogue
-                $catalogueFilter = $request->get('catalogue');
-
                 // Build the query
                 $salesQuery = Sale::query();
 
@@ -39,13 +37,6 @@ class SaleController extends Controller
                 foreach ($filters as $key => $value) {
                     $salesQuery->when(!empty($value), function ($query) use ($key, $value) {
                         $query->where($key, $value);
-                    });
-                }
-
-                // Filter by catalogue if provided
-                if (!empty($catalogueFilter)) {
-                    $salesQuery->whereHas('saleItems', function ($query) use ($catalogueFilter) {
-                        $query->where('catalogue_id', $catalogueFilter);
                     });
                 }
 
@@ -138,7 +129,7 @@ class SaleController extends Controller
             // Store each sale item
             foreach ($validated['data']['cart'] as $item) {
                 // Create the sale item record
-                SaleItem::create([
+                $saleItem = SaleItem::create([
                     'sale_id' => $sale->id,
                     'catalogue_id' => $item['product']['catalogue_id'],
                     'product_id' => $item['product']['id'],
@@ -153,6 +144,17 @@ class SaleController extends Controller
                     $product->sold_quantity += $item['quantity']; // Increment the sold quantity
                     $product->quantity -= $item['quantity']; // Decrease the available quantity
                     $product->save(); // Save the updated product
+
+                    // Create the commission record if applicable
+                    if (!empty($product->commission_on_sale)) {
+                        Commission::create([
+                            'user_id' => $validated['user_id'],
+                            'product_id' => $product->id,
+                            'unit_commission' => $product->commission_on_sale,
+                            'quantity_sold' => $item['quantity'],
+                            'commission_amount' => $product->commission_on_sale * $item['quantity'],
+                        ]);
+                    }
                 }
             }
 
@@ -202,6 +204,71 @@ class SaleController extends Controller
         } catch (\Exception $exception) {
             Log::error('Error viewing invoice: ' . $exception->getMessage());
             return redirect()->route('sale.index')->with('error', 'Invoice not found');
+        }
+    }
+
+    public function catalogue(Request $request)
+    {
+        try {
+            return view('portal.sale.catalogue_sale');
+        } catch (\Exception $exception) {
+            Log::error('Error viewing invoice: ' . $exception->getMessage());
+            return redirect()->route('sale.index')->with('error', 'Catalogue not found');
+        }
+    }
+
+    public function product(Request $request)
+    {
+        try {
+            return view('portal.sale.product_sale');
+        } catch (\Exception $exception) {
+            Log::error('Error viewing invoice: ' . $exception->getMessage());
+            return redirect()->route('sale.index')->with('error', 'Product not found');
+        }
+    }
+
+    public function catProFetch(Request $request)
+    {
+        try {
+            if ($request->ajax()) {
+                // Get ajax request filters parameters
+                $filters = [
+                    'category_id' => $request->get('category'),
+                    'product_id' => $request->get('product'),
+                ];
+
+                // Build the query
+                $salesQuery = SaleItem::with('product');
+
+                // Apply filters dynamically using 'when' to avoid explicit checks
+                foreach ($filters as $key => $value) {
+                    $salesQuery->when(!empty($value), function ($query) use ($key, $value) {
+                        $query->where($key, $value);
+                    });
+                }
+
+                // Fetch the sales and map the data
+                $sales = $salesQuery->get()->map(function ($sale) {
+
+                    return [
+                        'product' => ucwords($sale->product->name),
+                        'quantity' => '<div class="text-end">' . number_format($sale->quantity, 2) . '</div>',
+                        'unit_price' => '<div class="text-end">' . number_format($sale->price, 2) . '</div>',
+                        'total_price' => '<div class="text-end">' . number_format($sale->total, 2) . '</div>',
+                        'action' => ''
+                    ];
+                });
+
+                // Return the sales data to DataTables
+                return DataTables::of($sales)
+                    ->rawColumns(['total_billed', 'total_paid', 'total_balance', 'status', 'action'])
+                    ->make(true);
+            } else {
+                return view('portal.sale.index'); // Return the index view if not an AJAX request
+            }
+        } catch (\Exception $exception) {
+            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+            return response()->json(['error' => 'An error occurred while processing your request.'], 500); // Generic error message
         }
     }
 }

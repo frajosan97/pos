@@ -4,7 +4,6 @@
 
 @section('content')
 
-@if(auth()->user()->hasPermission('analytics'))
 
 <!-- control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
@@ -53,10 +52,6 @@
         </div>
     </div>
 </div>
-
-@else
-@include('layouts.partials.no_permission')
-@endif
 
 @endsection
 

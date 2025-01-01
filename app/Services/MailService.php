@@ -43,7 +43,7 @@ class MailService
      * @param \App\Models\User $user
      * @return void
      */
-    public function sendAccRegEmail(User $user): void
+    public function sendAccRegEmail(User $user, string $password = ""): void
     {
         $activationUrl = route('verify.activate', ['email' => $user->email]);
 
@@ -52,7 +52,7 @@ class MailService
             'subject' => 'Welcome to Our Service!',
             'body' => 'Your account has been successfully registered. Here are your details:',
             'more_info' => [
-                'Default Password' => '12345678',
+                'Default Password' => $password,
                 'Activation Link' => '<a href="' . $activationUrl . '">Verify Email</a>'
             ],
             'footer' => 'Please keep this information safe.',

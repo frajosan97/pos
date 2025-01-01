@@ -16,9 +16,10 @@
     <link rel="stylesheet" href="{{ asset('assets/libs/adminlte/css/adminlte.css') }}">
     <style>
         :root {
-            --primary-color: <?php echo $company_info->color ?? 'rgb(201, 40, 0)'; ?>;
+            --primary-color: <?php echo $company_info->color ?? '#990000'; ?>;
         }
     </style>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
     @stack('style')
@@ -83,9 +84,6 @@
                         <div class="info">
                             <a href="{{ route('employee.show',auth()->user()->id) }}" class="d-block text-color fw-bolder text-capitalize">
                                 <h6 class="m-0 fw-bold">{{ auth()->user()->name }}</h6>
-                                @foreach (auth()->user()->roles as $role)
-                                <small>{{ $role->name }}</small>
-                                @endforeach
                             </a>
                         </div>
                     </div>
@@ -149,6 +147,7 @@
     <script src="{{ asset('assets/js/jquery.js') }}"></script>
     <script src="{{ asset('assets/libs/adminlte/js/adminlte.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('assets/js/jquery.validate.min.js') }}"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="{{ asset('assets/libs/dataTables/js/dataTables.js') }}"></script>
