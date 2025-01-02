@@ -15,6 +15,11 @@
                         <!-- Product Image Section -->
                         <div class="col-lg-4 col-md-5">
                             <img src="{{ asset($product->photo) }}" alt="{{ $product->name }}" class="img-fluid rounded shadow-sm w-100">
+                            <hr>
+                            <div style="text-align: center;">
+                                <img src="data:image/png;base64,{{ $barcode }}" alt="Barcode">
+                                <p>{{ $product->barcode }}</p>
+                            </div>
                         </div>
 
                         <!-- Product Details Section -->
@@ -24,8 +29,6 @@
                                 <i class="bi bi-tags"></i>
                                 <strong>Category:</strong> {{ ucwords($product->catalogue->name) }}
                             </p>
-                            <img src="data:image/png;base64,{{ $barcode }}" alt="Barcode">
-                            <p>Barcode: {{ e($product->barcode) }}</p>
 
                             <div class="table-responsive">
                                 <table class="table table-sm table-borderless m-0 text-nowrap">
