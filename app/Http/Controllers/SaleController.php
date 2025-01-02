@@ -148,7 +148,7 @@ class SaleController extends Controller
                     // Create the commission record if applicable
                     if (!empty($product->commission_on_sale)) {
                         Commission::create([
-                            'user_id' => $validated['user_id'],
+                            'user_id' => $created_by,
                             'product_id' => $product->id,
                             'unit_commission' => $product->commission_on_sale,
                             'quantity_sold' => $item['quantity'],
