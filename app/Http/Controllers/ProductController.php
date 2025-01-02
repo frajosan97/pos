@@ -6,6 +6,7 @@ use App\Models\Products;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 use Yajra\DataTables\Facades\DataTables;
 
 class ProductController extends Controller
@@ -177,19 +178,14 @@ class ProductController extends Controller
             // Attempt to find the product
             $product = Products::with('catalogue')->findOrFail($id);
 
+            $generator = new BarcodeGeneratorPNG();
+            $barcode = base64_encode($generator->getBarcode($product->barcode, $generator::TYPE_CODE_128));
+
             // Return the view with the product
-            return view('portal.product.show', compact('product'));
+            return view('portal.product.show', compact('product', 'barcode'));
         } catch (\Exception $exception) {
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
             return response()->json(['error' => $exception->getMessage()], 500);
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

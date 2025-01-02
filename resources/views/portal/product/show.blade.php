@@ -24,6 +24,8 @@
                                 <i class="bi bi-tags"></i>
                                 <strong>Category:</strong> {{ ucwords($product->catalogue->name) }}
                             </p>
+                            <img src="data:image/png;base64,{{ $barcode }}" alt="Barcode">
+                            <p>Barcode: {{ e($product->barcode) }}</p>
 
                             <div class="table-responsive">
                                 <table class="table table-sm table-borderless m-0 text-nowrap">
