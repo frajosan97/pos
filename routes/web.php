@@ -55,7 +55,7 @@ Route::middleware('auth')->group(function () {
     /**
      * Route for the application dashboard.
      */
-    Route::get('/', [SaleController::class, 'create'])->name('/');
+    Route::get('/make-sale', [SaleController::class, 'create'])->name('/');
     Route::get('/analytics', [DashboardController::class, 'index'])->name('analytics.index');
 
     /**
