@@ -89,7 +89,7 @@ class LoginController extends Controller
 
             // return redirect()->route('otp.send-otp');
 
-            return redirect()->route($this->redirectPath())->with('status', 'Login successful.');
+            return redirect()->route('/');
         } catch (\Throwable $th) {
             Log::error('Authentication error: ' . $th->getMessage(), ['file' => $th->getFile(), 'line' => $th->getLine()]);
             Auth::logout();
