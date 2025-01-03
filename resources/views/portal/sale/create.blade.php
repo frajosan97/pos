@@ -37,14 +37,14 @@
                         <select name="sale_type" id="sale_type" class="form-control">
                             <option value="normal_price">Normal Price</option>
                             <option value="whole_sale_price">Whole Salers Price</option>
-                            @if(auth()->user()->hasPermission('data_manager_general'))
+                            @if(auth()->user()->hasPermission('manager_general'))
                             <option value="agent_price">Agents Price</option>
                             @endif
                         </select>
                     </div>
                     <div class="col-md-4 mb-2">
                         <select name="branch_id" id="branch_id" class="form-control">
-                            @if(auth()->user()->hasPermission('data_manager_general'))
+                            @if(auth()->user()->hasPermission('manager_general'))
                             @foreach ($branches as $key => $value)
                             <option value="{{ $value->id }}">{{ $value->name }}</option>
                             @endforeach
