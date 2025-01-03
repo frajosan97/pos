@@ -94,7 +94,7 @@ class PdfController extends Controller
     public function employee(Request $request)
     {
         // Fetch employee data and render it to HTML
-        $employee = User::with(['branch', 'role'])->get();
+        $employee = User::with(['branch'])->get();
         $html = View::make('portal.pdf.employee', compact('employee'))->render();
         $fileName = 'employee';
 
