@@ -14,7 +14,6 @@
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Branch</th>
-                    <th>Role</th>
                     <th>Remarks</th>
                 </tr>
             </thead>
@@ -26,7 +25,6 @@
                     <td style="color: blue;">{{ $value->email }}</td>
                     <td>{{ ucwords($value->phone) }}</td>
                     <td>{{ ucwords($value->branch->name) }}</td>
-                    <td>{{ ucwords(optional($user->roles->first())->name ? ucwords($user->roles->first()->name) : 'No Role Assigned') }}</td>
                     <td></td>
                 </tr>
                 @endforeach
