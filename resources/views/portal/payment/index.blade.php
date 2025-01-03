@@ -7,7 +7,7 @@
 @if(auth()->user()->hasPermission('payment_view'))
 
 <!-- Control buttons -->
-<ul class="nav nav-pills rounded bg-white mb-3">
+<!-- <ul class="nav nav-pills rounded bg-white mb-3">
     <li class="nav-item dropdown">
         <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fas fa-print"></i> Print
@@ -17,7 +17,7 @@
             <li><a href="" class="dropdown-item"><i class="fas fa-file-excel text-success"></i> Excel</a></li>
         </ul>
     </li>
-</ul>
+</ul> -->
 <!-- /Control buttons -->
 
 <div class="row">
