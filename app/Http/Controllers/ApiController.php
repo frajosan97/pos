@@ -49,7 +49,10 @@ class ApiController extends Controller
     public function product(Request $request, string $barcode)
     {
         try {
-            $data = Products::where('barcode', $barcode)->get();
+            $data = Products::where('barcode', $barcode)
+                ->orWhere('name', 'like', '%' . $barcode . '%')
+                ->get();
+
             return response()->json($data, 200);
         } catch (\Exception $exception) {
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
