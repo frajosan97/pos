@@ -76,11 +76,11 @@
                         <i class="fas fa-user-cog"></i> permissions
                     </button>
                 </li>
-                <li class="nav-item" role="presentation">
+                <!-- <li class="nav-item" role="presentation">
                     <button class="nav-link text-capitalize" id="commission-tab" data-bs-toggle="tab" data-bs-target="#commission-tab-pane" type="button" role="tab" aria-controls="commission-tab-pane" aria-selected="false">
                         <i class="fas fa-wallet"></i> commission
                     </button>
-                </li>
+                </li> -->
             </ul>
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade py-3 show active" id="kyc-tab-pane" role="tabpanel" aria-labelledby="kyc-tab" tabindex="0">
@@ -211,7 +211,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="tab-pane fade py-3" id="commission-tab-pane" role="tabpanel" aria-labelledby="commission-tab" tabindex="0">
+                <!-- <div class="tab-pane fade py-3" id="commission-tab-pane" role="tabpanel" aria-labelledby="commission-tab" tabindex="0">
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered table-sm">
                             <thead class="table-primary">
@@ -221,13 +221,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($commission as $key => $value)
 
-                                @endforeach
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> -->
             </div>
 
         </div>
