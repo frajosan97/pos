@@ -216,3 +216,20 @@ if (!function_exists('genPassword')) {
         return substr(str_shuffle($chars), 0, $length);
     }
 }
+
+/**
+ * Get a list of default customer and guarantor photo types and their default images.
+ *
+ * @return array An associative array of photo types and their default images.
+ */
+if (!function_exists('kyc_docs')) {
+    function kyc_docs()
+    {
+        return [
+            'passport_photo' => 'Passport Photo',
+            'id_photo' => 'ID Copy',
+            'kra' => 'KRA PIN Certificate',
+            'police_clearance' => 'PCC (Police Clearance Certificate)',
+        ];
+    }
+}

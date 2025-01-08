@@ -27,6 +27,7 @@ class User extends Authenticatable
         'gender',
         'phone',
         'id_number',
+        'commission_rate',
         'email',
         'status',
         'otp',
@@ -178,5 +179,15 @@ class User extends Authenticatable
     public function commissions(): HasMany
     {
         return $this->hasMany(Commission::class);
+    }
+
+        /**
+     * Get the kyc associated with the user.
+     *
+     * @return HasMany
+     */
+    public function kyc(): HasMany
+    {
+        return $this->hasMany(KYCData::class);
     }
 }

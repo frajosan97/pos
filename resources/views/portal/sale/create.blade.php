@@ -26,12 +26,6 @@
 
                 <!-- Sale setups -->
                 <div class="row">
-                    <!-- <div class="col-md-4 input-group mb-3">
-                        <input type="text" id="customer_id" class="form-control" placeholder="Add customer to sale" aria-label="Recipient's username" aria-describedby="button-addon2">
-                        <button class="btn btn-primary" type="button" id="button-addon2">
-                            <i class="fas fa-user-plus"></i>
-                        </button>
-                    </div> -->
                     <input type="hidden" id="customer_id">
                     <div class="col-md-4 mb-2">
                         <select name="sale_type" id="sale_type" class="form-control">
@@ -117,6 +111,7 @@
 
         // Get data
         var cart = [];
+        let paymentMethods = [];
         var totalPrice = 0;
 
         // Handle barcode input
@@ -246,16 +241,20 @@
                 Swal.fire('No items in cart', 'Please add products to the cart before completing the sale.', 'warning');
                 return;
             } else {
-                // Continue with sale
-                $.ajax({
-                    url: '/api/fetch-data/payment-methods',
-                    method: 'GET',
-                    success: function(data) {
-                        // open div
-                        let content = `<div class="row">`;
-                        // Loop through the fetched payment methods and create buttons
-                        data.forEach(paymentMethod => {
-                            content += `
+                loadPaymentMethods();
+            }
+        });
+
+        function loadPaymentMethods() {
+            $.ajax({
+                url: '/api/fetch-data/payment-methods',
+                method: 'GET',
+                success: function(data) {
+                    // open div
+                    let content = `<div class="row">`;
+                    // Loop through the fetched payment methods and create buttons
+                    data.forEach(paymentMethod => {
+                        content += `
                                 <div class="col">
                                     <button class="btn btn-lg w-100 border selected-payment-method"
                                         data-pay-id="${paymentMethod.id}" 
@@ -265,49 +264,64 @@
                                     </button>
                                 </div>
                             `;
-                        });
-                        // close div
-                        content += `</div>`;
+                    });
+                    // close div
+                    content += `</div>`;
 
-                        // Open SweetAlert modal
-                        Swal.fire({
-                            title: 'Select Payment Method',
-                            icon: 'info',
-                            html: content,
-                            showCancelButton: true,
-                            showConfirmButton: false,
-                            cancelButtonColor: '#d33',
-                            cancelButtonText: 'Cancel Transaction',
-                        });
-                    },
-                    error: function(xhr) {
-                        const errorMessage = xhr.responseJSON?.error || xhr.responseJSON?.message || 'An error occurred while fetching transactions.';
-                        Swal.fire('Error!', errorMessage, 'error');
-                    }
-                });
-            }
-        });
+                    // Open SweetAlert modal
+                    Swal.fire({
+                        title: 'Select Payment Method',
+                        icon: 'info',
+                        html: content,
+                        showCancelButton: true,
+                        showConfirmButton: false,
+                        cancelButtonColor: '#d33',
+                        cancelButtonText: 'Cancel Transaction',
+                    });
+                },
+                error: function(xhr) {
+                    const errorMessage = xhr.responseJSON?.error || xhr.responseJSON?.message || 'An error occurred while fetching transactions.';
+                    Swal.fire('Error!', errorMessage, 'error');
+                }
+            });
+        }
+
+        // Function to calculate the remaining balance
+        function remainingBalance() {
+            // Initialize remaining with totalPrice
+            let remaining = totalPrice;
+
+            // Subtract each payment's amount from the remaining balance
+            paymentMethods.forEach(function(payment) {
+                remaining -= payment.amount;
+            });
+
+            // Return the remaining balance
+            return remaining;
+        }
 
         // Delegate event listener for dynamically created buttons
         $(document).on('click', '.selected-payment-method', function() {
             const payModeId = $(this).data('pay-id');
             const payModeName = $(this).data('pay-name');
 
-            if (payModeName == 'cash') {
-                // Cash payment
+            function showPaymentAlert(paymentMethod) {
+                // Update remaining balance
+                let remainingAmount = remainingBalance();
+
                 Swal.fire({
-                    title: 'Enter amount given by customer',
+                    title: `Enter payment for ${paymentMethod}`,
                     icon: 'info',
                     html: `
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <input type="number" id="amountPaid" class="form-control form-control-lg" placeholder="Enter amount given by customer" required />
-                            </div>
-                            <div class="col-md-12 text-end cash-display mb-3">
-                                Change: <span id="total-change">0.00</span>
-                            </div>
-                        </div>
-                    `,
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <input type="number" id="amountPaid" class="form-control form-control-lg" placeholder="Enter amount" required />
+                    </div>
+                    <div class="col-md-12 text-end cash-display mb-3">
+                        Remaining Amount: <span id="remaining-amount">${remainingAmount}</span>
+                    </div>
+                </div>
+            `,
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
@@ -315,99 +329,106 @@
                     cancelButtonText: 'Cancel Transaction',
                     didOpen: () => {
                         $('#amountPaid').on('keyup', function() {
-                            const amountPaid = $(this).val();
-                            const salePrice = parseInt($('#total-price').text());
-                            const totalChange = parseInt(amountPaid) - parseInt(salePrice);
-                            $('#total-change').text(totalChange);
+                            const amountPaid = parseInt($(this).val()) || 0; // Ensure value is a number
+                            const remaining = remainingAmount - amountPaid;
+                            $('#remaining-amount').text(remaining >= 0 ? remaining : 0);
                         });
                     },
                     preConfirm: () => {
-                        const amountPaid = parseInt($('#amountPaid').val());
+                        // Save payment data for the selected payment method
+                        paymentMethods.push({
+                            payment_method_name: paymentMethod,
+                            amount: amountPaid,
+                            payment_method_id: payModeId
+                        });
 
-                        if (!amountPaid || amountPaid < totalPrice) {
-                            Swal.showValidationMessage(
-                                amountPaid < totalPrice ?
-                                'Amount paid MUST be greater or equal to the Sale total amount' :
-                                'Please enter a valid amount'
-                            );
-                            return false;
-                        }
-
-                        return amountPaid;
+                        return true;
                     }
                 }).then((result) => {
-                    if (result.isConfirmed && result.value) {
-                        // User clicked 'Proceed with payment'
-                        const paymentData = {
-                            cart: cart,
-                            total: totalPrice,
-                            paid: result.value, // Value returned from preConfirm
-                            payment_reference_id: '0',
-                            payment_method: payModeId,
-                            payment_method_name: payModeName,
-                        };
+                    if (result.isConfirmed) {
+                        // Update remaining balance
+                        remainingAmount = remainingBalance();
 
-                        // Initiate final transaction
-                        finalizeSale(paymentData);
-                    } else {
-                        // Do nothing
+                        // If remaining amount is still greater than 0, ask for another payment method
+                        if (remainingAmount > 0) {
+                            Swal.fire({
+                                title: 'Add another payment method?',
+                                text: `Remaining balance: Ksh ${remainingAmount}`,
+                                showCancelButton: true,
+                                confirmButtonText: 'Yes, add payment',
+                                cancelButtonText: 'No, finalize payment'
+                            }).then((res) => {
+                                if (res.isConfirmed) {
+                                    // Load the next available payment methods
+                                    loadPaymentMethods();
+                                } else {
+                                    // Proceed with payment processing
+                                    finalizeSale();
+                                }
+                            });
+                        } else {
+                            // Finalize the payment once the full amount is paid
+                            finalizeSale();
+                        }
                     }
                 });
+            }
+
+            if (payModeName == 'cash') {
+                showPaymentAlert('Cash');
             } else if (payModeName == 'mpesa') {
-                // Mpesa payment
+                // Show M-Pesa transaction selection
                 Swal.fire({
                     title: 'Select M-Pesa Transaction',
                     html: `
-                        <div class="col-md-12">
-                            <table class="table table-sm table-bordered table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>TransId</th>
-                                        <th>TransName</th>
-                                        <th>TransAmnt</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="mpesa-transactions-body">
-                                    <tr>
-                                        <td colspan="4" class="text-center">Loading...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    `,
+                <div class="col-md-12">
+                    <table class="table table-sm table-bordered table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>TransId</th>
+                                <th>TransName</th>
+                                <th>TransAmnt</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mpesa-transactions-body">
+                            <tr>
+                                <td colspan="4" class="text-center">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `,
                     showCancelButton: true,
                     showConfirmButton: false,
                     cancelButtonColor: '#d33',
                     cancelButtonText: 'Cancel Transaction',
                     didOpen: () => {
-                        // Fetch M-Pesa transactions
                         $.ajax({
-                            url: '/api/fetch-data/mpesa-payments', // Replace with your API endpoint
+                            url: '/api/fetch-data/mpesa-payments',
                             type: 'GET',
                             dataType: 'json',
                             success: function(response) {
                                 const tableBody = $('#mpesa-transactions-body');
-                                tableBody.empty(); // Clear any existing rows
-
+                                tableBody.empty();
                                 if (response.length > 0) {
                                     response.forEach(transaction => {
                                         tableBody.append(`
-                                            <tr>
-                                                <td>${transaction.transaction_id}</td>
-                                                <td>${transaction.name}</td>
-                                                <td>${transaction.amount}</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-primary select-transaction" 
-                                                            data-id="${transaction.id}" 
-                                                            data-transaction_id="${transaction.transaction_id}" 
-                                                            data-name="${transaction.name}" 
-                                                            data-amount="${transaction.amount}">
-                                                        Select
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        `);
+                                    <tr>
+                                        <td>${transaction.transaction_id}</td>
+                                        <td>${transaction.name}</td>
+                                        <td>${transaction.amount}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-primary select-transaction" 
+                                                    data-id="${transaction.id}" 
+                                                    data-transaction_id="${transaction.transaction_id}" 
+                                                    data-name="${transaction.name}" 
+                                                    data-amount="${transaction.amount}">
+                                                Select
+                                            </button>
+                                        </td>
+                                    </tr>
+                                `);
                                     });
 
                                     // Bind click event to dynamically added buttons
@@ -420,18 +441,14 @@
                                         };
 
                                         const transactionDetailsHtml = `
-                                            <div class="alert alert-success mt-3" role="alert">
-                                                <h5>Selected Transaction Details</h5>
-                                                <p><strong>Transaction ID:</strong>
-                                                <br>${selectedTransaction.transaction_id}</p>
-                                                <p><strong>Transaction Name:</strong>
-                                                <br>${selectedTransaction.name}</p>
-                                                <p><strong>Transaction Amount:</strong>
-                                                <br>Ksh ${selectedTransaction.amount}</p>
-                                            </div>
-                                        `;
+                                    <div class="alert alert-success mt-3" role="alert">
+                                        <h5>Selected Transaction Details</h5>
+                                        <p><strong>Transaction ID:</strong> ${selectedTransaction.transaction_id}</p>
+                                        <p><strong>Transaction Name:</strong> ${selectedTransaction.name}</p>
+                                        <p><strong>Transaction Amount:</strong> Ksh ${selectedTransaction.amount}</p>
+                                    </div>
+                                `;
 
-                                        // Update SweetAlert with the new content
                                         Swal.fire({
                                             title: 'Transaction Details',
                                             html: transactionDetailsHtml,
@@ -441,31 +458,33 @@
                                             confirmButtonText: 'Proceed with payment',
                                             cancelButtonText: 'Cancel Transaction',
                                             preConfirm: () => {
-                                                return selectedTransaction;
-                                            }
-                                        }).then((result) => {
-                                            if (result.isConfirmed && result.value) {
-                                                // User clicked 'Proceed with payment'
-                                                const paymentData = {
-                                                    cart: cart, // Ensure this variable is available in the scope
-                                                    total: totalPrice, // Ensure this variable is available in the scope
-                                                    paid: result.value.amount,
-                                                    payment_reference_id: result.value.id,
-                                                    payment_method: payModeId,
-                                                    payment_method_name: payModeName,
-                                                };
+                                                // Add M-Pesa payment to array
+                                                paymentMethods.push({
+                                                    payment_method_name: 'mpesa',
+                                                    amount: selectedTransaction.amount,
+                                                    payment_method_id: payModeId
+                                                });
 
-                                                // Initiate final transaction
-                                                finalizeSale(paymentData); // Call your final transaction function
+                                                return true;
+                                            }
+                                        }).then(() => {
+                                            // Update remaining balance
+                                            const remainingAmount = remainingBalance();
+
+                                            // After confirming the payment, check if remaining amount is greater than zero
+                                            if (remainingAmount > 0) {
+                                                loadPaymentMethods(); // Trigger the loading of next payment method
+                                            } else {
+                                                finalizeSale(paymentMethods);
                                             }
                                         });
                                     });
                                 } else {
                                     tableBody.append(`
-                                        <tr>
-                                            <td colspan="4" class="text-center">No recent payment made</td>
-                                        </tr>
-                                    `);
+                                <tr>
+                                    <td colspan="4" class="text-center">No recent payment made</td>
+                                </tr>
+                            `);
                                 }
                             },
                             error: function(xhr) {
@@ -480,11 +499,31 @@
             }
         });
 
-        // Finalise the sale
-        function finalizeSale(data) {
-            var customer_id = $('#customer_id').val();
+        // Finalize the sale
+        function finalizeSale() {
+            var customer_id = '';
             var branch_id = $('#branch_id').val();
+            var data = cart;
+            var paymentData = paymentMethods;
+            var totalAmount = data.total;
+            var totalPaid = 0;
 
+            // Calculate the total amount paid from the payments data
+            paymentData.forEach(function(payment) {
+                totalPaid += payment.amount;
+            });
+
+            // Check if total amount paid is greater than or equal to the total amount
+            if (totalPaid < totalAmount) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'The total amount paid is less than the total bill. Please ensure payment is sufficient before proceeding.',
+                    icon: 'error',
+                });
+                return; // Stop the function execution if payment is insufficient
+            }
+
+            // Proceed with the sale submission if the payment is sufficient
             Swal.fire({
                 title: 'Sale submission',
                 text: 'Are you sure you want to submit this sale?',
@@ -513,6 +552,7 @@
                             customer_id: customer_id,
                             sale_type: getCookie('sale_type') || 'normal_price',
                             branch_id: branch_id,
+                            payments: paymentData,
                             data
                         },
                         success: function(response) {

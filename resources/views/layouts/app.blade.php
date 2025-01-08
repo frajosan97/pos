@@ -20,6 +20,8 @@
         }
     </style>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Include CSS for daterangepicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
     @stack('style')
@@ -148,12 +150,15 @@
     <script src="{{ asset('assets/libs/adminlte/js/adminlte.js') }}"></script>
     <script src="{{ asset('assets/js/bootstrap.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <script src="{{ asset('assets/js/jquery.validate.min.js') }}"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
     <script src="{{ asset('assets/libs/dataTables/js/dataTables.js') }}"></script>
     <script src="{{ asset('assets/libs/dataTables/js/dataTables.bootstrap5.js') }}"></script>
     <script src="{{ asset('assets/js/sweetalert.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ asset('assets/js/select-custom.js') }}"></script>
     <script src="{{ asset('assets/js/app.js') }}"></script>
     @stack('script')
 

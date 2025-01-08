@@ -68,7 +68,7 @@ class ApiController extends Controller
         }
     }
 
-    public function mpesaPaymants(Request $request)
+    public function mpesaPayments(Request $request)
     {
         try {
             $data = MpesaPayment::whereNot('use_status', 'used')->get();

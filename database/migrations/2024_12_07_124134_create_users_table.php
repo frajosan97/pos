@@ -21,6 +21,7 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->string('phone', 15)->unique()->nullable();
             $table->string('id_number', 20)->unique();
+            $table->decimal('commission_rate', 10, 2)->default(5.00)->nullable();
             $table->string('email')->unique()->index();
             $table->timestamp('email_verified_at')->nullable();
             $table->integer('status')->default(1);

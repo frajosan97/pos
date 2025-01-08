@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\KYCData;
 use App\Models\Permission;
+use App\Models\Sale;
+use App\Models\SaleItem;
+use App\Models\Commission;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Services\MailService;
 use Illuminate\Http\Request;
@@ -33,24 +38,24 @@ class EmployeeController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $users = User::with(['branch'])
+                $users = User::with('branch')
                     ->get()
                     ->map(function ($user) {
                         return [
                             'name' => ucwords($user->name),
                             'email' => $user->email,
                             'phone' => $user->phone,
-                            'branch' => ucwords(optional($user->branch)->name),
+                            'branch' => ucwords(optional($user->branch)->name ?? 'N/A'), // Default to 'N/A' if branch is null
                             'status' => $user->email_verified_at ? 'Active' : 'Inactive',
-                            'action' => view('portal.employee.partials.actions', compact('user'))->render(),
+                            'action' => view('portal.employee.partials.actions', ['user' => $user])->render(),
                             'created_at' => $user->created_at->format('Y-m-d H:i:s'),
                         ];
                     });
 
                 return DataTables::of($users)->make(true);
-            } else {
-                return view('portal.employee.index');
             }
+
+            return view('portal.employee.index');
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
@@ -80,6 +85,7 @@ class EmployeeController extends Controller
             'email' => 'required|email|unique:users,email',
             'phone' => 'nullable|string|max:15|unique:users,phone',
             'id_number' => 'required|string|max:20|unique:users,id_number',
+            'commission_rate' => 'required',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
             'viewable_branches' => 'nullable|array',
@@ -104,6 +110,7 @@ class EmployeeController extends Controller
                 'email' => $validatedData['email'],
                 'phone' => $validatedData['phone'],
                 'id_number' => $validatedData['id_number'],
+                'commission_rate' => $validatedData['commission_rate'],
                 'password' => Hash::make($password),
                 'created_by' => Auth::user()->id,
             ]);
@@ -125,6 +132,33 @@ class EmployeeController extends Controller
                     ];
 
                     $user->permissions()->attach($permissionId, $permissionData);
+                }
+            }
+
+            // Add/update any uploaded photo
+            $kyc_docs = kyc_docs();
+
+            // Validate the request data for images dynamically
+            foreach ($kyc_docs as $key => $value) {
+                $validationRules[$key] = 'nullable|image|mimes:jpeg,png,jpg|max:2048'; // Limit to 2MB images
+            }
+
+            $request->validate($validationRules);
+
+            // Store each uploaded photo
+            foreach ($kyc_docs as $key => $value) {
+                if ($request->hasFile($key)) {
+                    // Generate a unique file name
+                    $fileName = $key . '_' . time() . '.' . $request->file($key)->getClientOriginalExtension();
+                    // Move the uploaded file to the public/assets/images/kyc_docs directory
+                    $photoPath = $request->file($key)->move(public_path('assets/images/kyc_docs'), $fileName);
+                    $relativePath = 'assets/images/kyc_docs/' . basename($photoPath);
+
+                    // Update/create
+                    KYCData::updateOrCreate(
+                        ['user_id' => $user->id, 'doc_type' => $key],
+                        ['document' => $relativePath]
+                    );
                 }
             }
 
@@ -153,20 +187,81 @@ class EmployeeController extends Controller
     public function show(Request $request, string $id)
     {
         try {
+            if ($request->ajax()) {
+                // Step 1: Define the filters with default values
+                $filters = [
+                    'created_by' => $id,
+                    'created_at' => $request->get('dates') ?? now()->format('Y-m'), // Default to current month
+                ];
+
+                // Step 2: Initialize the sales query
+                $salesQuery = Sale::query();
+
+                // Step 3: Apply dynamic filters using 'when' method
+                foreach ($filters as $key => $value) {
+                    $salesQuery->when(!empty($value), function ($query) use ($key, $value) {
+                        if ($key === 'created_at') {
+                            // Filter by month (current month by default)
+                            $query->whereYear('created_at', Carbon::parse($value)->year)
+                                ->whereMonth('created_at', Carbon::parse($value)->month);
+                        } else {
+                            $query->where($key, $value);
+                        }
+                    });
+                }
+
+                // Step 4: Fetch the sales IDs for detailed calculations
+                $salesIds = $salesQuery->pluck('id');
+
+                // Step 5: Calculate required statistics
+                $salesCount = $salesQuery->count();
+                $totalRevenue = $salesQuery->sum('total_amount');
+                $totalCost = SaleItem::join('products', 'sale_items.product_id', '=', 'products.id')
+                    ->whereIn('sale_items.sale_id', $salesIds)
+                    ->sum(DB::raw('sale_items.quantity * products.buying_price'));
+                $totalProfit = $totalRevenue - $totalCost;
+
+                // Step 6: Calculate total commission from the 'commissions' table
+                $totalCommission = Commission::whereIn('product_id', SaleItem::whereIn('sale_id', $salesIds)->pluck('product_id'))
+                    ->sum('commission_amount');  // Sum commission amounts for the relevant sales
+
+                // Step 7: Prepare chart data (daily sales for the current year)
+                $dailyData = $salesQuery
+                    ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total_revenue')
+                    ->whereYear('created_at', now()->year)
+                    ->groupBy('date')
+                    ->orderBy('date')
+                    ->get();
+
+                $labels = $dailyData->pluck('date')->map(fn($date) => Carbon::parse($date)->format('M d, Y'))->toArray();
+                $data = $dailyData->pluck('total_revenue')->toArray();
+
+                // Step 8: Prepare helper function for card data
+                $progress = fn($value, $total) => $total > 0 ? round(($value / $total) * 100) : 0;
+                $createCard = fn($icon, $bg, $value, $progress) => compact('icon', 'bg', 'value', 'progress');
+
+                // Step 9: Prepare dashboard cards
+                $cards = [
+                    'no of sales' => $createCard('bi-cart', 'warning', number_format($salesCount), $progress($salesCount, max($salesCount, 100))),
+                    'revenue'        => $createCard('bi-cash-stack', 'info', 'Ksh ' . number_format($totalRevenue, 2), $progress($totalRevenue, $totalRevenue + $totalCost)),
+                    'cost'           => $createCard('bi-credit-card', 'danger', 'Ksh ' . number_format($totalCost, 2), $progress($totalCost, $totalRevenue)),
+                    'profit'         => $createCard('bi-graph-up-arrow', 'success', 'Ksh ' . number_format($totalProfit, 2), $progress($totalProfit, $totalRevenue)),
+                    'commission'     => $createCard('bi-percent', 'primary', 'Ksh ' . number_format($totalCommission, 2), $progress($totalCommission, $totalRevenue)),
+                ];
+
+                // Step 10: Prepare the response
+                $responseData = [
+                    'cards' => $cards
+                ];
+
+                // Return the JSON response
+                return response()->json($responseData, 200);
+            }
+
             // Fetch User with related data (branch and permissions)
-            $user = User::with(['branch', 'permissions'])->findOrFail($id);
+            $user = User::with(['branch', 'permissions', 'kyc', 'commissions'])->findOrFail($id);
 
-            // Calculate total commission (all-time commission)
-            $allTimeCommission = $user->commissions()->sum('commission_amount');
-
-            // Calculate month-to-date commission
-            $currentMonth = now()->month;
-            $monthToDateCommission = $user->commissions()
-                ->whereMonth('created_at', $currentMonth)
-                ->sum('commission_amount');
-
-            // Return the main view with user data and commissions if it's not an AJAX request
-            return view('portal.employee.show', compact('user', 'allTimeCommission', 'monthToDateCommission'));
+            return view('portal.employee.show', compact('user'));
         } catch (\Exception $exception) {
             // Log the exception details
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
@@ -202,6 +297,7 @@ class EmployeeController extends Controller
             'email' => 'required|email|unique:users,email,' . $id,
             'phone' => 'nullable|string|max:15|unique:users,phone,' . $id,
             'id_number' => 'required|string|max:20|unique:users,id_number,' . $id,
+            'commission_rate' => 'required',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id',
             'viewable_branches' => 'nullable|array',
@@ -227,6 +323,7 @@ class EmployeeController extends Controller
                 'email' => $validatedData['email'],
                 'phone' => $validatedData['phone'],
                 'id_number' => $validatedData['id_number'],
+                'commission_rate' => $validatedData['commission_rate'],
                 'updated_by' => Auth::user()->id,
             ]);
 
@@ -251,6 +348,33 @@ class EmployeeController extends Controller
                 }
             }
 
+            // Add/update any uploaded photo
+            $kyc_docs = kyc_docs();
+
+            // Validate the request data for images dynamically
+            foreach ($kyc_docs as $key => $value) {
+                $validationRules[$key] = 'nullable|mimes:jpeg,png,jpg,pdf';
+            }
+
+            $request->validate($validationRules);
+
+            // Store each uploaded photo
+            foreach ($kyc_docs as $key => $value) {
+                if ($request->hasFile($key)) {
+                    // Generate a unique file name
+                    $fileName = $key . '_' . time() . '.' . $request->file($key)->getClientOriginalExtension();
+                    // Move the uploaded file to the public/assets/images/kyc_docs directory
+                    $photoPath = $request->file($key)->move(public_path('assets/images/kyc_docs'), $fileName);
+                    $relativePath = 'assets/images/kyc_docs/' . basename($photoPath);
+
+                    // Update/create
+                    KYCData::updateOrCreate(
+                        ['user_id' => $user->id, 'doc_type' => $key],
+                        ['document' => $relativePath]
+                    );
+                }
+            }
+
             // Commit the transaction
             DB::commit();
 
@@ -262,7 +386,7 @@ class EmployeeController extends Controller
             DB::rollBack();
 
             return response()->json([
-                'error' => 'Failed to update employee. Please try again later.',
+                'error' => 'Failed to update employee.' . $e->getMessage(),
             ], 500);
         }
     }

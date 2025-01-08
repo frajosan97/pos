@@ -97,15 +97,15 @@ class SaleController extends Controller
                 'customer_id' => 'nullable|string',
                 'sale_type' => 'required|string',
                 'branch_id' => 'required|string',
-                'data.total' => 'required|numeric|min:0',
-                'data.paid' => 'required|numeric|min:0',
-                'data.payment_reference_id' => 'string',
-                'data.payment_method' => 'required|string',
-                'data.payment_method_name' => 'required|string',
+                'data.totalAmount' => 'required|numeric|min:0',
                 'data.cart' => 'required|array|min:1',
                 'data.cart.product.*.product_id' => 'required|exists:products,id',
                 'data.cart.product.*.quantity' => 'required|integer|min:1',
                 'data.cart.product.*.price' => 'required|numeric|min:0',
+                'data.payments' => 'required|array|min:1',
+                'data.payments.*.payment_method_name' => 'required|string|in:cash,mpesa',
+                'data.payments.*.amount' => 'required|numeric|min:0',
+                'data.payments.*.payment_method_id' => 'required|integer',
             ]);
 
             // Transaction to ensure data integrity
@@ -121,8 +121,8 @@ class SaleController extends Controller
                 'branch_id' => $validated['branch_id'],
                 'customer_id' => $validated['customer_id'],
                 'sale_type' => $validated['sale_type'],
-                'total_amount' => $validated['data']['total'],
-                'status' => $validated['data']['paid'] >= $validated['data']['total'] ? 'paid' : 'pending',
+                'total_amount' => $validated['data']['totalAmount'],
+                'status' => $validated['data']['paid'] >= $validated['data']['totalAmount'] ? 'paid' : 'pending',
                 'created_by' => $created_by,
             ]);
 
@@ -138,57 +138,61 @@ class SaleController extends Controller
                     'total' => $item['quantity'] * $item['product'][$validated['sale_type']],
                 ]);
 
-                // Update the product sold quantity
-                $product = Products::find($item['product']['id']);
-                if ($product) {
-                    $product->sold_quantity += $item['quantity']; // Increment the sold quantity
-                    $product->quantity -= $item['quantity']; // Decrease the available quantity
-                    $product->save(); // Save the updated product
+                if ($saleItem) {
+                    // Update the product sold quantity
+                    $product = Products::find($item['product']['id']);
+                    if ($product) {
+                        $product->sold_quantity += $item['quantity']; // Increment the sold quantity
+                        $product->quantity -= $item['quantity']; // Decrease the available quantity
+                        $product->save(); // Save the updated product
 
-                    // Create the commission record if applicable
-                    if (!empty($product->commission_on_sale)) {
+                        // Create the commission record if applicable (Selling price - buying price * commission rate)
+                        $commissionEarned = ($item['product'][$validated['sale_type']] - $product->buying_price) * Auth::user()->commission_rate;
                         Commission::create([
                             'user_id' => $created_by,
                             'product_id' => $product->id,
-                            'unit_commission' => $product->commission_on_sale,
+                            'unit_commission' => $commissionEarned,
                             'quantity_sold' => $item['quantity'],
-                            'commission_amount' => $product->commission_on_sale * $item['quantity'],
+                            'commission_amount' => $commissionEarned * $item['quantity'],
                         ]);
                     }
                 }
             }
 
-            // Record the payment
-            $payment = Payment::create([
-                'branch_id' => $validated['branch_id'],
-                'sale_id' => $sale->id,
-                'amount' => $validated['data']['paid'],
-                'payment_method' => $validated['data']['payment_method'],
-                'status' => $validated['data']['paid'] >= $validated['data']['total'] ? 'completed' : 'pending',
-                'payment_date' => now(),
-                'reference_id' => $reference_id,
-            ]);
+            // Process each payment method (Cash, Mpesa, etc.)
+            foreach ($validated['data']['payments'] as $payment) {
+                // Record the payment
+                Payment::create([
+                    'branch_id' => $validated['branch_id'],
+                    'sale_id' => $sale->id,
+                    'amount' => $payment['amount'],
+                    'payment_method' => $payment['payment_method_name'],
+                    'status' => $payment['amount'] >= $validated['data']['totalAmount'] ? 'completed' : 'pending',
+                    'payment_date' => now(),
+                    'reference_id' => $reference_id,
+                ]);
 
-            if ($payment) {
-                if ($request->input('data.payment_method_name') == 'mpesa') {
-                    // Find the mpesa_response_update by ID or fail if not found
+                // If payment method is Mpesa, update the Mpesa record (if applicable)
+                if ($payment['payment_method_name'] == 'mpesa') {
                     $mpesa_response_update = MpesaPayment::findOrFail($reference_id);
-                    // Update the mpesa_response_update name
                     $mpesa_response_update->update([
                         'use_status' => 'used',
                     ]);
                 }
             }
 
+            // Commit the transaction
             DB::commit();
 
             return response()->json(['success' => 'Sale and payment recorded successfully', 'sale_id' => $sale->id], 201);
         } catch (\Exception $exception) {
+            // Rollback in case of an error
             DB::rollBack();
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
             return response()->json(['error' => $exception->getMessage()], 500);
         }
     }
+
 
     /**
      * Show the form for showing a resource.
