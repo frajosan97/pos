@@ -6,6 +6,7 @@ use App\Models\MpesaPayment;
 use App\Models\Payment;
 use App\Models\Products;
 use App\Models\Commission;
+use App\Models\Company;
 use App\Models\Sale;
 use App\Models\SaleItem;
 use App\Models\User;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 use Yajra\DataTables\Facades\DataTables;
 
 class SaleController extends Controller
@@ -97,57 +99,68 @@ class SaleController extends Controller
                 'customer_id' => 'nullable|string',
                 'sale_type' => 'required|string',
                 'branch_id' => 'required|string',
-                'data.totalAmount' => 'required|numeric|min:0',
+                'data.total_price' => 'required|numeric|min:0',
+                'data.total_paid' => 'required|numeric|min:0',
                 'data.cart' => 'required|array|min:1',
-                'data.cart.product.*.product_id' => 'required|exists:products,id',
-                'data.cart.product.*.quantity' => 'required|integer|min:1',
-                'data.cart.product.*.price' => 'required|numeric|min:0',
+                'data.cart.*.quantity' => 'required|integer|min:1',
+                'data.cart.*.product.id' => 'required|exists:products,id',
+                'data.cart.*.product.quantity' => 'required|integer|min:1',
+                'data.cart.*.product.normal_price' => 'required|numeric|min:0',
+                'data.cart.*.product.whole_sale_price' => 'required|numeric|min:0',
+                'data.cart.*.product.agent_price' => 'required|numeric|min:0',
                 'data.payments' => 'required|array|min:1',
-                'data.payments.*.payment_method_name' => 'required|string|in:cash,mpesa',
+                'data.payments.*.id' => 'required|integer',
+                'data.payments.*.name' => 'required|string|in:cash,mpesa',
                 'data.payments.*.amount' => 'required|numeric|min:0',
-                'data.payments.*.payment_method_id' => 'required|integer',
+                'data.payments.*.reference' => 'nullable|string',
             ]);
 
             // Transaction to ensure data integrity
             DB::beginTransaction();
 
-            $reference_id = (!($validated['data']['payment_reference_id'] == '0'))
-                ? $validated['data']['payment_reference_id'] : null;
-            $created_by = (Auth::user()->id)
-                ? Auth::user()->id : null;
+            // prepare reference id
+            $created_by = Auth::id();
 
             // Store the sale
             $sale = Sale::create([
                 'branch_id' => $validated['branch_id'],
                 'customer_id' => $validated['customer_id'],
                 'sale_type' => $validated['sale_type'],
-                'total_amount' => $validated['data']['totalAmount'],
-                'status' => $validated['data']['paid'] >= $validated['data']['totalAmount'] ? 'paid' : 'pending',
+                'total_amount' => $validated['data']['total_price'],
+                'status' => $validated['data']['total_paid'] >= $validated['data']['total_price'] ? 'paid' : 'pending',
                 'created_by' => $created_by,
             ]);
 
             // Store each sale item
             foreach ($validated['data']['cart'] as $item) {
-                // Create the sale item record
-                $saleItem = SaleItem::create([
-                    'sale_id' => $sale->id,
-                    'catalogue_id' => $item['product']['catalogue_id'],
-                    'product_id' => $item['product']['id'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['product'][$validated['sale_type']],
-                    'total' => $item['quantity'] * $item['product'][$validated['sale_type']],
-                ]);
+                $product = Products::find($item['product']['id']);
+                if ($product) {
+                    // Create sale item record
+                    SaleItem::create([
+                        'sale_id' => $sale->id,
+                        'catalogue_id' => $product->catalogue_id,
+                        'product_id' => $product->id,
+                        'quantity' => $item['quantity'],
+                        'price' => $item['product'][$validated['sale_type']],
+                        'total' => $item['quantity'] * $item['product'][$validated['sale_type']],
+                    ]);
 
-                if ($saleItem) {
-                    // Update the product sold quantity
-                    $product = Products::find($item['product']['id']);
-                    if ($product) {
-                        $product->sold_quantity += $item['quantity']; // Increment the sold quantity
-                        $product->quantity -= $item['quantity']; // Decrease the available quantity
-                        $product->save(); // Save the updated product
+                    // Update product stock and sold quantity
+                    $product->decrement('quantity', $item['quantity']);
+                    $product->increment('sold_quantity', $item['quantity']);
 
-                        // Create the commission record if applicable (Selling price - buying price * commission rate)
-                        $commissionEarned = ($item['product'][$validated['sale_type']] - $product->buying_price) * Auth::user()->commission_rate;
+                    $commission_by = Company::first()->commission_by;
+
+                    if (!$commission_by === 'gross_sale') {
+                        switch ($commission_by) {
+                            case 'product':
+                                $commissionEarned = $item['product'][$validated['sale_type']] * $item['product']['commission_on_sale'];
+                                break;
+                            default:
+                                $commissionEarned = ($item['product'][$validated['sale_type']] - $product->buying_price) * Auth::user()->commission_rate;
+                                break;
+                        }
+
                         Commission::create([
                             'user_id' => $created_by,
                             'product_id' => $product->id,
@@ -159,25 +172,36 @@ class SaleController extends Controller
                 }
             }
 
-            // Process each payment method (Cash, Mpesa, etc.)
+            if ($commission_by === 'gross_sale') {
+                $commissionEarned = $validated['data']['total_price'] - $validated['data']['total_paid'] * Auth::user()->commission_rate;
+                Commission::create([
+                    'user_id' => $created_by,
+                    'product_id' => $product->id,
+                    'unit_commission' => $commissionEarned,
+                    'quantity_sold' => '1',
+                    'commission_amount' => $commissionEarned,
+                ]);
+            }
+
+            // Process payments
             foreach ($validated['data']['payments'] as $payment) {
-                // Record the payment
-                Payment::create([
+
+                // Check if payment is mpesa and update the status
+                $reference = $payment['reference'] === 'NULL' ? null : $payment['reference'];
+
+                // Create payment record
+                $currentPayment = Payment::create([
                     'branch_id' => $validated['branch_id'],
                     'sale_id' => $sale->id,
                     'amount' => $payment['amount'],
-                    'payment_method' => $payment['payment_method_name'],
-                    'status' => $payment['amount'] >= $validated['data']['totalAmount'] ? 'completed' : 'pending',
+                    'payment_method_id' => $payment['id'],
+                    'status' => $payment['amount'] >= $validated['data']['total_price'] ? 'completed' : 'pending',
                     'payment_date' => now(),
-                    'reference_id' => $reference_id,
+                    'reference_id' => $reference,
                 ]);
 
-                // If payment method is Mpesa, update the Mpesa record (if applicable)
-                if ($payment['payment_method_name'] == 'mpesa') {
-                    $mpesa_response_update = MpesaPayment::findOrFail($reference_id);
-                    $mpesa_response_update->update([
-                        'use_status' => 'used',
-                    ]);
+                if ($currentPayment && $payment['name'] === 'mpesa') {
+                    MpesaPayment::where('id', $reference)->update(['use_status' => 'used']);
                 }
             }
 
@@ -189,10 +213,9 @@ class SaleController extends Controller
             // Rollback in case of an error
             DB::rollBack();
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
-            return response()->json(['error' => $exception->getMessage()], 500);
+            return response()->json(['error' => 'Message: ' . $exception->getMessage()], 500); // Generic error message
         }
     }
-
 
     /**
      * Show the form for showing a resource.
@@ -203,8 +226,11 @@ class SaleController extends Controller
             // Fetch the sale by its ID, along with related sale items and customer
             $sale = Sale::with(['saleItems.product', 'payments.paymentMethod', 'customer'])->findOrFail($id);
 
+            $generator = new BarcodeGeneratorPNG();
+            $barcode = base64_encode($generator->getBarcode($id, $generator::TYPE_CODE_128));
+
             // Return the invoice view with the sale, total cost, and profit
-            return view('portal.sale.show', compact('sale'));
+            return view('portal.sale.show', compact(['sale', 'barcode']));
         } catch (\Exception $exception) {
             Log::error('Error viewing invoice: ' . $exception->getMessage());
             return redirect()->route('sale.index')->with('error', 'Invoice not found');

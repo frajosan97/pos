@@ -41,8 +41,8 @@
         </div>
 
         <div class="row g-4" id="user-analytics-cards">
-            @for ($i = 0; $i < 5; $i++)
-                <div class="col">
+            @for ($i = 0; $i < 4; $i++)
+                <div class="col-md-3">
                 <div class="card shadow-sm rounded-3 p-3 bg-white placeholder-glow">
                     <div class="card-body p-0 d-flex align-items-center">
                         <div class="col-2 me-3">
@@ -128,6 +128,7 @@
                                         $isImage = @getimagesize($filePath);
                                         @endphp
 
+                                        {{-- Display the document --}}
                                         @if($isImage)
                                         <a href="{{ asset($value->document) }}" target="_blank">
                                             <img src="{{ asset($value->document) }}" alt="" style="max-width: 100px">
@@ -137,6 +138,27 @@
                                             View Document
                                         </a>
                                         @endif
+
+                                        {{-- Display status and approval/rejection actions --}}
+                                        <div class="mt-2">
+                                            @if($value->status === 'approved')
+                                            <span class="badge bg-success">Approved</span>
+                                            @elseif($value->status === 'rejected')
+                                            <span class="badge bg-danger">Rejected</span>
+                                            @else
+                                            <span class="badge bg-warning">Pending Approval</span>
+                                            @if(auth()->user()->hasPermission('manager_general')) {{-- Check user permission --}}
+                                            <div class="mt-2">
+                                                <button class="btn btn-success btn-sm approve-kyc" data-id="{{ $value->id }}">
+                                                    Approve
+                                                </button>
+                                                <button class="btn btn-danger btn-sm reject-kyc" data-id="{{ $value->id }}">
+                                                    Reject
+                                                </button>
+                                            </div>
+                                            @endif
+                                            @endif
+                                        </div>
                                     </td>
                                     @endforeach
 
@@ -259,9 +281,9 @@
                 beforeSend: function() {
                     // Reset cards to skeleton loaders
                     userAnalyticsCards.empty();
-                    for (let i = 0; i < 5; i++) {
+                    for (let i = 0; i < 4; i++) {
                         userAnalyticsCards.append(`
-                            <div class="col">
+                            <div class="col-md-3">
                                 <div class="card shadow-sm rounded-3 p-3 bg-light placeholder-glow">
                                     <div class="card-body p-0 d-flex align-items-center">
                                         <div class="col-2 me-3">
@@ -292,7 +314,7 @@
                         Object.keys(response.cards).forEach(key => {
                             const card = response.cards[key];
                             userAnalyticsCards.append(`
-                                <div class="col">
+                                <div class="col-md-3">
                                     <div class="card shadow-sm analytics-data-card bg-${card.bg} rounded-3 p-3 hover-shadow">
                                         <div class="card-body p-0 d-flex align-items-center">
                                             <div class="col-2 me-3">
@@ -345,6 +367,64 @@
 
                 // Call your analytics function
                 fetchAnalyticsData(picker.startDate.format('YYYY-MM-DD'), picker.endDate.format('YYYY-MM-DD'));
+            });
+        });
+
+        // Handle Approve or Reject KYC
+        $(document).on('click', '.approve-kyc, .reject-kyc', function() {
+            const kycId = $(this).data('id');
+            const action = $(this).hasClass('approve-kyc') ? 'approve' : 'reject'; // Determine action based on button class
+            const actionText = action === 'approve' ? 'approve' : 'reject';
+            const actionTitle = action === 'approve' ? 'Approve KYC' : 'Reject KYC';
+
+            // Confirmation Dialog
+            Swal.fire({
+                title: `${actionTitle}`,
+                text: `Are you sure you want to ${actionText} this KYC?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: action === 'approve' ? '#3085d6' : '#d33',
+                cancelButtonColor: action === 'approve' ? '#d33' : '#3085d6',
+                confirmButtonText: `Yes, ${actionText.charAt(0).toUpperCase() + actionText.slice(1)}`,
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Processing Indicator
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: `Please wait while the KYC is being ${actionText}ed.`,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // AJAX Request
+                    $.ajax({
+                        url: `/kyc/${kycId}/handle`,
+                        type: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        },
+                        data: {
+                            action: action
+                        },
+                        success: function(response) {
+                            // Success Notification
+                            Swal.fire({
+                                title: 'Success',
+                                text: response.message,
+                                icon: 'success',
+                            }).then(() => {
+                                location.reload(); // Reload the page to reflect changes
+                            });
+                        },
+                        error: function(xhr) {
+                            // Error Notification
+                            Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message, 'error');
+                        },
+                    });
+                }
             });
         });
     });

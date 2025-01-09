@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('doc_type')->nullable();
             $table->string('document')->nullable();
+            $table->string('status')->default('pending')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
         });

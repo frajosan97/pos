@@ -59,6 +59,8 @@ class UserSeeder extends Seeder
             'system_setting',
             'system_cache',
             'system_optimization',
+            // Analytics
+            'view_analytics',
         ];
 
         // Step 2: Create and/or get predefined permissions

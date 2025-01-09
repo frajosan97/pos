@@ -28,6 +28,7 @@ class Company extends Model
         'email',
         'logo',
         'color',
+        'commission_by',
         'sms_mode',
         'sms_partner_id',
         'sms_api_key',

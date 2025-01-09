@@ -129,6 +129,8 @@ Route::middleware('auth')->group(function () {
         Route::put('/company/update/{id}', [SettingController::class, 'updateCompany'])->name('setting.company.update');
     });
 
+    Route::post('/kyc/{id}/handle', [EmployeeController::class, 'handleKyc'])->name('kyc.handle');
+
     /**
      * Cache-related routes.
      */

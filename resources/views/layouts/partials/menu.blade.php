@@ -8,6 +8,7 @@
 </li>
 @endif
 
+@if(auth()->user()->hasPermission('view_analytics'))
 <!-- Analytics -->
 <li class="nav-item">
     <a href="{{ route('analytics.index') }}" class="nav-link">
@@ -15,6 +16,7 @@
         <p>Analytics</p>
     </a>
 </li>
+@endif
 
 <!-- Products -->
 @if(auth()->user()->hasPermission('product_view'))

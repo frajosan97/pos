@@ -43,7 +43,8 @@
                             <option value="{{ $value->id }}">{{ $value->name }}</option>
                             @endforeach
                             @else
-                            <option value="{{ auth()->user()->branch?->id }}">{{ auth()->user()->branch?->name }}</option>
+                            <option value="{{ auth()->user()->branch?->id }}">{{ auth()->user()->branch?->name }}
+                            </option>
                             @endif
                         </select>
                     </div>
@@ -54,7 +55,9 @@
                     <span class="mx-2 text-muted">
                         <i class="fas fa-search"></i>
                     </span>
-                    <input type="text" class="form-control border-0" placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode" name="barcode">
+                    <input type="text" class="form-control border-0"
+                        placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode"
+                        name="barcode">
                 </div>
 
                 <!-- Cart Section -->
@@ -82,7 +85,7 @@
                                 <tfoot>
                                     <tr class="font-weight-bold">
                                         <th colspan="4" class="text-end">Totals:</th>
-                                        <th colspan="2">Ksh <span id="total-price">0.00</span></th>
+                                        <th colspan="2" class="text-nowrap">Ksh <span id="total-price">0.00</span></th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -124,11 +127,13 @@
                     success: function(response) {
                         if (response.length > 0) {
                             var product = response[0];
-                            var existingProduct = cart.find(item => item.product.id === product.id);
+                            var existingProduct = cart.find(item => item.product.id === product
+                                .id);
 
                             if (existingProduct) {
                                 existingProduct.quantity++; // Increment quantity
-                                existingProduct.total = existingProduct.quantity * existingProduct.product.price; // Recalculate total
+                                existingProduct.total = existingProduct.quantity *
+                                    existingProduct.product.price; // Recalculate total
                             } else {
                                 cart.push({
                                     product: product,
@@ -137,14 +142,16 @@
                                 });
                             }
                         } else {
-                            Swal.fire('Error!', 'No product found matching the search barcode!', 'error');
+                            Swal.fire('Error!', 'No product found matching the search barcode!',
+                                'error');
                         }
 
                         $('#barcode').val('');
                         updateCart();
                     },
                     error: function(xhr) {
-                        Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message, 'error');
+                        Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message,
+                            'error');
                     }
                 });
             }
@@ -238,7 +245,8 @@
         // Complete the sale
         $('#complete-sale').on('click', function() {
             if (cart.length === 0) {
-                Swal.fire('No items in cart', 'Please add products to the cart before completing the sale.', 'warning');
+                Swal.fire('No items in cart', 'Please add products to the cart before completing the sale.',
+                    'warning');
                 return;
             } else {
                 loadPaymentMethods();
@@ -280,7 +288,8 @@
                     });
                 },
                 error: function(xhr) {
-                    const errorMessage = xhr.responseJSON?.error || xhr.responseJSON?.message || 'An error occurred while fetching transactions.';
+                    const errorMessage = xhr.responseJSON?.error || xhr.responseJSON?.message ||
+                        'An error occurred while fetching transactions.';
                     Swal.fire('Error!', errorMessage, 'error');
                 }
             });
@@ -288,15 +297,13 @@
 
         // Function to calculate the remaining balance
         function remainingBalance() {
-            // Initialize remaining with totalPrice
-            let remaining = totalPrice;
+            let remaining = Number(totalPrice) || 0; // Ensure totalPrice is a number
 
-            // Subtract each payment's amount from the remaining balance
             paymentMethods.forEach(function(payment) {
-                remaining -= payment.amount;
+                const amount = Number(payment.amount) || 0;
+                remaining -= amount;
             });
 
-            // Return the remaining balance
             return remaining;
         }
 
@@ -305,100 +312,89 @@
             const payModeId = $(this).data('pay-id');
             const payModeName = $(this).data('pay-name');
 
-            function showPaymentAlert(paymentMethod) {
-                // Update remaining balance
-                let remainingAmount = remainingBalance();
+            // Function to bind payment
+            function bindPayment(amount, reference = 'NULL') {
+                paymentMethods.push({
+                    id: payModeId,
+                    name: payModeName,
+                    amount: amount,
+                    reference: reference, // Placeholder for reference
+                });
 
+                // Update remaining balance
+                const remainingAmount = remainingBalance();
+
+                // After confirming the payment, check if remaining amount is greater than zero
+                if (remainingAmount > 0) {
+                    Swal.fire({
+                        title: 'Add another payment method?',
+                        text: `You have successfully paid Ksh ${amount}. The remaining balance is Ksh ${remainingAmount}.`,
+                        icon: 'success',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, add payment',
+                        cancelButtonText: 'No, finalize payment'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Load payment methods
+                            loadPaymentMethods();
+                        }
+                    });
+                } else {
+                    finalizeSale();
+                }
+            }
+
+            // Check the payment method selected
+            if (payModeName == 'cash') {
+                // Handle cash payment
                 Swal.fire({
-                    title: `Enter payment for ${paymentMethod}`,
+                    title: `Enter payment for cash payment`,
                     icon: 'info',
                     html: `
-                <div class="row">
-                    <div class="col-md-12 mb-3">
-                        <input type="number" id="amountPaid" class="form-control form-control-lg" placeholder="Enter amount" required />
-                    </div>
-                    <div class="col-md-12 text-end cash-display mb-3">
-                        Remaining Amount: <span id="remaining-amount">${remainingAmount}</span>
-                    </div>
-                </div>
-            `,
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <input type="number" id="amountPaid" class="form-control form-control-lg" placeholder="Enter amount" required />
+                            </div>
+                        </div>
+                    `,
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Proceed with payment',
                     cancelButtonText: 'Cancel Transaction',
-                    didOpen: () => {
-                        $('#amountPaid').on('keyup', function() {
-                            const amountPaid = parseInt($(this).val()) || 0; // Ensure value is a number
-                            const remaining = remainingAmount - amountPaid;
-                            $('#remaining-amount').text(remaining >= 0 ? remaining : 0);
-                        });
-                    },
-                    preConfirm: () => {
-                        // Save payment data for the selected payment method
-                        paymentMethods.push({
-                            payment_method_name: paymentMethod,
-                            amount: amountPaid,
-                            payment_method_id: payModeId
-                        });
-
-                        return true;
-                    }
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // Update remaining balance
-                        remainingAmount = remainingBalance();
-
-                        // If remaining amount is still greater than 0, ask for another payment method
-                        if (remainingAmount > 0) {
-                            Swal.fire({
-                                title: 'Add another payment method?',
-                                text: `Remaining balance: Ksh ${remainingAmount}`,
-                                showCancelButton: true,
-                                confirmButtonText: 'Yes, add payment',
-                                cancelButtonText: 'No, finalize payment'
-                            }).then((res) => {
-                                if (res.isConfirmed) {
-                                    // Load the next available payment methods
-                                    loadPaymentMethods();
-                                } else {
-                                    // Proceed with payment processing
-                                    finalizeSale();
-                                }
-                            });
-                        } else {
-                            // Finalize the payment once the full amount is paid
-                            finalizeSale();
-                        }
+                        // Bind Payment
+                        bindPayment($('#amountPaid').val());
                     }
                 });
-            }
-
-            if (payModeName == 'cash') {
-                showPaymentAlert('Cash');
+            } else if (payModeName == 'card') {
+                // Handle card payment
             } else if (payModeName == 'mpesa') {
-                // Show M-Pesa transaction selection
+                // Handle mpesa payment
                 Swal.fire({
                     title: 'Select M-Pesa Transaction',
                     html: `
-                <div class="col-md-12">
-                    <table class="table table-sm table-bordered table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>TransId</th>
-                                <th>TransName</th>
-                                <th>TransAmnt</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="mpesa-transactions-body">
-                            <tr>
-                                <td colspan="4" class="text-center">Loading...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            `,
+                        <div class="col-md-12">
+                            <table class="table table-sm table-bordered table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>TransId</th>
+                                        <th>TransName</th>
+                                        <th>TransAmnt</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mpesa-transactions-body">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `,
                     showCancelButton: true,
                     showConfirmButton: false,
                     cancelButtonColor: '#d33',
@@ -414,71 +410,56 @@
                                 if (response.length > 0) {
                                     response.forEach(transaction => {
                                         tableBody.append(`
-                                    <tr>
-                                        <td>${transaction.transaction_id}</td>
-                                        <td>${transaction.name}</td>
-                                        <td>${transaction.amount}</td>
-                                        <td>
-                                            <button class="btn btn-sm btn-primary select-transaction" 
-                                                    data-id="${transaction.id}" 
-                                                    data-transaction_id="${transaction.transaction_id}" 
-                                                    data-name="${transaction.name}" 
-                                                    data-amount="${transaction.amount}">
-                                                Select
-                                            </button>
-                                        </td>
-                                    </tr>
-                                `);
+                                            <tr>
+                                                <td>${transaction.transaction_id}</td>
+                                                <td>${transaction.name}</td>
+                                                <td>${transaction.amount}</td>
+                                                <td>
+                                                    <button class="btn btn-sm btn-primary select-transaction" 
+                                                            data-id="${transaction.id}" 
+                                                            data-transaction_id="${transaction.transaction_id}" 
+                                                            data-name="${transaction.name}" 
+                                                            data-amount="${transaction.amount}">
+                                                        Select
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `);
                                     });
 
                                     // Bind click event to dynamically added buttons
-                                    $('#mpesa-transactions-body').on('click', '.select-transaction', function() {
-                                        const selectedTransaction = {
-                                            id: $(this).data('id'),
-                                            transaction_id: $(this).data('transaction_id'),
-                                            name: $(this).data('name'),
-                                            amount: $(this).data('amount')
-                                        };
+                                    $('#mpesa-transactions-body').on('click',
+                                        '.select-transaction',
+                                        function() {
+                                            const selectedTransaction = {
+                                                id: $(this).data('id'),
+                                                transaction_id: $(this).data('transaction_id'),
+                                                name: $(this).data('name'),
+                                                amount: $(this).data('amount')
+                                            };
 
-                                        const transactionDetailsHtml = `
-                                    <div class="alert alert-success mt-3" role="alert">
-                                        <h5>Selected Transaction Details</h5>
-                                        <p><strong>Transaction ID:</strong> ${selectedTransaction.transaction_id}</p>
-                                        <p><strong>Transaction Name:</strong> ${selectedTransaction.name}</p>
-                                        <p><strong>Transaction Amount:</strong> Ksh ${selectedTransaction.amount}</p>
-                                    </div>
-                                `;
+                                            const transactionDetailsHtml = `
+                                                <div class="alert alert-success mt-3" role="alert">
+                                                    <h5>Selected Transaction Details</h5>
+                                                    <p><strong>Transaction ID:</strong> ${selectedTransaction.transaction_id}</p>
+                                                    <p><strong>Transaction Name:</strong> ${selectedTransaction.name}</p>
+                                                    <p><strong>Transaction Amount:</strong> Ksh ${selectedTransaction.amount}</p>
+                                                </div>
+                                            `;
 
-                                        Swal.fire({
-                                            title: 'Transaction Details',
-                                            html: transactionDetailsHtml,
-                                            showCancelButton: true,
-                                            confirmButtonColor: '#3085d6',
-                                            cancelButtonColor: '#d33',
-                                            confirmButtonText: 'Proceed with payment',
-                                            cancelButtonText: 'Cancel Transaction',
-                                            preConfirm: () => {
-                                                // Add M-Pesa payment to array
-                                                paymentMethods.push({
-                                                    payment_method_name: 'mpesa',
-                                                    amount: selectedTransaction.amount,
-                                                    payment_method_id: payModeId
-                                                });
-
-                                                return true;
-                                            }
-                                        }).then(() => {
-                                            // Update remaining balance
-                                            const remainingAmount = remainingBalance();
-
-                                            // After confirming the payment, check if remaining amount is greater than zero
-                                            if (remainingAmount > 0) {
-                                                loadPaymentMethods(); // Trigger the loading of next payment method
-                                            } else {
-                                                finalizeSale(paymentMethods);
-                                            }
+                                            Swal.fire({
+                                                title: 'Transaction Details',
+                                                html: transactionDetailsHtml,
+                                                showCancelButton: true,
+                                                confirmButtonColor: '#3085d6',
+                                                cancelButtonColor: '#d33',
+                                                confirmButtonText: 'Proceed with payment',
+                                                cancelButtonText: 'Cancel Transaction',
+                                            }).then(() => {
+                                                // Bind Payment
+                                                bindPayment(selectedTransaction.amount, selectedTransaction.id);
+                                            });
                                         });
-                                    });
                                 } else {
                                     tableBody.append(`
                                 <tr>
@@ -488,53 +469,62 @@
                                 }
                             },
                             error: function(xhr) {
-                                const errorMessage = xhr.responseJSON?.error || xhr.responseJSON?.message || 'An error occurred while fetching transactions.';
+                                const errorMessage = xhr.responseJSON?.error || xhr
+                                    .responseJSON?.message ||
+                                    'An error occurred while fetching transactions.';
                                 Swal.fire('Error!', errorMessage, 'error');
                             }
                         });
                     }
                 });
             } else {
-                Swal.fire('Error!', 'No payment method found matching your selection, kindly try again!', 'error');
+                Swal.fire('Error!', 'No payment method found matching your selection, kindly try again!',
+                    'error');
             }
         });
 
         // Finalize the sale
         function finalizeSale() {
-            var customer_id = '';
-            var branch_id = $('#branch_id').val();
-            var data = cart;
-            var paymentData = paymentMethods;
-            var totalAmount = data.total;
-            var totalPaid = 0;
+            const branch_id = $('#branch_id').val(); // Branch ID
+            const customer_id = ''; // Placeholder for customer ID
+            let totalPaid = 0;
 
-            // Calculate the total amount paid from the payments data
-            paymentData.forEach(function(payment) {
-                totalPaid += payment.amount;
+            // Calculate the total amount paid
+            paymentMethods.forEach(payment => {
+                const amount = parseFloat(payment.amount) || 0; // Ensure numeric conversion
+                totalPaid += amount;
             });
 
-            // Check if total amount paid is greater than or equal to the total amount
-            if (totalPaid < totalAmount) {
+            const data = {
+                total_price: parseFloat(totalPrice) || 0, // Total price of the sale
+                cart: cart, // Cart items
+                payments: paymentMethods, // Payment methods
+                total_paid: totalPaid, // Total amount paid
+            };
+
+            // Check if total paid is less than the total price
+            if (data.total_paid < data.total_price) {
                 Swal.fire({
-                    title: 'Error',
-                    text: 'The total amount paid is less than the total bill. Please ensure payment is sufficient before proceeding.',
+                    title: 'Payment Error',
+                    text: `The total amount paid (${totalPaid.toFixed(2)}) is less than the total bill (${data.totalAmount.toFixed(2)}). Please ensure full payment is made before proceeding.`,
                     icon: 'error',
                 });
-                return; // Stop the function execution if payment is insufficient
+                return; // Stop execution if payment is insufficient
             }
 
-            // Proceed with the sale submission if the payment is sufficient
+            // Confirmation dialog for sale submission
             Swal.fire({
-                title: 'Sale submission',
+                title: 'Confirm Sale',
                 text: 'Are you sure you want to submit this sale?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
-                confirmButtonText: 'Proceed with payment',
+                confirmButtonText: 'Proceed with Payment',
                 cancelButtonText: 'Cancel Transaction',
-            }).then((result) => {
+            }).then(result => {
                 if (result.isConfirmed) {
+                    // Show loading while processing
                     Swal.fire({
                         title: 'Processing...',
                         text: 'Please wait while we process your request.',
@@ -544,6 +534,7 @@
                         }
                     });
 
+                    // AJAX request to submit the sale
                     $.ajax({
                         url: "{{ route('sale.store') }}",
                         method: 'POST',
@@ -552,22 +543,32 @@
                             customer_id: customer_id,
                             sale_type: getCookie('sale_type') || 'normal_price',
                             branch_id: branch_id,
-                            payments: paymentData,
-                            data
+                            data: data, // Send the prepared data object
                         },
                         success: function(response) {
                             Swal.fire({
-                                title: 'Success',
-                                text: response.success,
+                                title: 'Sale Successful',
+                                text: response.success || 'The sale has been completed successfully.',
                                 icon: 'success',
-                            }).then((result) => {
-                                cart = [];
-                                updateCart();
-                                window.location.href = "{{ route('sale.show', ':sale_id') }}".replace(':sale_id', response.sale_id);
+                            }).then(() => {
+                                cart = []; // Clear cart
+                                paymentMethods = []; // Clear paymentMethods
+                                totalPrice = 0; // Reset total price
+                                updateCart(); // Update UI to reflect cleared cart
+                                const saleUrl = "{{ route('sale.show', ':sale_id') }}".replace(':sale_id', response.sale_id);
+                                window.location.href = saleUrl; // Redirect to sale details
                             });
                         },
                         error: function(xhr) {
-                            Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message, 'error');
+                            Swal.fire({
+                                title: 'Error',
+                                text: xhr.responseJSON?.error || xhr.responseJSON
+                                    ?.message ||
+                                    'An error occurred during the sale submission.',
+                                icon: 'error',
+                            }).then(() => {
+                                paymentMethods = []; // Clear paymentMethods
+                            });
                         }
                     });
                 }
@@ -591,7 +592,8 @@
 
             Swal.fire({
                 title: 'Switch to ' + swalTitle,
-                text: 'Are you sure you want to change the sale type to ' + swalTitle + ' customer?',
+                text: 'Are you sure you want to change the sale type to ' + swalTitle +
+                    ' customer?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',
@@ -612,13 +614,15 @@
                     // Set a cookie for one year
                     var expirationDate = new Date();
                     expirationDate.setFullYear(expirationDate.getFullYear() + 1);
-                    document.cookie = "sale_type=" + sale_type + ";expires=" + expirationDate.toUTCString() + ";path=/";
+                    document.cookie = "sale_type=" + sale_type + ";expires=" + expirationDate
+                        .toUTCString() + ";path=/";
 
                     // Simulate a delay to mimic processing time
                     setTimeout(() => {
                         Swal.fire({
                             title: 'Success',
-                            text: 'The sale type has been successfully changed to ' + swalTitle + '.',
+                            text: 'The sale type has been successfully changed to ' +
+                                swalTitle + '.',
                             icon: 'success',
                             confirmButtonColor: '#3085d6',
                             confirmButtonText: 'OK'

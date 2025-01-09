@@ -188,65 +188,73 @@ class EmployeeController extends Controller
     {
         try {
             if ($request->ajax()) {
-                // Step 1: Define the filters with default values
+                // Step 1: Define filters with default values
                 $filters = [
                     'created_by' => $id,
-                    'created_at' => $request->get('dates') ?? now()->format('Y-m'), // Default to current month
+                    'created_at' => $request->get('dates') ?? now()->format('Y'), // Default to current year
                 ];
 
                 // Step 2: Initialize the sales query
                 $salesQuery = Sale::query();
 
-                // Step 3: Apply dynamic filters using 'when' method
+                // Step 3: Apply dynamic filters using the 'when' method
                 foreach ($filters as $key => $value) {
                     $salesQuery->when(!empty($value), function ($query) use ($key, $value) {
                         if ($key === 'created_at') {
-                            // Filter by month (current month by default)
-                            $query->whereYear('created_at', Carbon::parse($value)->year)
-                                ->whereMonth('created_at', Carbon::parse($value)->month);
+                            // Filter by year (current year by default)
+                            $query->whereYear('created_at', Carbon::parse($value)->year);
                         } else {
                             $query->where($key, $value);
                         }
                     });
                 }
 
-                // Step 4: Fetch the sales IDs for detailed calculations
+                // Step 4: Fetch sales IDs for detailed calculations
                 $salesIds = $salesQuery->pluck('id');
 
-                // Step 5: Calculate required statistics
-                $salesCount = $salesQuery->count();
-                $totalRevenue = $salesQuery->sum('total_amount');
-                $totalCost = SaleItem::join('products', 'sale_items.product_id', '=', 'products.id')
-                    ->whereIn('sale_items.sale_id', $salesIds)
-                    ->sum(DB::raw('sale_items.quantity * products.buying_price'));
-                $totalProfit = $totalRevenue - $totalCost;
+                // Step 5: Calculate commission statistics
+                $allTimeCommission = Commission::whereIn('product_id', SaleItem::whereIn('sale_id', $salesIds)->pluck('product_id'))
+                    ->sum('commission_amount'); // Total commission for all relevant sales
 
-                // Step 6: Calculate total commission from the 'commissions' table
-                $totalCommission = Commission::whereIn('product_id', SaleItem::whereIn('sale_id', $salesIds)->pluck('product_id'))
-                    ->sum('commission_amount');  // Sum commission amounts for the relevant sales
+                $commissionPaid = Commission::whereIn('product_id', SaleItem::whereIn('sale_id', $salesIds)->pluck('product_id'))
+                    ->where('status', 'paid') // Assuming a `status` field tracks payment
+                    ->sum('commission_amount'); // Total paid commission
 
-                // Step 7: Prepare chart data (daily sales for the current year)
-                $dailyData = $salesQuery
-                    ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total_revenue')
-                    ->whereYear('created_at', now()->year)
-                    ->groupBy('date')
-                    ->orderBy('date')
-                    ->get();
+                $commissionPending = $allTimeCommission - $commissionPaid; // Remaining unpaid commission
 
-                $labels = $dailyData->pluck('date')->map(fn($date) => Carbon::parse($date)->format('M d, Y'))->toArray();
-                $data = $dailyData->pluck('total_revenue')->toArray();
+                // Step 6: Calculate the number of sales
+                $salesCount = $salesQuery->count(); // Total number of sales based on the filters
 
-                // Step 8: Prepare helper function for card data
+                // Step 7: Prepare helper function for card data
                 $progress = fn($value, $total) => $total > 0 ? round(($value / $total) * 100) : 0;
                 $createCard = fn($icon, $bg, $value, $progress) => compact('icon', 'bg', 'value', 'progress');
 
-                // Step 9: Prepare dashboard cards
+                // Step 8: Prepare dashboard cards
                 $cards = [
-                    'no of sales' => $createCard('bi-cart', 'warning', number_format($salesCount), $progress($salesCount, max($salesCount, 100))),
-                    'revenue'        => $createCard('bi-cash-stack', 'info', 'Ksh ' . number_format($totalRevenue, 2), $progress($totalRevenue, $totalRevenue + $totalCost)),
-                    'cost'           => $createCard('bi-credit-card', 'danger', 'Ksh ' . number_format($totalCost, 2), $progress($totalCost, $totalRevenue)),
-                    'profit'         => $createCard('bi-graph-up-arrow', 'success', 'Ksh ' . number_format($totalProfit, 2), $progress($totalProfit, $totalRevenue)),
-                    'commission'     => $createCard('bi-percent', 'primary', 'Ksh ' . number_format($totalCommission, 2), $progress($totalCommission, $totalRevenue)),
+                    'no of sales' => $createCard(
+                        'bi-cart',
+                        'info',
+                        number_format($salesCount),
+                        100 // Progress is always 100% for total count
+                    ),
+                    'all commission' => $createCard(
+                        'bi-graph-up',
+                        'primary',
+                        'Ksh ' . number_format($allTimeCommission, 2),
+                        100 // Always 100% for "all time"
+                    ),
+                    'paid commission' => $createCard(
+                        'bi-cash',
+                        'success',
+                        'Ksh ' . number_format($commissionPaid, 2),
+                        $progress($commissionPaid, $allTimeCommission)
+                    ),
+                    'unpaid commission' => $createCard(
+                        'bi-clock',
+                        'warning',
+                        'Ksh ' . number_format($commissionPending, 2),
+                        $progress($commissionPending, $allTimeCommission)
+                    ),
                 ];
 
                 // Step 10: Prepare the response
@@ -421,5 +429,28 @@ class EmployeeController extends Controller
             // Return a general error message
             return response()->json(['error' => $exception->getMessage()], 500);
         }
+    }
+
+    public function handleKyc(Request $request, $id)
+    {
+        // Retrieve the KYC record
+        $kyc = KYCData::findOrFail($id);
+        
+        // Determine action
+        $action = $request->input('action');
+        if ($action === 'approve') {
+            $kyc->status = 'approved';
+            $message = 'KYC has been approved successfully.';
+        } elseif ($action === 'reject') {
+            $kyc->status = 'rejected';
+            $message = 'KYC has been rejected successfully.';
+        } else {
+            return response()->json(['error' => 'Invalid action.'], 400);
+        }
+
+        // Save the updated status
+        $kyc->save();
+
+        return response()->json(['message' => $message]);
     }
 }

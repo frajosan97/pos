@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('email')->unique()->index();
             $table->string('logo')->nullable();
             $table->string('color')->default('red');
+            $table->string('commission_by')->nullable()->default('employee');
             $table->string('sms_mode')->default('online');
             $table->string('sms_partner_id')->nullable();
             $table->string('sms_api_key')->nullable();

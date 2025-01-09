@@ -14,7 +14,7 @@ class Payment extends Model
         'branch_id',
         'sale_id',
         'amount',
-        'payment_method',
+        'payment_method_id',
         'status',
         'payment_date',
         'reference_id',
@@ -34,7 +34,7 @@ class Payment extends Model
     // Corrected relationship to PaymentMethod
     public function paymentMethod()
     {
-        return $this->belongsTo(PaymentMethod::class, 'payment_method');
+        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
     }
 
     public function mpesaPayment()
