@@ -85,7 +85,10 @@ class SmsService
             return $response;
         } catch (\Exception $e) {
             // Log any exceptions that occur during the process
-            Log::error('Error while sending SMS', ['error' => $e->getMessage()]);
+            // Log::error('Error while sending SMS', ['error' => $e->getMessage()]);
+            Log::info('SMS Payload', ['payload' => $payload]);
+            Log::info('Headers', ['headers' => ['Content-Type' => 'application/json']]);
+
             return false;
         }
     }

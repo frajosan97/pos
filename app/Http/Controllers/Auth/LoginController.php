@@ -67,29 +67,29 @@ class LoginController extends Controller
                 return redirect()->back()->with('error', 'Your account is pending verification. <br><a href="/verify/resend-activation-link">Resend verification link</a>');
             }
 
-            $verifyMethods = [
-                [
-                    'method' => 'email',
-                    'label' => 'Send code to my email',
-                    'icon' => 'fas fa-envelope',
-                    'value' => obfuscateEmail($user->email),
-                ],
-                [
-                    'method' => 'phone',
-                    'label' => 'Send code to my phone',
-                    'icon' => 'fas fa-sms',
-                    'value' => obfuscatePhone($user->phone),
-                ],
-            ];
+            // $verifyMethods = [
+            //     [
+            //         'method' => 'email',
+            //         'label' => 'Send code to my email',
+            //         'icon' => 'fas fa-envelope',
+            //         'value' => obfuscateEmail($user->email),
+            //     ],
+            //     [
+            //         'method' => 'phone',
+            //         'label' => 'Send code to my phone',
+            //         'icon' => 'fas fa-sms',
+            //         'value' => obfuscatePhone($user->phone),
+            //     ],
+            // ];
 
-            Session::put('verify_methods', $verifyMethods);
-            Session::put('otp_user_id', $user->id);
+            // Session::put('verify_methods', $verifyMethods);
+            // Session::put('otp_user_id', $user->id);
 
-            Auth::logout();
+            // Auth::logout();
 
-            return redirect()->route('otp.send-otp');
+            // return redirect()->route('otp.send-otp');
 
-            // return redirect()->route($this->redirectPath())->with('status', 'Login successful.');
+            return redirect()->route($this->redirectPath())->with('status', 'Login successful.');
         } catch (\Throwable $th) {
             Log::error('Authentication error: ' . $th->getMessage(), ['file' => $th->getFile(), 'line' => $th->getLine()]);
             Auth::logout();
@@ -201,7 +201,7 @@ class LoginController extends Controller
         try {
             $request->validate([
                 'old_password' => 'required|string',
-                'password' => ['required', 'string', Password::min(8)->letters()->numbers()->mixedCase()->symbols(), 'confirmed'],
+                'password' => 'required|string',
             ]);
 
             $user = User::where('email', $email)->first();

@@ -25,10 +25,10 @@
 
         <!-- Company Logo and Information -->
         <div class="text-center">
-            <img src="{{ asset(getImage($company_info->logo, 'logo.png')) }}" alt="Company Logo" style="width: 60px; height: auto;">
-            <h4 class="m-0">{{ $company_info->name }}</h4>
+            <img src="{{ asset(getImage($company_info->logo, 'logo.png')) }}"
+                alt="Company Logo" style="width: 100px; height: auto;">
             <p class="m-0">{{ $company_info->address }}</p>
-            <p class="m-0">{{ $company_info->email }} | Tel: {{ $company_info->phone }}</p>
+            <p class="m-0">{{ $company_info->email }}</p>
         </div>
 
         <!-- Divider Line -->
@@ -122,7 +122,9 @@
         </div>
 
         <!-- Footer Message -->
+        <p class="text-center m-0">+254785933333 | {{ $company_info->phone }}</p>
         <p class="text-center m-0">THANK YOU FOR SHOPPING WITH US!</p>
+
         <p class="text-center m-0">Visit Again or Check Out Our Loyalty Program.</p>
     </div>
 </div>

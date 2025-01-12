@@ -40,10 +40,10 @@ class MpesaApiHandleController extends Controller
 
             // Extract data from the decoded response
             $transactionId = $decodedResponse['TransID'];
-            $name = $decodedResponse['lastName'];
+            $name = $decodedResponse['LastName'];
             $amount = $decodedResponse['TransAmount'];
             $phoneNumber = '0700000000';
-            $shortCode = $decodedResponse['shortCode'];
+            $shortCode = $decodedResponse['BusinessShortCode'];
             $status = 'success';
 
             // Store successful payment response
