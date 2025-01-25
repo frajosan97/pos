@@ -2,7 +2,7 @@
 == PAGE CUSTOM JAVASCRIPT
 =========================================================================*/
 
-// jQuery validation
+// jQuery validation defaults
 jQuery.validator.setDefaults({
     errorElement: 'div',
     errorClass: 'invalid-feedback',
@@ -14,9 +14,10 @@ jQuery.validator.setDefaults({
     }
 });
 
+// Handle County change event
 $('#county').change(function () {
-    // Selected County
     var county_id = $(this).val();
+
     // Fetch constituencies
     $.ajax({
         url: '/api/fetch-data/constituency/' + county_id,
@@ -25,6 +26,7 @@ $('#county').change(function () {
             $('#constituency').empty().append('<option value="">--Select Constituency--</option>');
             $('#ward').empty().append('<option value="">--Select Ward--</option>');
             $('#location').empty().append('<option value="">--Select Location--</option>');
+
             $.each(response, function (key, value) {
                 $('#constituency').append('<option value="' + value.id + '">' + value.name + '</option>');
             });
@@ -35,16 +37,18 @@ $('#county').change(function () {
     });
 });
 
+// Handle Constituency change event
 $('#constituency').change(function () {
-    // Selected constituency
     var constituency_id = $(this).val();
-    // Fetch constituencies
+
+    // Fetch wards
     $.ajax({
         url: '/api/fetch-data/ward/' + constituency_id,
         method: 'GET',
         success: function (response) {
             $('#ward').empty().append('<option value="">--Select Ward--</option>');
             $('#location').empty().append('<option value="">--Select Location--</option>');
+
             $.each(response, function (key, value) {
                 $('#ward').append('<option value="' + value.id + '">' + value.name + '</option>');
             });
@@ -55,15 +59,17 @@ $('#constituency').change(function () {
     });
 });
 
+// Handle Ward change event
 $('#ward').change(function () {
-    // Selected ward
     var ward_id = $(this).val();
-    // Fetch constituencies
+
+    // Fetch locations
     $.ajax({
         url: '/api/fetch-data/location/' + ward_id,
         method: 'GET',
         success: function (response) {
             $('#location').empty().append('<option value="">--Select Location--</option>');
+
             $.each(response, function (key, value) {
                 $('#location').append('<option value="' + value.id + '">' + value.name + '</option>');
             });
@@ -74,10 +80,10 @@ $('#ward').change(function () {
     });
 });
 
-// Password view
+// Toggle password visibility
 $('#show-password-icon').click(function () {
     var passwordInput = $('#password');
-    var icon = $(this); // Corrected line
+    var icon = $(this);
 
     if (passwordInput.attr('type') === 'password') {
         passwordInput.attr('type', 'text');
@@ -88,6 +94,7 @@ $('#show-password-icon').click(function () {
     }
 });
 
+// Get cookie by name
 function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -95,10 +102,13 @@ function getCookie(name) {
     return null;
 }
 
+// Print div content
 function printDiv(divId) {
     var divContents = $('#' + divId).html();
     var originalContents = $('body').html();
+
     $('body').html(divContents);
     window.print();
+
     $('body').html(originalContents);
 }

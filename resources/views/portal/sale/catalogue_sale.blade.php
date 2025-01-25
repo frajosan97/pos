@@ -33,7 +33,6 @@
                                 <th>Quantity</th>
                                 <th>Unit Price</th>
                                 <th>Total Price</th>
-                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -75,9 +74,9 @@
             ajax: {
                 url: "{{ route('sale.cat_pro_fetch') }}",
                 data: function(d) {
-                    d.branch = $('#branch').val();
-                    d.catalogue = $('#catalogue').val();
-                    d.employee = $('#employee').val();
+                    d.branch = $('.filter-branch.active').data('value');
+                    d.catalogue = $('.filter-catalogue.active').data('value');
+                    d.employee = $('.filter-employee.active').data('value');
                 }
             },
             columns: [{
@@ -95,12 +94,6 @@
                 {
                     data: 'total_price',
                     name: 'total_price'
-                },
-                {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
                 }
             ],
             drawCallback: function(settings) {
@@ -140,7 +133,12 @@
         });
 
         // Trigger DataTable reload on filter change
-        $('#catalogue, #product').on('change', function() {
+        $(document).on('click', '.filter-employee, .filter-branch, .filter-catalogue, .filter-product', function(e) {
+            e.preventDefault();
+            var filterClass = '.' + $(this).attr('class').split(' ')[0];
+
+            $(filterClass).removeClass('active');
+            $(this).addClass('active');
             table.ajax.reload();
         });
 

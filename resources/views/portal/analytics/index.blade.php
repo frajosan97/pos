@@ -65,7 +65,13 @@
         fetchAnalyticsData();
 
         // Trigger DataTable reload on filter change
-        $('#employee, #branch, #catalogue').on('change', function() {
+        // Trigger DataTable reload on filter change
+        $(document).on('click', '.filter-employee, .filter-branch, .filter-catalogue, .filter-product', function(e) {
+            e.preventDefault();
+            var filterClass = '.' + $(this).attr('class').split(' ')[0];
+
+            $(filterClass).removeClass('active');
+            $(this).addClass('active');
             fetchAnalyticsData();
         });
 
@@ -74,9 +80,9 @@
                 url: "{{ route('analytics.index') }}",
                 type: 'GET',
                 data: {
-                    branch: $('#branch').val(),
-                    catalogue: $('#catalogue').val(),
-                    employee: $('#employee').val(),
+                    branch: $('.filter-branch.active').data('value'),
+                    catalogue: $('.filter-catalogue.active').data('value'),
+                    employee: $('.filter-employee.active').data('value'),
                 },
                 headers: {
                     'X-CSRF-TOKEN': csrfToken

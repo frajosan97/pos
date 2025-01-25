@@ -291,7 +291,7 @@ class SaleController extends Controller
 
                 // Return the sales data to DataTables
                 return DataTables::of($sales)
-                    ->rawColumns(['total_billed', 'total_paid', 'total_balance', 'status', 'action'])
+                    ->rawColumns(['product', 'quantity', 'unit_price', 'total_price', 'action'])
                     ->make(true);
             } else {
                 return view('portal.sale.index'); // Return the index view if not an AJAX request

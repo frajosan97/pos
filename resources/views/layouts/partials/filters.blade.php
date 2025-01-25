@@ -1,71 +1,79 @@
 @if(auth()->user()->hasPermission('manager_self'))
-<li class="nav-item dropdown d-flex align-items-center">
-    <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-    <select name="employee" id="employee" class="form-control border-0">
-        @foreach ($employees as $key => $value)
-        <option value="{{ $value->id }}"
-            {{ ($value->id == auth()->user()->id) ? 'selected' : '' }}>
-            {{ ucwords($value->name) }}
-        </option>
-        @endforeach
-    </select>
+<li class="nav-item dropdown d-flex align-items-center mx-2">
+    <a href="#" class="nav-link p-0 dropdown-toggle" id="employeeDropdown" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-filter"></i> <span class="ms-1">Employee</span>
+    </a>
+    <ul class="dropdown-menu">
+        <li>
+            <a class="dropdown-item filter-employee" href="#" data-value="{{ auth()->user()->id }}">
+                {{ ucwords(auth()->user()->name) }}
+            </a>
+        </li>
+    </ul>
 </li>
 @endif
 
 @if(auth()->user()->hasPermission('manager_branch'))
-<li class="nav-item dropdown d-flex align-items-center">
-    <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-    <select name="branch" id="branch" class="form-control border-0">
+<li class="nav-item dropdown d-flex align-items-center mx-2">
+    <a href="#" class="nav-link p-0 dropdown-toggle" id="branchDropdown" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-filter"></i> <span class="ms-1">Branch</span>
+    </a>
+    <ul class="dropdown-menu">
         @foreach ($branches as $key => $value)
         @if(in_array($value->id, auth()->user()->selectedBranches()->pluck('id')->toArray()))
-        <option value="{{ $value->id }}">
-            {{ ucwords($value->name) }}
-        </option>
+        <li><a class="dropdown-item filter-branch" href="#" data-value="{{ $value->id }}">{{ ucwords($value->name) }}</a></li>
         @endif
         @endforeach
-    </select>
+    </ul>
 </li>
 @endif
 
 @if(auth()->user()->hasPermission('manager_general'))
-<li class="nav-item dropdown d-flex align-items-center">
-    <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-    <select name="employee" id="employee" class="form-control border-0">
-        <option value="">All Employees</option>
+<li class="nav-item dropdown d-flex align-items-center mx-2">
+    <a href="#" class="nav-link p-0 dropdown-toggle" id="allEmployeesDropdown" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-filter"></i> <span class="ms-1">All Employees</span>
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item filter-employee" href="#" data-value="">All Employees</a></li>
         @foreach ($employees as $key => $value)
-        <option value="{{ $value->id }}">
-            {{ ucwords($value->name) }}
-        </option>
+        <li><a class="dropdown-item filter-employee" href="#" data-value="{{ $value->id }}">{{ ucwords($value->name) }}</a></li>
         @endforeach
-    </select>
+    </ul>
 </li>
-<li class="nav-item dropdown d-flex align-items-center">
-    <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-    <select name="branch" id="branch" class="form-control border-0">
-        <option value="">All Branches</option>
+
+<li class="nav-item dropdown d-flex align-items-center mx-2">
+    <a href="#" class="nav-link p-0 dropdown-toggle" id="allBranchesDropdown" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-filter"></i> <span class="ms-1">All Branches</span>
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item filter-branch" href="#" data-value="">All Branches</a></li>
         @foreach ($branches as $key => $value)
-        <option value="{{ $value->id }}">
-            {{ ucwords($value->name) }}
-        </option>
+        <li><a class="dropdown-item filter-branch" href="#" data-value="{{ $value->id }}">{{ ucwords($value->name) }}</a></li>
         @endforeach
-    </select>
+    </ul>
 </li>
-<li class="nav-item dropdown d-flex align-items-center">
-    <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-    <select name="catalogue" id="catalogue" class="form-control border-0">
-        <option value="">All Brands</option>
+
+<li class="nav-item dropdown d-flex align-items-center mx-2">
+    <a href="#" class="nav-link p-0 dropdown-toggle" id="catalogueDropdown" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-filter"></i> <span class="ms-1">Catalogue</span>
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item filter-catalogue" href="#" data-value="">All Brands</a></li>
         @foreach ($catalogue as $key => $value)
-        <option value="{{ $value->id }}">{{ ucwords($value->name) }}</option>
+        <li><a class="dropdown-item filter-catalogue" href="#" data-value="{{ $value->id }}">{{ ucwords($value->name) }}</a></li>
         @endforeach
-    </select>
+    </ul>
 </li>
-<li class="nav-item dropdown d-flex align-items-center">
-    <a href="" class="nav-link p-0"><i class="fas fa-filter"></i></a>
-    <select name="product" id="product" class="form-control border-0">
-        <option value="">All Product</option>
+
+<li class="nav-item dropdown d-flex align-items-center mx-2">
+    <a href="#" class="nav-link p-0 dropdown-toggle" id="productDropdown" role="button" data-bs-toggle="dropdown">
+        <i class="fas fa-filter"></i> <span class="ms-1">Products</span>
+    </a>
+    <ul class="dropdown-menu">
+        <li><a class="dropdown-item filter-product" href="#" data-value="">All Products</a></li>
         @foreach ($products as $key => $value)
-        <option value="{{ $value->id }}">{{ ucwords($value->name) }}</option>
+        <li><a class="dropdown-item filter-product" href="#" data-value="{{ $value->id }}">{{ ucwords($value->name) }}</a></li>
         @endforeach
-    </select>
+    </ul>
 </li>
 @endif

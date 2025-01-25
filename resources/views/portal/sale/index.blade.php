@@ -87,9 +87,9 @@
             ajax: {
                 url: "{{ route('sale.index') }}",
                 data: function(d) {
-                    d.branch = $('#branch').val();
-                    d.catalogue = $('#catalogue').val();
-                    d.employee = $('#employee').val();
+                    d.branch = $('.filter-branch.active').data('value');
+                    d.catalogue = $('.filter-catalogue.active').data('value');
+                    d.employee = $('.filter-employee.active').data('value');
                 }
             },
             columns: [{
@@ -160,7 +160,12 @@
         });
 
         // Trigger DataTable reload on filter change
-        $('#employee, #branch, #catalogue').on('change', function() {
+        $(document).on('click', '.filter-employee, .filter-branch, .filter-catalogue, .filter-product', function(e) {
+            e.preventDefault();
+            var filterClass = '.' + $(this).attr('class').split(' ')[0];
+
+            $(filterClass).removeClass('active');
+            $(this).addClass('active');
             table.ajax.reload();
         });
 
