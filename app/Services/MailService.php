@@ -18,8 +18,8 @@ class MailService
     public function sendEmail(array $details): bool
     {
         try {
-            $fromEmail = env('MAIL_FROM_ADDRESS', 'info@yourdomain.com');
-            $fromName = env('MAIL_FROM_NAME', 'Our Service');
+            $fromEmail = env('MAIL_FROM_ADDRESS', 'pos@atricare.co.ke');
+            $fromName = env('MAIL_FROM_NAME', 'ATRICARE POS');
 
             Mail::send('layouts.email', ['details' => $details], function ($message) use ($details, $fromEmail, $fromName) {
                 $message->from($fromEmail, $fromName);
