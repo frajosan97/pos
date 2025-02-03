@@ -511,20 +511,26 @@
                                 tableBody.empty();
 
                                 if (response.length > 0) {
+                                    // Gather all transaction_ids from paymentMethods
+                                    const paidTransactionIds = paymentMethods.map(payment => payment.transaction_id);
+
+                                    // Loop through each transaction and append it to the table if it's not already paid
                                     response.forEach(transaction => {
-                                        tableBody.append(`
-                                            <tr class="transaction-row cursor-pointer" 
-                                                data-id="${transaction.id}" 
-                                                data-transaction_id="${transaction.transaction_id}" 
-                                                data-name="${transaction.name}" 
-                                                data-phone="${transaction.phone}" 
-                                                data-amount="${transaction.amount}">
-                                                <td>${transaction.transaction_id}</td>
-                                                <td>${transaction.name}</td>
-                                                <td>${transaction.phone}</td>
-                                                <td>${transaction.amount}</td>
-                                            </tr>
-                                        `);
+                                        if (!paidTransactionIds.includes(transaction.transaction_id)) {
+                                            tableBody.append(`
+                                                <tr class="transaction-row cursor-pointer" 
+                                                    data-id="${transaction.id}" 
+                                                    data-transaction_id="${transaction.transaction_id}" 
+                                                    data-name="${transaction.name}" 
+                                                    data-phone="${transaction.phone}" 
+                                                    data-amount="${transaction.amount}">
+                                                    <td>${transaction.transaction_id}</td>
+                                                    <td>${transaction.name}</td>
+                                                    <td>${transaction.phone}</td>
+                                                    <td>${transaction.amount}</td>
+                                                </tr>
+                                            `);
+                                        }
                                     });
 
                                     // Bind click event to dynamically added rows
