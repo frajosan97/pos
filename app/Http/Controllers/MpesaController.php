@@ -154,7 +154,7 @@ class MpesaController extends Controller
                 $metadata = collect($callbackData['CallbackMetadata']['Item'])->pluck('Value', 'Name');
 
                 $transactionId = $metadata['MpesaReceiptNumber'] ?? null;
-                $name = $metadata['LastName'] ?? null;
+                $name = $metadata['LastName'] ?? 'Unknown';
                 $amount = $metadata['Amount'] ?? null;
                 $phoneNumber = $metadata['PhoneNumber'] ?? null;
                 $shortCode = '650';
