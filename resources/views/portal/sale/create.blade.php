@@ -512,11 +512,11 @@
 
                                 if (response.length > 0) {
                                     // Gather all transaction_ids from paymentMethods
-                                    const paidTransactionIds = paymentMethods.map(payment => payment.transaction_id);
+                                    const paidTransactionIds = paymentMethods.map(payment => payment.id);
 
                                     // Loop through each transaction and append it to the table if it's not already paid
                                     response.forEach(transaction => {
-                                        if (!paidTransactionIds.includes(transaction.transaction_id)) {
+                                        if (!paidTransactionIds.includes(transaction.id)) {
                                             tableBody.append(`
                                                 <tr class="transaction-row cursor-pointer" 
                                                     data-id="${transaction.id}" 
