@@ -127,23 +127,29 @@
                     success: function(response) {
                         if (response.length > 0) {
                             var product = response[0];
-                            var existingProduct = cart.find(item => item.product.id === product
-                                .id);
+                            var existingProduct = cart.find(item => item.product.id === product.id);
 
+                            // Check if available quantity is sufficient
                             if (existingProduct) {
-                                existingProduct.quantity++; // Increment quantity
-                                existingProduct.total = existingProduct.quantity *
-                                    existingProduct.product.price; // Recalculate total
+                                if (existingProduct.quantity + 1 <= product.quantity) {
+                                    existingProduct.quantity++; // Increment quantity
+                                    existingProduct.total = existingProduct.quantity * existingProduct.product.price; // Recalculate total
+                                } else {
+                                    Swal.fire('Error!', 'Not enough stock available for this product!', 'error');
+                                }
                             } else {
-                                cart.push({
-                                    product: product,
-                                    quantity: 1,
-                                    total: product.price
-                                });
+                                if (product.quantity > 0) {
+                                    cart.push({
+                                        product: product,
+                                        quantity: 1,
+                                        total: product.price
+                                    });
+                                } else {
+                                    Swal.fire('Error!', 'Product is out of stock!', 'error');
+                                }
                             }
                         } else {
-                            Swal.fire('Error!', 'No product found matching the search barcode!',
-                                'error');
+                            Swal.fire('Error!', 'No product found matching the search barcode!', 'error');
                         }
 
                         $('#barcode').val('');
@@ -193,12 +199,13 @@
                             <td>${item.product.name}</td>
                             <td>Ksh ${price}</td>
                             <td>
-                                <input type="number" value="${item.quantity}" min="1" class="form-control quantity-input" data-id="${item.product.id}">
+                                <input type="number" value="${item.quantity}" min="1" class="form-control quantity-input" data-id="${item.product.id}" hidden />
+                                ${item.quantity}
                             </td>
                             <td>Ksh ${total}</td>
                             <td>
                                 <button class="btn btn-outline-danger remove-item w-100" data-id="${item.product.id}">
-                                    <i class="fas fa-trash-alt"></i>
+                                    <i class="fas fa-times-circle"></i>
                                 </button>
                             </td>
                         </tr>
@@ -222,18 +229,18 @@
             $('#total-price').text(totalPrice.toFixed(2));
         }
 
-        // Update quantity in cart
-        $('#cart-table').on('change', '.quantity-input', function() {
-            var productId = $(this).data('id');
-            var quantity = parseInt($(this).val());
-            var product = cart.find(item => item.product.id === productId);
+        // // Update quantity in cart
+        // $('#cart-table').on('change', '.quantity-input', function() {
+        //     var productId = $(this).data('id');
+        //     var quantity = parseInt($(this).val());
+        //     var product = cart.find(item => item.product.id === productId);
 
-            if (product) {
-                product.quantity = quantity;
-                product.total = quantity * product.product.price;
-                updateCart();
-            }
-        });
+        //     if (product) {
+        //         product.quantity = quantity;
+        //         product.total = quantity * product.product.price;
+        //         updateCart();
+        //     }
+        // });
 
         // Remove item from cart
         $('#cart-table').on('click', '.remove-item', function() {
@@ -375,24 +382,50 @@
             } else if (payModeName == 'mpesa') {
                 // Handle mpesa payment
                 Swal.fire({
-                    title: 'Select M-Pesa Transaction',
+                    title: 'M-Pesa Payments',
                     html: `
-                        <div class="col-md-12">
-                            <table class="table table-sm table-bordered table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>TransId</th>
-                                        <th>TransName</th>
-                                        <th>TransAmnt</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="mpesa-transactions-body">
-                                    <tr>
-                                        <td colspan="4" class="text-center">Loading...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <nav>
+                            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                                <button class="nav-link active" id="nav-recent-transactions-tab" data-bs-toggle="tab" data-bs-target="#nav-recent-transactions" type="button" role="tab" aria-controls="nav-recent-transactions" aria-selected="true">
+                                    Transactions
+                                </button>
+                                <button class="nav-link" id="nav-initiate-transaction-tab" data-bs-toggle="tab" data-bs-target="#nav-initiate-transaction" type="button" role="tab" aria-controls="nav-initiate-transaction" aria-selected="false">
+                                    STK Push
+                                </button>
+                            </div>
+                        </nav>
+
+                        <div class="tab-content border mt-1" id="nav-tabContent">
+                            <div class="tab-pane fade show active" id="nav-recent-transactions" role="tabpanel" aria-labelledby="nav-recent-transactions-tab" tabindex="0">
+                                <div class="p-1">
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-bordered table-striped table-hover">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th>TransID</th>
+                                                    <th>Name</th>
+                                                    <th>Phone</th>
+                                                    <th>Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="mpesa-transactions-body">
+                                                <tr>
+                                                    <td colspan="4" class="text-center">Loading...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="nav-initiate-transaction" role="tabpanel" aria-labelledby="nav-initiate-transaction-tab" tabindex="0">
+                                <div class="p-1">
+                                    <form id="transaction-form" method="POST">
+                                        <input type="text" id="stk_phone" name="stk_phone" class="form-control mb-2" placeholder="Enter phone number" required>
+                                        <input type="number" id="stk_amount" name="stk_amount" class="form-control mb-2" placeholder="Enter amount" required>
+                                        <button type="submit" id="initiate-transaction" class="btn btn-success w-100">Initiate Payment</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     `,
                     showCancelButton: true,
@@ -400,6 +433,75 @@
                     cancelButtonColor: '#d33',
                     cancelButtonText: 'Cancel Transaction',
                     didOpen: () => {
+                        // Initiate transaction
+                        $('#transaction-form').on('submit', function (e) {
+                            e.preventDefault(); // Prevent the default form submission
+
+                            const stk_phone = $('#stk_phone').val();
+                            const stk_amount = $('#stk_amount').val();
+
+                            // Basic validation
+                            if (stk_phone === '' || stk_amount === '') {
+                                Swal.fire('Error!', 'Please fill in both fields.', 'error');
+                                return;
+                            }
+
+                            Swal.fire({
+                                title: 'Initiate transaction for customer',
+                                text: 'Are you sure you want to initiate the transaction for the customer?',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#3085d6',
+                                cancelButtonColor: '#d33',
+                                confirmButtonText: 'Yes, Initiate',
+                                cancelButtonText: 'Cancel'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    Swal.fire({
+                                        title: 'Processing...',
+                                        text: 'Please wait while the transaction is being initiated.',
+                                        allowOutsideClick: false,
+                                        didOpen: () => {
+                                            Swal.showLoading();
+                                        }
+                                    });
+
+                                    // Prepare the data to send in AJAX request
+                                    const formData = new FormData();
+                                    formData.append('phoneNumber', stk_phone);
+                                    formData.append('amount', stk_amount);
+
+                                    // Get the CSRF token from the meta tag
+                                    const csrfToken = $('meta[name="csrf-token"]').attr('content');
+                                    
+                                    $.ajax({
+                                        url: '/mpesa/stkpush', // Replace with your actual API endpoint
+                                        type: 'POST',
+                                        data: formData,
+                                        contentType: false,
+                                        processData: false,
+                                        headers: {
+                                            'X-CSRF-TOKEN': csrfToken // Send CSRF token in the header
+                                        },
+                                        success: function (response) {
+                                            Swal.fire({
+                                                title: 'Success',
+                                                text: response.success || 'Transaction initiated successfully!',
+                                                icon: 'success',
+                                            }).then(() => {
+                                                // Optionally reset the form or take any other actions
+                                                $('#transaction-form')[0].reset();
+                                            });
+                                        },
+                                        error: function (xhr) {
+                                            Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message || 'An error occurred while initiating the transaction.', 'error');
+                                        }
+                                    });
+                                }
+                            });
+                        });
+
+                        // Fetch and bind transaction
                         $.ajax({
                             url: '/api/fetch-data/mpesa-payments',
                             type: 'GET',
@@ -407,65 +509,80 @@
                             success: function(response) {
                                 const tableBody = $('#mpesa-transactions-body');
                                 tableBody.empty();
+
                                 if (response.length > 0) {
                                     response.forEach(transaction => {
                                         tableBody.append(`
-                                            <tr>
+                                            <tr class="transaction-row cursor-pointer" 
+                                                data-id="${transaction.id}" 
+                                                data-transaction_id="${transaction.transaction_id}" 
+                                                data-name="${transaction.name}" 
+                                                data-phone="${transaction.phone}" 
+                                                data-amount="${transaction.amount}">
                                                 <td>${transaction.transaction_id}</td>
                                                 <td>${transaction.name}</td>
+                                                <td>${transaction.phone}</td>
                                                 <td>${transaction.amount}</td>
-                                                <td>
-                                                    <button class="btn btn-sm btn-primary select-transaction" 
-                                                            data-id="${transaction.id}" 
-                                                            data-transaction_id="${transaction.transaction_id}" 
-                                                            data-name="${transaction.name}" 
-                                                            data-amount="${transaction.amount}">
-                                                        Select
-                                                    </button>
-                                                </td>
                                             </tr>
                                         `);
                                     });
 
-                                    // Bind click event to dynamically added buttons
-                                    $('#mpesa-transactions-body').on('click',
-                                        '.select-transaction',
-                                        function() {
-                                            const selectedTransaction = {
-                                                id: $(this).data('id'),
-                                                transaction_id: $(this).data('transaction_id'),
-                                                name: $(this).data('name'),
-                                                amount: $(this).data('amount')
-                                            };
+                                    // Bind click event to dynamically added rows
+                                    $('#mpesa-transactions-body').on('click', '.transaction-row', function() {
+                                        const selectedTransaction = {
+                                            id: $(this).data('id'),
+                                            transaction_id: $(this).data('transaction_id'),
+                                            name: $(this).data('name'),
+                                            phone: $(this).data('phone'),
+                                            amount: $(this).data('amount')
+                                        };
 
-                                            const transactionDetailsHtml = `
-                                                <div class="alert alert-success mt-3" role="alert">
-                                                    <h5>Selected Transaction Details</h5>
-                                                    <p><strong>Transaction ID:</strong> ${selectedTransaction.transaction_id}</p>
-                                                    <p><strong>Transaction Name:</strong> ${selectedTransaction.name}</p>
-                                                    <p><strong>Transaction Amount:</strong> Ksh ${selectedTransaction.amount}</p>
-                                                </div>
-                                            `;
+                                        const transactionDetailsHtml = `
+                                            <div class="table-responsive">
+                                                <table class="table table-bordered">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th>Transaction ID</th>
+                                                            <td>${selectedTransaction.transaction_id}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <td>${selectedTransaction.name}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Phone</th>
+                                                            <td>${selectedTransaction.phone}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Amount (Ksh)</th>
+                                                            <td>${selectedTransaction.amount}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        `;
 
-                                            Swal.fire({
-                                                title: 'Transaction Details',
-                                                html: transactionDetailsHtml,
-                                                showCancelButton: true,
-                                                confirmButtonColor: '#3085d6',
-                                                cancelButtonColor: '#d33',
-                                                confirmButtonText: 'Proceed with payment',
-                                                cancelButtonText: 'Cancel Transaction',
-                                            }).then(() => {
-                                                // Bind Payment
+                                        Swal.fire({
+                                            title: 'Selected Transaction Details',
+                                            html: transactionDetailsHtml,
+                                            showCancelButton: true,
+                                            confirmButtonColor: '#3085d6',
+                                            cancelButtonColor: '#d33',
+                                            confirmButtonText: 'Proceed with Payment',
+                                            cancelButtonText: 'Cancel Transaction',
+                                        }).then((result) => {
+                                            if (result.isConfirmed) {
                                                 bindPayment(selectedTransaction.amount, selectedTransaction.id);
-                                            });
+                                            }
                                         });
+                                    });
+
                                 } else {
                                     tableBody.append(`
-                                <tr>
-                                    <td colspan="4" class="text-center">No recent payment made</td>
-                                </tr>
-                            `);
+                                        <tr>
+                                            <td colspan="4" class="text-center">No recent payment made</td>
+                                        </tr>
+                                    `);
                                 }
                             },
                             error: function(xhr) {
@@ -630,6 +747,74 @@
                             updateCart();
                         });
                     }, 1500);
+                }
+            });
+        });
+
+        // When the "Initiate Transaction" button is clicked
+        $('#initiate-transaction').click(function(e) {
+            e.preventDefault(); // Prevent form submission
+
+            // Get values from the input fields
+            var phone = $('#phone').val();
+            var amount = $('#amount').val();
+
+            // Check if both fields are filled
+            if (phone === "" || amount === "") {
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Please enter both phone number and amount.',
+                    icon: 'error',
+                });
+                return;
+            }
+
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Initiate transaction',
+                text: 'Are you sure you want to initiate the transaction?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, initiate!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading dialog while processing
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Please wait while the transaction is being initiated.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // AJAX call to initiate the transaction
+                    $.ajax({
+                        url: '/mpesa/stkpush', // Replace with your URL endpoint
+                        type: 'POST',
+                        data: {
+                            phone: phone,
+                            amount: amount,
+                            _token: '{{ csrf_token() }}', // CSRF token for Laravel
+                        },
+                        success: function(response) {
+                            Swal.fire({
+                                title: 'Success!',
+                                text: 'Transaction initiated successfully.',
+                                icon: 'success',
+                            });
+                        },
+                        error: function(xhr) {
+                            Swal.fire({
+                                title: 'Error!',
+                                text: xhr.responseJSON.message || 'Something went wrong!',
+                                icon: 'error',
+                            });
+                        }
+                    });
                 }
             });
         });

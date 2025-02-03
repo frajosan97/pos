@@ -9,7 +9,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\SettingController;
-use App\Http\Controllers\ApiController;
 use App\Http\Controllers\CatalogueController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SaleController;
@@ -76,18 +75,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/brand-sales', [SaleController::class, 'catalogue'])->name('sale.catalogue');
     Route::get('/product-sales', [SaleController::class, 'product'])->name('sale.product');
     Route::get('/category-product-sales', [SaleController::class, 'catProFetch'])->name('sale.cat_pro_fetch');
-
-    /**
-     * API routes for data fetching and external integrations.
-     */
-    Route::prefix('/api/fetch-data')->group(function () {
-        Route::get('/constituency/{county_id}', [ApiController::class, 'constituency']);
-        Route::get('/ward/{constituency_id}', [ApiController::class, 'ward']);
-        Route::get('/location/{ward_id}', [ApiController::class, 'location']);
-        Route::get('/product/{barcode}', [ApiController::class, 'product']);
-        Route::get('/payment-methods', [ApiController::class, 'paymentMethods']);
-        Route::get('/mpesa-payments', [ApiController::class, 'mpesaPayments']);
-    });
 
     /**
      * PDF Generator routes.
