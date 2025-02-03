@@ -274,7 +274,7 @@
                                     <button class="btn btn-lg w-100 border selected-payment-method"
                                         data-pay-id="${paymentMethod.id}" 
                                         data-pay-name="${paymentMethod.name}">
-                                            <h6>${paymentMethod.name}</h6>
+                                            <h5 class="text-capitalize">${paymentMethod.name}</h5>
                                             <img src="{{ asset('') }}${paymentMethod.image}" width="100">
                                     </button>
                                 </div>
