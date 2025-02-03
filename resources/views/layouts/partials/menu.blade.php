@@ -188,7 +188,6 @@
 @endif
 
 @if(auth()->user()->hasPermission('system_cache'))
-<!-- Clear Cache -->
 <li class="nav-item">
     <a href="{{ route('clear-cache.form') }}" class="nav-link">
         <i class="nav-icon fas fa-broom"></i>

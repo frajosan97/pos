@@ -357,7 +357,7 @@
             if (payModeName == 'cash') {
                 // Handle cash payment
                 Swal.fire({
-                    title: `Enter payment for cash payment`,
+                    title: `Amount given in cash`,
                     icon: 'info',
                     html: `
                         <div class="row">
@@ -434,7 +434,7 @@
                     cancelButtonText: 'Cancel Transaction',
                     didOpen: () => {
                         // Initiate transaction
-                        $('#transaction-form').on('submit', function (e) {
+                        $('#transaction-form').on('submit', function(e) {
                             e.preventDefault(); // Prevent the default form submission
 
                             const stk_phone = $('#stk_phone').val();
@@ -473,7 +473,7 @@
 
                                     // Get the CSRF token from the meta tag
                                     const csrfToken = $('meta[name="csrf-token"]').attr('content');
-                                    
+
                                     $.ajax({
                                         url: '/mpesa/stkpush', // Replace with your actual API endpoint
                                         type: 'POST',
@@ -483,7 +483,7 @@
                                         headers: {
                                             'X-CSRF-TOKEN': csrfToken // Send CSRF token in the header
                                         },
-                                        success: function (response) {
+                                        success: function(response) {
                                             Swal.fire({
                                                 title: 'Success',
                                                 text: response.success || 'Transaction initiated successfully!',
@@ -493,7 +493,7 @@
                                                 $('#transaction-form')[0].reset();
                                             });
                                         },
-                                        error: function (xhr) {
+                                        error: function(xhr) {
                                             Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message || 'An error occurred while initiating the transaction.', 'error');
                                         }
                                     });
