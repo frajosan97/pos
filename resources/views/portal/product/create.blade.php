@@ -112,7 +112,7 @@
                         <!-- commission_on_sale -->
                         <div class="col-md-12 mb-3">
                             <label for="commission_on_sale">Commission Rate Per Unit</label>
-                            <textarea name="commission_on_sale" id="commission_on_sale" placeholder="Commission Rate Per Unit" rows="3" class="form-control"></textarea>
+                            <input type="number" name="commission_on_sale" id="commission_on_sale" placeholder="Commission Rate Per Unit" rows="3" class="form-control">
                         </div>
 
                         <!-- Description -->

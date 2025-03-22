@@ -66,3 +66,75 @@ select {
     overflow-y: auto;
     overflow-x: hidden;
 }
+
+
+/* Custom Chat Styles */
+.chat-sidebar {
+    height: 80vh;
+    background: #fefefe;
+    overflow-y: auto;
+}
+
+.chat-item {
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+}
+
+.chat-item:hover {
+    background-color: #f9f9f9;
+}
+
+.chat-item img {
+    object-fit: cover;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.chat-window {
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+.message {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    font-size: 14px;
+    word-wrap: break-word;
+}
+
+.message.sent {
+    margin-left: auto;
+    align-self: flex-end;
+    background-color: #dcf8c6;
+    text-align: right;
+}
+
+.message.received {
+    margin-right: auto;
+    align-self: flex-start;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.message-text {
+    margin-bottom: 4px;
+}
+
+.message-time {
+    font-size: 12px;
+    color: #888;
+    text-align: right;
+}

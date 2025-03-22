@@ -5,8 +5,7 @@
 @section('content')
 
 <div class="row">
-    <div class="col-md-12">
-
+    <div class="col-md-3">
         <!-- Profile Card -->
         <div class="card shadow-sm border-0">
             <div class="card-body">
@@ -20,48 +19,56 @@
 
                     <img src="{{ $passportPath }}"
                         alt="Profile Picture"
-                        class="rounded-circle img-fluid profile-picture mb-3 p-1 shadow-sm bg-white"
-                        style="margin-top: -50px;">
+                        class="rounded-circle img-fluid profile-picture mb-3 p-1 shadow-sm bg-white" />
 
                     <!-- Full Name -->
                     <h3 class="fw-bold">{{ $user->name }}</h3>
                     <!-- Edit icon -->
-                    <a href="{{ route('employee.edit', $user->id) }}" class="btn btn-outline-primary mb-3">
+                    <a class="w-100 btn btn-outline-primary mb-3" href="{{ route('employee.edit', $user->id) }}">
                         <i class="fas fa-pencil"></i> Edit Profile
                     </a>
-                </div>
-                <hr>
-                <div class="d-flex justify-content-between">
-                    <a href="" class="btn btn-link"><i class="fas fa-print"></i> Print Data</a>
-                    <div>
-                        <input type="text" id="daterange" class="form-control" placeholder="Select Date Range" />
-                    </div>
+                    <a class="w-100 btn btn-outline-success mb-3" href="{{ route('contract_letter.show',$user->id) }}">
+                        <i class="fas fa-file-pdf"></i> Contract Letter
+                    </a>
+                    <a class="w-100 btn btn-outline-secondary mb-3" href="#">
+                        <i class="fas fa-print"></i> Print Data
+                    </a>
                 </div>
             </div>
         </div>
-
-        <div class="row g-4" id="user-analytics-cards">
-            @for ($i = 0; $i < 4; $i++)
-                <div class="col-md-3">
-                <div class="card shadow-sm rounded-3 p-3 bg-white placeholder-glow">
-                    <div class="card-body p-0 d-flex align-items-center">
-                        <div class="col-2 me-3">
-                            <div class="placeholder rounded-circle bg-secondary" style="width: 40px; height: 40px;"></div>
-                        </div>
-                        <div class="col-10">
-                            <h6 class="placeholder bg-secondary rounded mb-2" style="width: 60%; height: 15px;"></h6>
-                            <h5 class="placeholder bg-secondary rounded mb-2" style="width: 80%; height: 20px;"></h5>
-                            <div class="mb-2 progress rounded" style="height: 5px;">
-                                <div class="progress-bar placeholder bg-secondary" style="width: 50%;"></div>
-                            </div>
-                            <div class="placeholder bg-secondary rounded mt-2" style="width: 50%; height: 10px;"></div>
-                        </div>
-                    </div>
-                </div>
-        </div>
-        @endfor
     </div>
 
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-body">
+                <input type="text" id="daterange" class="form-control" placeholder="Select Date Range" />
+                <hr>
+                <div class="row g-4" id="user-analytics-cards">
+                    @for ($i = 0; $i < 4; $i++)
+                        <div class="col-md-6">
+                        <div class="card shadow-sm rounded-3 p-3 bg-white placeholder-glow">
+                            <div class="card-body p-0 d-flex align-items-center">
+                                <div class="col-2 me-3">
+                                    <div class="placeholder rounded-circle bg-secondary" style="width: 40px; height: 40px;"></div>
+                                </div>
+                                <div class="col-10">
+                                    <h6 class="placeholder bg-secondary rounded mb-2" style="width: 60%; height: 15px;"></h6>
+                                    <h5 class="placeholder bg-secondary rounded mb-2" style="width: 80%; height: 20px;"></h5>
+                                    <div class="mb-2 progress rounded" style="height: 5px;">
+                                        <div class="progress-bar placeholder bg-secondary" style="width: 50%;"></div>
+                                    </div>
+                                    <div class="placeholder bg-secondary rounded mt-2" style="width: 50%; height: 10px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                @endfor
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="col-md-12">
     <div class="card shadow-sm border-0">
         <div class="card-body">
 
@@ -77,10 +84,10 @@
                     </button>
                 </li>
                 <!-- <li class="nav-item" role="presentation">
-                    <button class="nav-link text-capitalize" id="commission-tab" data-bs-toggle="tab" data-bs-target="#commission-tab-pane" type="button" role="tab" aria-controls="commission-tab-pane" aria-selected="false">
-                        <i class="fas fa-wallet"></i> commission
-                    </button>
-                </li> -->
+                        <button class="nav-link text-capitalize" id="commission-tab" data-bs-toggle="tab" data-bs-target="#commission-tab-pane" type="button" role="tab" aria-controls="commission-tab-pane" aria-selected="false">
+                            <i class="fas fa-wallet"></i> commission
+                        </button>
+                    </li> -->
             </ul>
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade py-3 show active" id="kyc-tab-pane" role="tabpanel" aria-labelledby="kyc-tab" tabindex="0">
@@ -234,24 +241,25 @@
                     </div>
                 </div>
                 <!-- <div class="tab-pane fade py-3" id="commission-tab-pane" role="tabpanel" aria-labelledby="commission-tab" tabindex="0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-sm">
-                            <thead class="table-primary">
-                                <tr>
-                                    <th>Period</th>
-                                    <th>Amount Earned</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-sm">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>Period</th>
+                                        <th>Amount Earned</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
 
-                            </tbody>
-                        </table>
-                    </div>
-                </div> -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div> -->
             </div>
 
         </div>
     </div>
+</div>
 
 </div>
 
@@ -283,7 +291,7 @@
                     userAnalyticsCards.empty();
                     for (let i = 0; i < 4; i++) {
                         userAnalyticsCards.append(`
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <div class="card shadow-sm rounded-3 p-3 bg-light placeholder-glow">
                                     <div class="card-body p-0 d-flex align-items-center">
                                         <div class="col-2 me-3">
@@ -295,7 +303,6 @@
                                             <div class="mb-2 progress rounded" style="height: 5px;">
                                                 <div class="progress-bar placeholder bg-secondary" style="width: 50%;"></div>
                                             </div>
-                                            <div class="placeholder bg-secondary rounded mt-2" style="width: 50%; height: 10px;"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -314,7 +321,7 @@
                         Object.keys(response.cards).forEach(key => {
                             const card = response.cards[key];
                             userAnalyticsCards.append(`
-                                <div class="col-md-3">
+                                <div class="col-md-6">
                                     <div class="card shadow-sm analytics-data-card bg-${card.bg} rounded-3 p-3 hover-shadow">
                                         <div class="card-body p-0 d-flex align-items-center">
                                             <div class="col-2 me-3">

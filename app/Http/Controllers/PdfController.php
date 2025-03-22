@@ -31,6 +31,13 @@ class PdfController extends Controller
                 'orientation' => $orientation,
             ]);
 
+            // Set the Footer
+            $mpdf->SetHTMLFooter('
+                <div style="text-align: center; color: gray;">
+                    Page {PAGENO} of {nbpg}
+                </div>
+            ');
+
             $mpdf->SetBasePath(public_path()); // Set base path for assets
             $mpdf->WriteHTML($html); // Write HTML content to the PDF
 
@@ -148,6 +155,16 @@ class PdfController extends Controller
         $company = Company::first();
         $html = View::make('portal.pdf.company', compact('company'))->render();
         $fileName = 'company';
+
+        // Generate and return the PDF
+        return $this->generatePDF($html, $fileName, 'S', 'P');
+    }
+
+    public function contractLetter(Request $request, string $id)
+    {
+        $employee = User::findOrFail($id);
+        $html = View::make('portal.pdf.contract_letter', compact('employee'))->render();
+        $fileName = 'contract_letter';
 
         // Generate and return the PDF
         return $this->generatePDF($html, $fileName, 'S', 'P');

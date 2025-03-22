@@ -124,6 +124,13 @@
 </li>
 @endif
 
+<li class="nav-item">
+    <a href="{{ route('chat.index') }}" class="nav-link">
+        <i class="nav-icon fas fa-sms"></i>
+        <p>Chats</p>
+    </a>
+</li>
+
 @if(auth()->user()->hasPermission('system_setting'))
 <!-- Settings -->
 <li class="nav-item">
@@ -171,18 +178,6 @@
                 <p>Company Information</p>
             </a>
         </li>
-        <!-- <li class="nav-item">
-            <a href="{{ route('mpesa.simulate.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-mobile-alt"></i>
-                <p>Register Urls</p>
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="{{ route('mpesa.stkpush.form') }}" class="nav-link">
-                <i class="nav-icon fas fa-receipt"></i>
-                <p>STK Push</p>
-            </a>
-        </li> -->
     </ul>
 </li>
 @endif

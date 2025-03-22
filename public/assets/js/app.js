@@ -112,3 +112,14 @@ function printDiv(divId) {
 
     $('body').html(originalContents);
 }
+
+function escapeHtml(text) {
+    let element = document.createElement('div');
+    element.innerText = text;
+    return element.innerHTML;
+}
+
+function formatDate(dateString) {
+    let date = new Date(dateString);
+    return date.toLocaleString(); // Adjust format as needed
+}

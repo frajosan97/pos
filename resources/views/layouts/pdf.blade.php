@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title')</title>
-    <link rel="shortcut icon" href="{{ asset(getImage($company_info->logo,'logo.png')) }}" type="image/x-icon">
     <!-- Use absolute URL for the CSS file -->
     <link rel="stylesheet" href="{{ public_path('assets/css/bootstrap.css') }}">
     <link rel="stylesheet" href="{{ public_path('assets/css/pdf.css') }}">
@@ -20,7 +19,7 @@
                 <!-- Logo Section -->
                 <td style="width: 20%; text-align: left; vertical-align: middle;">
                     <div class="logo">
-                        <img src="{{ asset(getImage($company_info->logo,'logo.png')) }}" alt="Logo">
+                        <img src="{{ public_path('assets/images/logo/'.$company_info->logo) }}" alt="" srcset="">
                     </div>
                 </td>
 

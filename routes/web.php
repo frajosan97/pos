@@ -5,11 +5,13 @@
  * These classes manage the logic for authentication, payments, settings, API, and the dashboard.
  */
 
+use App\Http\Controllers\ApiController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MpesaController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CatalogueController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\ProductController;
@@ -47,6 +49,15 @@ Route::prefix('/verify')->group(function () {
     Route::post('/activate-account/{email}', [LoginController::class, 'activateAccount'])->name('account.activate');
 });
 
+Route::group(['prefix' => '/api/fetch-data'], function () {
+    Route::get('/constituency/{county_id}', [ApiController::class, 'constituency']);
+    Route::get('/ward/{constituency_id}', [ApiController::class, 'ward']);
+    Route::get('/location/{ward_id}', [ApiController::class, 'location']);
+    Route::get('/product/{barcode}', [ApiController::class, 'product']);
+    Route::get('/payment-methods', [ApiController::class, 'paymentMethods']);
+    Route::get('/mpesa-payments', [ApiController::class, 'mpesaPayments']);
+});
+
 /**
  * Group routes requiring user authentication.
  */
@@ -69,6 +80,15 @@ Route::middleware('auth')->group(function () {
         'customer'  => CustomerController::class,
     ]);
 
+    // Chat
+    Route::prefix('/chat')->group(function () {
+        Route::get('/box', [ChatController::class, 'index'])->name('chat.index');
+        Route::get('/load-chats', [ChatController::class, 'loadChats'])->name('chat.load-chat');
+        Route::get('/messages/{conversationId}', [ChatController::class, 'getMessages'])->name('message.get');
+        Route::get('/get-user/{id}', [ChatController::class, 'getUser'])->name('chat.get');
+        Route::post('/send-message', [ChatController::class, 'sendMessage'])->name('message.send');
+    });
+
     /**
      * Sale-specific routes.
      */
@@ -83,9 +103,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/inventory', [PdfController::class, 'inventory'])->name('inventory.pdf');
         Route::get('/employee', [PdfController::class, 'employee'])->name('employee.pdf');
         Route::get('/sales', [PdfController::class, 'sales'])->name('sales.pdf');
-        Route::get('/invoice/{invoice_id}', [PdfController::class, 'invoice'])->name('invoice.pdf');
+        Route::get('/invoice/{id}', [PdfController::class, 'invoice'])->name('invoice.pdf');
         Route::get('/branch', [PdfController::class, 'branch'])->name('branch.pdf');
         Route::get('/company', [PdfController::class, 'company'])->name('company.pdf');
+        Route::get('/contract_letter/{id}', [PdfController::class, 'contractLetter'])->name('contract_letter.pdf');
     });
 
     /**
@@ -117,6 +138,8 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::post('/kyc/{id}/handle', [EmployeeController::class, 'handleKyc'])->name('kyc.handle');
+    Route::get('/contract-letter/{id}', [EmployeeController::class, 'contractLetter'])->name('contract_letter.show');
+    Route::post('/save-signature/{id}', [EmployeeController::class, 'saveSignature'])->name('save_signature.save');
 
     /**
      * Cache-related routes.

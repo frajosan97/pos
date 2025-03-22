@@ -1,0 +1,92 @@
+/* General Styles */
+.contract-letter {
+    font-family: 'Times New Roman', Times, serif;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+}
+
+.contract-letter .page {
+    /* margin-bottom: 40px; */
+    page-break-inside: avoid;
+}
+
+/* Titles and Headings */
+.contract-letter .title-1 {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #2c3e50;
+}
+
+.contract-letter .title-2 {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    color: #2c3e50;
+    padding-bottom: 10px;
+}
+
+.contract-letter .title-3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+.contract-letter .title-4 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+/* Paragraphs and Text */
+.contract-letter p {
+    margin-bottom: 15px;
+    text-align: justify;
+}
+
+.contract-letter .inline-text {
+    font-weight: bold;
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* Lists */
+.contract-letter ol,
+.contract-letter ul {
+    margin-bottom: 15px;
+    padding-left: 20px;
+}
+
+.contract-letter li {
+    margin-bottom: 10px;
+}
+
+.contract-letter .signature-section p {
+    margin-bottom: 10px;
+}
+
+/* Additional Styling */
+.contract-letter .ms-2 {
+    margin-left: 20px;
+}
+
+.contract-letter .text-center {
+    text-align: center;
+}
+
+.contract-letter .mb-5 {
+    margin-bottom: 30px;
+}
+
+.contract-letter b,
+.contract-letter strong {
+    font-weight: bold;
+}

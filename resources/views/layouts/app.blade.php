@@ -22,6 +22,9 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- Include CSS for daterangepicker -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <!-- E-signature -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+    <!-- Other resources -->
     <link rel="stylesheet" href="{{ asset('assets/css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
     @stack('style')
@@ -34,6 +37,7 @@
         @php
         $isAuthRoute = Request::is(['login', 'register', 'password','password/*', 'otp','otp/*', 'verify','verify/*']);
         $isPortal = Request::is(['portal', 'portal/*']);
+        $isChat = Request::is(['chat', 'chat/*']);
         @endphp
 
         @if($isAuthRoute)
@@ -104,10 +108,12 @@
 
             <!-- Content Wrapper. Contains page content -->
             <div class="content-wrapper">
+
                 <!-- Content Header (Page header) -->
                 <div class="content-header">
                     <div class="container-fluid">
                         <div class="row mb-2 text-capitalize">
+                            @if(!$isChat)
                             <div class="col-sm-6">
                                 <h1 class="m-0">@yield('pageTitle')</h1>
                             </div><!-- /.col -->
@@ -117,6 +123,7 @@
                                     <li class="breadcrumb-item active">@yield('pageTitle')</li>
                                 </ol>
                             </div><!-- /.col -->
+                            @endif
                         </div><!-- /.row -->
                     </div><!-- /.container-fluid -->
                 </div>

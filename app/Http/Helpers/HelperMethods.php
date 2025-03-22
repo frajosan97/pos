@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\View;
+use Carbon\Carbon;
 
 /**
  * Check if the current user agent is a desktop device.
@@ -231,5 +232,50 @@ if (!function_exists('kyc_docs')) {
             'kra' => 'KRA PIN Certificate',
             'police_clearance' => 'PCC (Police Clearance Certificate)',
         ];
+    }
+}
+
+/**
+ * Format a given date with an ordinal suffix (e.g., 20TH March, 2025).
+ *
+ * @param \Carbon\Carbon|null $date The date to format. If null, the current date is used.
+ * @param string $get Specifies whether to return the full date, or just the day, month, or year.
+ * @return string
+ */
+if (!function_exists('formatDateWithOrdinal')) {
+    function formatDateWithOrdinal($date = null, string $get = 'full'): string
+    {
+        // Use the current date if no date is provided
+        if (empty($date)) {
+            $date = Carbon::now();
+        } else {
+            $date = Carbon::parse($date);
+        }
+
+        // Get the day of the month
+        $day = $date->day;
+
+        // Determine the ordinal suffix
+        $ordinal = 'th';
+        if ($day % 10 == 1 && $day != 11) {
+            $ordinal = 'st';
+        } elseif ($day % 10 == 2 && $day != 12) {
+            $ordinal = 'nd';
+        } elseif ($day % 10 == 3 && $day != 13) {
+            $ordinal = 'rd';
+        }
+
+        // Format the date based on the $get parameter
+        switch ($get) {
+            case 'day':
+                return $day . '<sup>' . $ordinal . '</sup>';
+            case 'month':
+                return $date->format('F');
+            case 'year':
+                return $date->format('Y');
+            case 'full':
+            default:
+                return $day . '<sup>' . $ordinal . '</sup> ' . $date->format('F, Y');
+        }
     }
 }

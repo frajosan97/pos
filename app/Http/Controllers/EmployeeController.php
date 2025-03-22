@@ -69,7 +69,7 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        return view('portal.employee.create',);
+        return view('portal.employee.create');
     }
 
     /**
@@ -295,7 +295,7 @@ class EmployeeController extends Controller
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         // Validate the input data
         $validatedData = $request->validate([
@@ -431,11 +431,11 @@ class EmployeeController extends Controller
         }
     }
 
-    public function handleKyc(Request $request, $id)
+    public function handleKyc(Request $request, string $id)
     {
         // Retrieve the KYC record
         $kyc = KYCData::findOrFail($id);
-        
+
         // Determine action
         $action = $request->input('action');
         if ($action === 'approve') {
@@ -452,5 +452,51 @@ class EmployeeController extends Controller
         $kyc->save();
 
         return response()->json(['message' => $message]);
+    }
+
+    public function contractLetter(Request $request, string $id)
+    {
+        $employee = User::findOrFail($id);
+
+        return view('portal.employee.contract_letter', compact('employee'));
+    }
+
+    public function saveSignature(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        // Save the base64 signature
+        $signatureData = $request->signature;
+
+        // Decode the base64 image
+        $image = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $signatureData));
+
+        // Generate a unique file name
+        $fileName = 'signature_' . uniqid() . '.png';
+
+        // Define the directory to save the signature
+        $directory = public_path('assets/images/signatures');
+
+        // Create the directory if it doesn't exist
+        if (!file_exists($directory)) {
+            mkdir($directory, 0777, true);
+        }
+
+        // Save the image to the directory
+        $filePath = $directory . '/' . $fileName;
+        file_put_contents($filePath, $image);
+
+        // Save the relative path to the database
+        $relativePath = 'assets/images/signatures/' . $fileName;
+
+        // Update the user's signature and signed_at fields
+        $user->update([
+            'signature' => $relativePath, // Save the relative file path
+            'signed_at' => now(), // Update signed_at with the current date and time
+        ]);
+
+        return response()->json([
+            'success' => 'Contract signed successfully.',
+        ]);
     }
 }

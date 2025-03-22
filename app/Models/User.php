@@ -5,20 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'branch_id',
         'user_name',
@@ -32,26 +27,18 @@ class User extends Authenticatable
         'status',
         'otp',
         'otp_expires_at',
+        'signature',
+        'signed_at',
         'password',
         'created_by',
         'updated_by',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'otp_expires_at'    => 'datetime',
@@ -59,8 +46,6 @@ class User extends Authenticatable
 
     /**
      * Relationship with the Branch model.
-     *
-     * @return BelongsTo
      */
     public function branch(): BelongsTo
     {
@@ -68,72 +53,48 @@ class User extends Authenticatable
     }
 
     /**
-     * Relationship with the Permission model through the pivot table.
-     *
-     * @return BelongsToMany
+     * Relationship with the Permission model.
      */
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'user_permissions', 'user_id', 'permission_id')
-            ->withPivot('selected_branches', 'selected_products', 'selected_catalogues'); // Explicitly load pivot columns
+            ->withPivot('selected_branches', 'selected_products', 'selected_catalogues');
     }
 
     /**
-     * Get the selected branches for the user based on the 'manage_branch' permission.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Get the conversations where the user is a participant.
      */
-    public function selectedBranches()
+    public function conversations(): BelongsToMany
     {
-        $permission = $this->permissions()->withPivot('selected_branches')->where('slug', 'manager_branch')->first();
-
-        if ($permission && isset($permission->pivot->selected_branches)) {
-            $branchIds = json_decode($permission->pivot->selected_branches, true);
-            return Branch::whereIn('id', $branchIds)->get();
-        }
-
-        return collect();
+        return $this->belongsToMany(Conversation::class, 'conversation_participants', 'user_id', 'conversation_id');
     }
 
     /**
-     * Get the selected products for the user based on the 'manage_products' permission.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Get the messages sent by the user.
      */
-    public function selectedProducts()
+    public function sentMessages(): HasMany
     {
-        $permission = $this->permissions()->withPivot('selected_products')->where('slug', 'manager_product')->first();
-
-        if ($permission && isset($permission->pivot->selected_products)) {
-            $productIds = json_decode($permission->pivot->selected_products, true);
-            return Products::whereIn('id', $productIds)->get();
-        }
-
-        return collect();
+        return $this->hasMany(Message::class, 'sender_id');
     }
 
     /**
-     * Get the selected catalogues for the user based on the 'manage_catalogues' permission.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * Get the messages received by the user.
      */
-    public function selectedCatalogues()
+    public function receivedMessages(): HasMany
     {
-        $permission = $this->permissions()->withPivot('selected_catalogues')->where('slug', 'manager_catalogue')->first();
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
 
-        if ($permission && isset($permission->pivot->selected_catalogues)) {
-            $catalogueIds = json_decode($permission->pivot->selected_catalogues, true);
-            return Catalogue::whereIn('id', $catalogueIds)->get();
-        }
-
-        return collect();
+    /**
+     * Get the conversations the user participates in.
+     */
+    public function participatedConversations(): HasMany
+    {
+        return $this->hasMany(ConversationParticipant::class, 'user_id');
     }
 
     /**
      * Check if the user has a specific permission.
-     *
-     * @param string $permission
-     * @return bool
      */
     public function hasPermission(string $permission): bool
     {
@@ -142,8 +103,6 @@ class User extends Authenticatable
 
     /**
      * Check if the user is active.
-     *
-     * @return bool
      */
     public function isActive(): bool
     {
@@ -152,8 +111,6 @@ class User extends Authenticatable
 
     /**
      * Get the full name of the user.
-     *
-     * @return string
      */
     public function fullName(): string
     {
@@ -162,9 +119,6 @@ class User extends Authenticatable
 
     /**
      * Scope a query to only include active users.
-     *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeActive($query)
     {
@@ -173,18 +127,14 @@ class User extends Authenticatable
 
     /**
      * Get the commissions associated with the user.
-     *
-     * @return HasMany
      */
     public function commissions(): HasMany
     {
         return $this->hasMany(Commission::class);
     }
 
-        /**
+    /**
      * Get the kyc associated with the user.
-     *
-     * @return HasMany
      */
     public function kyc(): HasMany
     {
