@@ -52,12 +52,15 @@
 
                 <!-- Product Search -->
                 <div class="col-md-12 input-group border rounded d-flex align-items-center mb-3">
-                    <span class="mx-2 text-muted">
+                    <!-- <span class="mx-2 text-muted">
                         <i class="fas fa-search"></i>
                     </span>
                     <input type="text" class="form-control border-0"
                         placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode"
-                        name="barcode">
+                        name="barcode"> -->
+                    <div id="reader"></div>
+                    <p>Scanned Code: <span id="barcode-result"></span></p>
+                    <button id="stop-scanner" style="display: none;">Stop Scanner</button>
                 </div>
 
                 <!-- Cart Section -->
@@ -113,9 +116,45 @@
     $(document).ready(function() {
 
         // Get data
-        var cart = [];
-        let paymentMethods = [];
-        var totalPrice = 0;
+        let scanner = new Html5Qrcode("reader");
+        cart = [];
+        paymentMethods = [];
+        totalPrice = 0;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            $("#barcode-result").text(decodedText);
+            alert("Scanned Barcode: " + decodedText);
+
+            // Send data to Laravel backend via AJAX
+            sendBarcodeToServer(decodedText);
+
+            // Stop scanning after successful scan
+            scanner.stop().then(() => {
+                $("#stop-scanner").hide();
+            }).catch(err => console.error("Stop error:", err));
+        }
+
+        function onScanFailure(error) {
+            console.warn(`Scan error: ${error}`);
+        }
+
+        // Start Scanner
+        scanner.start({
+                facingMode: "environment"
+            }, // Use back camera
+            {
+                fps: 10,
+                qrbox: 250
+            },
+            onScanSuccess,
+            onScanFailure
+        );
+
+        $("#stop-scanner").show().click(function() {
+            scanner.stop().then(() => {
+                $("#stop-scanner").hide();
+            }).catch(err => console.error("Stop error:", err));
+        });
 
         // Handle barcode input
         $('#barcode').on('keyup', function() {
