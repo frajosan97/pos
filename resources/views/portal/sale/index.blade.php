@@ -23,7 +23,7 @@
             <i class="fas fa-print"></i> Print
         </a>
         <ul class="dropdown-menu rounded-0 border-0 shadow-sm p-0">
-            <li><a href="{{ route('inventory.pdf') }}" target="_blank" class="dropdown-item"><i class="fas fa-file-pdf text-danger"></i> PDF</a></li>
+            <li><a href="{{ route('sales.pdf') }}" target="_blank" class="dropdown-item"><i class="fas fa-file-pdf text-danger"></i> PDF</a></li>
             <!-- <li><a href="#" class="dropdown-item"><i class="fas fa-file-excel text-success"></i> Excel</a></li> -->
         </ul>
     </li>
