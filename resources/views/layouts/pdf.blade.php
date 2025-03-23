@@ -19,7 +19,7 @@
                 <!-- Logo Section -->
                 <td style="width: 20%; text-align: left; vertical-align: middle;">
                     <div class="logo">
-                        <img src="{{ public_path('assets/images/logo/'.$company_info->logo) }}" alt="" srcset="">
+                        <img src="{{ public_path('assets/images/logo/'.$company_info->logo ?? 'logo.png') }}" alt="" srcset="">
                     </div>
                 </td>
 

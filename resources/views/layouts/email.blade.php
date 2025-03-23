@@ -11,7 +11,7 @@
     <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
 
         <div style="padding: 10px; text-align: center;">
-            <img src="{{ asset(getImage($company_info->logo,'logo.png')) }}" alt="">
+            <img src="{{ asset('assets/images/logo/'.$company_info->logo ?? 'logo.png') }}" alt="">
         </div>
 
         <!-- Header -->

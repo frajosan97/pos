@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ ucwords($company_info->name) }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" href="{{ asset(getImage($company_info->logo,'logo.png')) }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('assets/images/logo/'.$company_info->logo ?? 'logo.png') }}" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.css') }}">
@@ -53,7 +53,7 @@
 
             <!-- Preloader -->
             <div class="preloader flex-column justify-content-center align-items-center">
-                <img class="animation__shake" src="{{ asset(getImage($company_info->logo,'logo.png')) }}" alt="" height="60" width="60">
+                <img class="animation__shake" src="{{ asset('assets/images/logo/'.$company_info->logo ?? 'logo.png') }}" alt="" height="60" width="60">
             </div>
 
             <!-- Navbar -->
@@ -76,7 +76,7 @@
             <aside class="main-sidebar sidebar-dark-primary elevation-4 main-bg">
                 <!-- Brand Logo -->
                 <a href="/" class="brand-link border-0 shadow-sm">
-                    <img src="{{ asset(getImage($company_info->logo,'logo.png')) }}" alt="" class="brand-image rounded-4" style="opacity: .8">
+                    <img src="{{ asset('assets/images/logo/'.$company_info->logo ?? 'logo.png') }}" alt="" class="brand-image rounded-4" style="opacity: .8">
                     <span class="brand-text font-weight-light"> POS</span>
                 </a>
 

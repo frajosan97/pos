@@ -6,7 +6,7 @@
             <div class="card-body p-4">
                 <!-- Logo -->
                 <div class="d-flex justify-content-center">
-                    <img src="{{ asset(getImage($company_info->logo,'logo.png')) }}" class="img-fluid"
+                    <img src="{{ asset('assets/images/logo/'.$company_info->logo ?? 'logo.png') }}" class="img-fluid"
                         alt="{{ $company_info->name }}" style="max-width: 100px; max-height: 100px;">
                 </div>
 
