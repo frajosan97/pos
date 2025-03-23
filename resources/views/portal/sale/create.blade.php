@@ -17,6 +17,47 @@
         font-weight: bolder;
         font-size: 30px;
     }
+
+    #scanner-container {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        height: 320px;
+        margin: 10px auto;
+        background: #000;
+        overflow: hidden;
+    }
+
+    /* Full Video Feed */
+    video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* Ensures full coverage */
+    }
+
+    /* Scanning Frame */
+    .scanner-frame {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 80%;
+        height: 50%;
+        transform: translate(-50%, -50%);
+        border: 3px solid red;
+        box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+        z-index: 2;
+    }
+
+    button {
+        margin: 10px;
+        padding: 10px 15px;
+        font-size: 16px;
+        cursor: pointer;
+    }
 </style>
 
 <div class="row mb-3">
@@ -52,17 +93,38 @@
 
                 <!-- Product Search -->
                 <div class="col-md-12 input-group border rounded d-flex align-items-center mb-3">
-                    <!-- <span class="mx-2 text-muted">
+                    <span class="me-2 text-muted">
                         <i class="fas fa-search"></i>
                     </span>
                     <input type="text" class="form-control border-0"
                         placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode"
-                        name="barcode"> -->
-                    <h1>Barcode Scanner</h1>
-                    <button id="start-scanner">Start Scanner</button>
-                    <button id="stop-scanner" style="display: none;">Stop Scanner</button>
-                    <video id="scanner-container"></video>
-                    <p>Scanned Code: <span id="barcode-result"></span></p>
+                        name="barcode">
+                    <span class="ms-2 text-muted" data-bs-toggle="modal" data-bs-target="#scannerModal">
+                        <i class="fas fa-barcode"></i>
+                    </span>
+
+                    <!-- Scanner Modal -->
+                    <div class="modal fade" id="scannerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="scannerModalLabel">Bar Code Scanner</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-capitalize">
+                                    <div id="scanner-container">
+                                        <video id="camera-feed" autoplay></video>
+                                        <div class="scanner-frame"></div>
+                                    </div>
+                                    <p>Scanned Code: <span id="barcode-result"></span></p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-outline-primary" id="start-scanner">Start Scanner</button>
+                                    <button type="button" class="btn btn-outline-danger" id="stop-scanner">Stop Scanner</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 </div>
 
@@ -119,25 +181,37 @@
     $(document).ready(function() {
 
         // Get data
-        let cart = [];
+        let isScanning = false;
+        cart = [];
         paymentMethods = [];
         totalPrice = 0;
 
         $("#start-scanner").click(function() {
+            if (isScanning) return;
+            isScanning = true;
+
             Quagga.init({
                 inputStream: {
                     type: "LiveStream",
                     constraints: {
-                        facingMode: "environment"
-                    }, // Use back camera
+                        facingMode: "environment", // Use back camera
+                        width: 640,
+                        height: 480
+                    },
                     target: document.querySelector("#scanner-container")
+                },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
                 },
                 decoder: {
                     readers: ["ean_reader", "code_128_reader"]
-                } // Supports multiple barcode types
+                }, // Supports multiple barcode types
+                locate: true
             }, function(err) {
                 if (err) {
                     console.error("Scanner initialization failed:", err);
+                    isScanning = false;
                     return;
                 }
                 console.log("Scanner started");
@@ -145,65 +219,91 @@
                 $("#stop-scanner").show();
             });
 
+            Quagga.onProcessed(function(result) {
+                let drawingCanvas = Quagga.canvas.dom.overlay;
+                let ctx = drawingCanvas.getContext("2d");
+                if (result) {
+                    if (result.boxes) {
+                        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                        result.boxes.forEach((box) => {
+                            Quagga.ImageDebug.drawPath(box, {
+                                x: 0,
+                                y: 1
+                            }, ctx, {
+                                color: "green",
+                                lineWidth: 2
+                            });
+                        });
+                    }
+                }
+            });
+
             Quagga.onDetected(function(result) {
                 let code = result.codeResult.code;
                 $("#barcode-result").text(code);
-                alert("Scanned Barcode: " + code);
-                Quagga.stop(); // Stop scanning after the first successful read
+                $("#barcode").val(code);
+                searchProduct(code);
+                Quagga.stop();
                 $("#stop-scanner").hide();
+                isScanning = false;
             });
         });
 
         $("#stop-scanner").click(function() {
             Quagga.stop();
             $("#stop-scanner").hide();
+            isScanning = false;
         });
 
         // Handle barcode input
         $('#barcode').on('keyup', function() {
             var barcode = $(this).val();
             if (barcode.length > 0) {
-                $.ajax({
-                    url: `/api/fetch-data/product/${barcode}`,
-                    method: 'GET',
-                    success: function(response) {
-                        if (response.length > 0) {
-                            var product = response[0];
-                            var existingProduct = cart.find(item => item.product.id === product.id);
-
-                            // Check if available quantity is sufficient
-                            if (existingProduct) {
-                                if (existingProduct.quantity + 1 <= product.quantity) {
-                                    existingProduct.quantity++; // Increment quantity
-                                    existingProduct.total = existingProduct.quantity * existingProduct.product.price; // Recalculate total
-                                } else {
-                                    Swal.fire('Error!', 'Not enough stock available for this product!', 'error');
-                                }
-                            } else {
-                                if (product.quantity > 0) {
-                                    cart.push({
-                                        product: product,
-                                        quantity: 1,
-                                        total: product.price
-                                    });
-                                } else {
-                                    Swal.fire('Error!', 'Product is out of stock!', 'error');
-                                }
-                            }
-                        } else {
-                            Swal.fire('Error!', 'No product found matching the search barcode!', 'error');
-                        }
-
-                        $('#barcode').val('');
-                        updateCart();
-                    },
-                    error: function(xhr) {
-                        Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message,
-                            'error');
-                    }
-                });
+                searchProduct(barcode);
             }
         });
+
+        function searchProduct(barcode) {
+            $.ajax({
+                url: `/api/fetch-data/product/${barcode}`,
+                method: 'GET',
+                success: function(response) {
+                    if (response.length > 0) {
+                        var product = response[0];
+                        var existingProduct = cart.find(item => item.product.id === product.id);
+
+                        // Check if available quantity is sufficient
+                        if (existingProduct) {
+                            if (existingProduct.quantity + 1 <= product.quantity) {
+                                existingProduct.quantity++; // Increment quantity
+                                existingProduct.total = existingProduct.quantity * existingProduct.product.price; // Recalculate total
+                            } else {
+                                Swal.fire('Error!', 'Not enough stock available for this product!', 'error');
+                            }
+                        } else {
+                            if (product.quantity > 0) {
+                                cart.push({
+                                    product: product,
+                                    quantity: 1,
+                                    total: product.price
+                                });
+                            } else {
+                                Swal.fire('Error!', 'Product is out of stock!', 'error');
+                            }
+                        }
+                    } else {
+                        Swal.fire('Error!', 'No product found matching the search barcode!', 'error');
+                    }
+
+                    $('#barcode').val('');
+                    updateCart();
+                },
+                error: function(xhr) {
+                    Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message,
+                        'error');
+                }
+            });
+        }
 
         // Update the cart display
         function updateCart() {
