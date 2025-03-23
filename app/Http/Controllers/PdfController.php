@@ -30,7 +30,7 @@ class PdfController extends Controller
                 // Receipt dimensions
                 $mpdf = new Mpdf([
                     'mode' => 'utf-8',
-                    'format' => 'A6',
+                    'format' => [105, 297], // Width: 105mm (A6), Height: 297mm (A4)
                     'orientation' => $orientation,
                     'margin_left' => 5,   // Reduced left margin
                     'margin_right' => 5,  // Reduced right margin
@@ -84,7 +84,7 @@ class PdfController extends Controller
     public function sales(Request $request)
     {
         // Fetch sales data and render it to HTML
-        $sales = Sale::with(['payments.paymentMethod'])->get();
+        $sales = Sale::with(['user', 'payments.paymentMethod'])->get();
         $html = View::make('portal.pdf.sales', compact('sales'))->render();
         $fileName = 'sales';
 
@@ -146,7 +146,7 @@ class PdfController extends Controller
     public function receipt(Request $request, string $id)
     {
         // Fetch the sale by its ID, along with related sale items and customer
-        $sale = Sale::with(['saleItems.product', 'payments.paymentMethod', 'customer'])->findOrFail($id);
+        $sale = Sale::with(['user', 'saleItems.product', 'payments.paymentMethod', 'customer'])->findOrFail($id);
 
         $generator = new BarcodeGeneratorPNG();
         $barcode = base64_encode($generator->getBarcode($id, $generator::TYPE_CODE_128));

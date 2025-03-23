@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->foreignId('customer_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('sale_type')->default('normal_sale');
             $table->decimal('total_amount', 10, 2);

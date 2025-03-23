@@ -6,6 +6,8 @@
 
 <div class="row">
 
+    @if($employee->hasCompletedKYC())
+
     @if(empty($employee->signature))
     <div class="col-md-9 mx-auto">
         <div class="card shadow-none rounded-0 border">
@@ -67,6 +69,21 @@
                     <i class="fas fa-arrow-circle-right"></i>
                     View Contract Letter
                 </a>
+            </div>
+        </div>
+    </div>
+
+    @endif
+
+    @else
+
+    <div class="col-md-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header">
+                Contract Letter
+            </div>
+            <div class="card-body">
+                User has missing or unapproved KYC documents.
             </div>
         </div>
     </div>

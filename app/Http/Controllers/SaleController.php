@@ -28,7 +28,7 @@ class SaleController extends Controller
             if ($request->ajax()) {
                 // Get ajax request filters parameters
                 $filters = [
-                    'created_by' => $request->get('employee'),
+                    'user_id' => $request->get('employee'),
                     'branch_id' => $request->get('branch'),
                 ];
 
@@ -43,29 +43,31 @@ class SaleController extends Controller
                 }
 
                 // Fetch the sales and map the data
-                $sales = $salesQuery->get()->map(function ($sale) {
-                    // Bill calculations
-                    $total_billed = $sale->total_amount;
-                    $total_paid = $sale->payments->sum('amount');
-                    $total_balance = $total_billed - $total_paid;
+                $sales = $salesQuery->with('user')
+                    ->get()
+                    ->map(function ($sale) {
+                        // Bill calculations
+                        $total_billed = $sale->total_amount;
+                        $total_paid = $sale->payments->sum('amount');
+                        $total_balance = $total_billed - $total_paid;
 
-                    // Status button
-                    $statusBtn = ($sale->status == 'paid')
-                        ? '<strong class="text-success text-capitalize"><i class="fas fa-check-circle"></i> ' . $sale->status . '</strong>'
-                        : '<strong class="text-danger text-capitalize"><i class="fas fa-times-circle"></i> ' . $sale->status . '</strong>';
+                        // Status button
+                        $statusBtn = ($sale->status == 'paid')
+                            ? '<strong class="text-success text-capitalize"><i class="fas fa-check-circle"></i> ' . $sale->status . '</strong>'
+                            : '<strong class="text-danger text-capitalize"><i class="fas fa-times-circle"></i> ' . $sale->status . '</strong>';
 
-                    return [
-                        'invoice_number' => str_pad($sale->id, 6, '0', STR_PAD_LEFT),
-                        'total_billed' => '<div class="text-end">' . number_format($total_billed, 2) . '</div>',
-                        'total_paid' => '<div class="text-end">' . number_format($total_paid, 2) . '</div>',
-                        'total_balance' => '<div class="text-end">' . number_format($total_balance, 2) . '</div>',
-                        'pay_method' => ucwords($sale->payments->first()->paymentMethod->name) ?? 'Unknown Method',
-                        'cashier' => User::where('id', $sale->created_by)->value('name') ?? 'Unknown Cashier',
-                        'status' => $statusBtn,
-                        'action' => view('portal.sale.partials.sale_actions', compact('sale'))->render(),
-                        'created_at' => $sale->created_at->format('Y-m-d H:i:s'),
-                    ];
-                });
+                        return [
+                            'invoice_number' => str_pad($sale->id, 6, '0', STR_PAD_LEFT),
+                            'total_billed' => '<div class="text-end">' . number_format($total_billed, 2) . '</div>',
+                            'total_paid' => '<div class="text-end">' . number_format($total_paid, 2) . '</div>',
+                            'total_balance' => '<div class="text-end">' . number_format($total_balance, 2) . '</div>',
+                            'pay_method' => ucwords($sale->payments->first()->paymentMethod->name) ?? 'Unknown Method',
+                            'cashier' => $sale->user->name ?? 'Unknown Cashier',
+                            'status' => $statusBtn,
+                            'action' => view('portal.sale.partials.sale_actions', compact('sale'))->render(),
+                            'created_at' => $sale->created_at->format('Y-m-d H:i:s'),
+                        ];
+                    });
 
                 // Return the sales data to DataTables
                 return DataTables::of($sales)
@@ -119,11 +121,12 @@ class SaleController extends Controller
             DB::beginTransaction();
 
             // prepare reference id
-            $created_by = Auth::id();
+            $created_by = Auth::user()->id;
 
             // Store the sale
             $sale = Sale::create([
                 'branch_id' => $validated['branch_id'],
+                'user_id' => $created_by,
                 'customer_id' => $validated['customer_id'],
                 'sale_type' => $validated['sale_type'],
                 'total_amount' => $validated['data']['total_price'],

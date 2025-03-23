@@ -86,7 +86,7 @@
 
         .receipt-footer {
             text-align: center;
-            font-size: 10px;
+            font-size: 12px;
             margin-top: 10px;
         }
     </style>
@@ -96,9 +96,10 @@
     <div class="receipt-container">
         <!-- Receipt Heading -->
         <div class="receipt-heading">
+            <img src="{{ public_path('assets/images/logo/'.$company_info->logo ?? 'logo.png') }}" alt="" srcset="">
             <h1>{{ strtoupper($company_info->name) }}</h1>
             <h1>{{ strtoupper('P.O BOX ' . $company_info->address) }}</h1>
-            <h1>{{ strtoupper(auth()->user()->branch?->name) }}</h1>
+            <h1>{{ strtoupper($sale->user->branch?->name) }}</h1>
         </div>
 
         <!-- Receipt Title -->
@@ -119,7 +120,7 @@
                 </tr>
                 <tr>
                     <td>Cashier:</td>
-                    <td>{{ ucwords(auth()->user()->name) }}</td>
+                    <td>{{ ucwords($sale->user->name ?? 'No Cashier') }}</td>
                 </tr>
             </table>
         </div>
@@ -176,8 +177,8 @@
             <img src="data:image/png;base64,{{ $barcode }}" alt="Barcode">
             <p>{{ $sale->id }}</p>
             <p>+254785933333 | {{ $company_info->phone }}</p>
-            <p>THANK YOU FOR SHOPPING WITH US!</p>
-            <p>Visit Again or Check Out Our Loyalty Program.</p>
+            <p>Thank you for shopping with Atricare!</p>
+            <p>All goods are sold subject to manufacturer's warranty. The warranty does not cover faults arising from misuse of damage to the goods caused by the user.</p>
         </div>
     </div>
 </body>

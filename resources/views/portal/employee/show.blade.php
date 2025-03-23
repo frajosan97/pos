@@ -14,7 +14,7 @@
                     @php
                     // Retrieve the passport photo URL from the user's KYC data
                     $passportPhoto = $user->kyc->where('doc_type', 'passport_photo')->first();
-                    $passportPath = $passportPhoto ? asset($passportPhoto->document) : asset('passport.png');
+                    $passportPath = $passportPhoto ? asset($passportPhoto->document) : asset('assets/images/profiles/passport.png');
                     @endphp
 
                     <img src="{{ $passportPath }}"

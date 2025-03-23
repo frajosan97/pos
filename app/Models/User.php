@@ -46,6 +46,8 @@ class User extends Authenticatable
 
     /**
      * Relationship with the Branch model.
+     *
+     * @return BelongsTo
      */
     public function branch(): BelongsTo
     {
@@ -53,12 +55,125 @@ class User extends Authenticatable
     }
 
     /**
-     * Relationship with the Permission model.
+     * Relationship with the Permission model through the pivot table.
+     *
+     * @return BelongsToMany
      */
     public function permissions(): BelongsToMany
     {
         return $this->belongsToMany(Permission::class, 'user_permissions', 'user_id', 'permission_id')
-            ->withPivot('selected_branches', 'selected_products', 'selected_catalogues');
+            ->withPivot('selected_branches', 'selected_products', 'selected_catalogues'); // Explicitly load pivot columns
+    }
+
+    /**
+     * Get the selected branches for the user based on the 'manage_branch' permission.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function selectedBranches()
+    {
+        $permission = $this->permissions()->withPivot('selected_branches')->where('slug', 'manager_branch')->first();
+
+        if ($permission && isset($permission->pivot->selected_branches)) {
+            $branchIds = json_decode($permission->pivot->selected_branches, true);
+            return Branch::whereIn('id', $branchIds)->get();
+        }
+
+        return collect();
+    }
+
+    /**
+     * Get the selected products for the user based on the 'manage_products' permission.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function selectedProducts()
+    {
+        $permission = $this->permissions()->withPivot('selected_products')->where('slug', 'manager_product')->first();
+
+        if ($permission && isset($permission->pivot->selected_products)) {
+            $productIds = json_decode($permission->pivot->selected_products, true);
+            return Products::whereIn('id', $productIds)->get();
+        }
+
+        return collect();
+    }
+
+    /**
+     * Get the selected catalogues for the user based on the 'manage_catalogues' permission.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function selectedCatalogues()
+    {
+        $permission = $this->permissions()->withPivot('selected_catalogues')->where('slug', 'manager_catalogue')->first();
+
+        if ($permission && isset($permission->pivot->selected_catalogues)) {
+            $catalogueIds = json_decode($permission->pivot->selected_catalogues, true);
+            return Catalogue::whereIn('id', $catalogueIds)->get();
+        }
+
+        return collect();
+    }
+
+    /**
+     * Check if the user has a specific permission.
+     *
+     * @param string $permission
+     * @return bool
+     */
+    public function hasPermission(string $permission): bool
+    {
+        return $this->permissions->contains('slug', $permission);
+    }
+
+    /**
+     * Check if the user is active.
+     *
+     * @return bool
+     */
+    public function isActive(): bool
+    {
+        return $this->status === 1;
+    }
+
+    /**
+     * Get the full name of the user.
+     *
+     * @return string
+     */
+    public function fullName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * Scope a query to only include active users.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('status', 1);
+    }
+
+    /**
+     * Get the commissions associated with the user.
+     *
+     * @return HasMany
+     */
+    public function commissions(): HasMany
+    {
+        return $this->hasMany(Commission::class);
+    }
+
+    /**
+     * Get sales made by the user.
+     */
+    public function sales(): HasMany
+    {
+        return $this->hasMany(Sale::class);
     }
 
     /**
@@ -94,50 +209,32 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if the user has a specific permission.
-     */
-    public function hasPermission(string $permission): bool
-    {
-        return $this->permissions->contains('slug', $permission);
-    }
-
-    /**
-     * Check if the user is active.
-     */
-    public function isActive(): bool
-    {
-        return $this->status === 1;
-    }
-
-    /**
-     * Get the full name of the user.
-     */
-    public function fullName(): string
-    {
-        return $this->name;
-    }
-
-    /**
-     * Scope a query to only include active users.
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('status', 1);
-    }
-
-    /**
-     * Get the commissions associated with the user.
-     */
-    public function commissions(): HasMany
-    {
-        return $this->hasMany(Commission::class);
-    }
-
-    /**
      * Get the kyc associated with the user.
+     *
+     * @return HasMany
      */
     public function kyc(): HasMany
     {
         return $this->hasMany(KYCData::class);
+    }
+
+    public function kycData()
+    {
+        return $this->hasMany(KYCData::class, 'user_id');
+    }
+
+    public function hasCompletedKYC()
+    {
+        $requiredDocs = array_keys(kyc_docs());
+
+        // Fetch user's uploaded KYC documents with approval status
+        $uploadedDocs = $this->kycData()
+            ->whereIn('doc_type', $requiredDocs)
+            ->where('status', 'approved')
+            ->pluck('doc_type')
+            ->toArray();
+
+        // Check if all required docs exist and are approved
+        return empty(array_diff($requiredDocs, $uploadedDocs));
     }
 }

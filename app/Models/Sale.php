@@ -12,6 +12,7 @@ class Sale extends Model
     // Mass assignable attributes
     protected $fillable = [
         'branch_id',
+        'user_id',
         'customer_id',
         'sale_type',
         'total_amount',
@@ -20,7 +21,14 @@ class Sale extends Model
         'updated_by',
     ];
 
-    // Relationships
+    /**
+     * Get the user (salesperson) who handled the sale.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class)->withDefault();
