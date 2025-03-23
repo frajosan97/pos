@@ -10,7 +10,7 @@
         <table class="table data-table items-list-table">
             <thead class="bg-light">
                 <tr>
-                    <th>Invoice No.</th>
+                    <th>Receipt No.</th>
                     <th>Billed (KES)</th>
                     <th>Paid (KES)</th>
                     <th>Pay Mode</th>
@@ -27,7 +27,7 @@
                     <td>{{ number_format($sale->payments->sum('amount'),2) }}</td>
                     <td>
                         @foreach($sale->payments as $payment)
-                        {{ ucwords($payment->paymentMethod->name ?? 'Unknown Method') }}
+                        <p class="p-0 m-0">{{ ucwords($payment->paymentMethod->name.' - KES '.number_format($payment->amount,2)) }}</p>
                         @endforeach
                     </td>
                     <td>{{ ucwords($sale->user->name ?? 'No User') }}</td>
