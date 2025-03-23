@@ -241,6 +241,7 @@
             Quagga.onDetected(function(result) {
                 let code = result.codeResult.code;
                 $("#barcode-result").text(code);
+                $('#scannerModal').modal('hide');
                 $("#barcode").val(code);
                 searchProduct(code);
                 Quagga.stop();
@@ -250,6 +251,7 @@
         });
 
         $("#stop-scanner").click(function() {
+            $('#scannerModal').modal('hide');
             Quagga.stop();
             $("#stop-scanner").hide();
             isScanning = false;
