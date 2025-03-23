@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\View;
 use Mpdf\Mpdf;
+use Picqer\Barcode\BarcodeGeneratorPNG;
 
 class PdfController extends Controller
 {
@@ -25,18 +26,34 @@ class PdfController extends Controller
     protected function generatePDF(string $html, string $fileName, string $viewType, string $orientation)
     {
         try {
-            $mpdf = new Mpdf([
-                'mode' => 'utf-8',
-                'format' => 'A4',
-                'orientation' => $orientation,
-            ]);
+            if ($fileName === 'receipt') {
+                // Receipt dimensions
+                $mpdf = new Mpdf([
+                    'mode' => 'utf-8',
+                    'format' => 'A6',
+                    'orientation' => $orientation,
+                    'margin_left' => 5,   // Reduced left margin
+                    'margin_right' => 5,  // Reduced right margin
+                    'margin_top' => 5,    // Reduced top margin
+                    'margin_bottom' => 5, // Reduced bottom margin
+                    'margin_header' => 0, // No header margin
+                    'margin_footer' => 0, // No footer margin
+                ]);
+            } else {
+                // Receipt dimensions
+                $mpdf = new Mpdf([
+                    'mode' => 'utf-8',
+                    'format' => 'A4',
+                    'orientation' => $orientation,
+                ]);
 
-            // Set the Footer
-            $mpdf->SetHTMLFooter('
-                <div style="text-align: center; color: gray;">
-                    Page {PAGENO} of {nbpg}
-                </div>
-            ');
+                // Set the Footer
+                $mpdf->SetHTMLFooter('
+                    <div style="text-align: center; color: gray;">
+                        Page {PAGENO} of {nbpg}
+                    </div>
+                ');
+            }
 
             $mpdf->SetBasePath(public_path()); // Set base path for assets
             $mpdf->WriteHTML($html); // Write HTML content to the PDF
@@ -126,20 +143,17 @@ class PdfController extends Controller
         return $this->generatePDF($html, $fileName, 'S', 'P');
     }
 
-    /**
-     * Generate an invoice PDF.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function invoice(Request $request, string $id)
+    public function receipt(Request $request, string $id)
     {
-        // Fetch invoice data and render it to HTML
-        $invoice = Sale::with(['saleItems.product', 'payments.paymentMethod', 'customer'])->findOrFail($id);
-        $html = View::make('portal.pdf.invoice', compact('invoice'))->render();
-        $fileName = 'invoice';
+        // Fetch the sale by its ID, along with related sale items and customer
+        $sale = Sale::with(['saleItems.product', 'payments.paymentMethod', 'customer'])->findOrFail($id);
 
-        // Generate and return the PDF
+        $generator = new BarcodeGeneratorPNG();
+        $barcode = base64_encode($generator->getBarcode($id, $generator::TYPE_CODE_128));
+
+        $html = View::make('portal.pdf.receipt', compact(['sale', 'barcode']))->render();
+        $fileName = 'receipt';
+
         return $this->generatePDF($html, $fileName, 'S', 'P');
     }
 

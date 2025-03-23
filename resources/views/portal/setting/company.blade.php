@@ -4,23 +4,6 @@
 
 @section('content')
 
-<!-- Control Buttons -->
-<ul class="nav nav-pills rounded bg-white mb-3">
-    <li class="nav-item dropdown">
-        <a class="nav-link" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-print"></i> Print
-        </a>
-        <ul class="dropdown-menu rounded-0 border-0 shadow-sm p-0">
-            <li>
-                <a href="{{ route('company.pdf') }}" target="_blank" class="dropdown-item">
-                    <i class="fas fa-file-pdf text-danger"></i> PDF
-                </a>
-            </li>
-        </ul>
-    </li>
-</ul>
-<!-- / End Control Buttons -->
-
 <div class="row">
     <div class="col-12">
         <div class="card shadow-sm">
@@ -100,56 +83,56 @@
 
 @push('script')
 <script>
-$(document).ready(function() {
-    // Handle form submission for both create and edit
-    $("#company-update-form").validate({
-        submitHandler: function(form, event) {
-            event.preventDefault();
+    $(document).ready(function() {
+        // Handle form submission for both create and edit
+        $("#company-update-form").validate({
+            submitHandler: function(form, event) {
+                event.preventDefault();
 
-            Swal.fire({
-                title: 'Company Update',
-                text: 'Are you sure you want to proceed?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, Proceed',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    Swal.fire({
-                        title: 'Processing...',
-                        text: 'Please wait while we process your request.',
-                        allowOutsideClick: false,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    });
+                Swal.fire({
+                    title: 'Company Update',
+                    text: 'Are you sure you want to proceed?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Proceed',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Processing...',
+                            text: 'Please wait while we process your request.',
+                            allowOutsideClick: false,
+                            didOpen: () => {
+                                Swal.showLoading();
+                            }
+                        });
 
-                    $.ajax({
-                        url: $(form).attr('action'),
-                        type: $(form).attr('method'),
-                        data: new FormData(form),
-                        contentType: false,
-                        processData: false,
-                        success: function(response) {
-                            Swal.fire({
-                                title: 'Success',
-                                text: response.success,
-                                icon: 'success',
-                            }).then(() => {
-                                window.location.reload();
-                            });
-                        },
-                        error: function(xhr) {
-                            Swal.fire('Error!', xhr.responseJSON.error || xhr
-                                .responseJSON.message, 'error');
-                        }
-                    });
-                }
-            });
-        }
+                        $.ajax({
+                            url: $(form).attr('action'),
+                            type: $(form).attr('method'),
+                            data: new FormData(form),
+                            contentType: false,
+                            processData: false,
+                            success: function(response) {
+                                Swal.fire({
+                                    title: 'Success',
+                                    text: response.success,
+                                    icon: 'success',
+                                }).then(() => {
+                                    window.location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error!', xhr.responseJSON.error || xhr
+                                    .responseJSON.message, 'error');
+                            }
+                        });
+                    }
+                });
+            }
+        });
     });
-});
 </script>
 @endpush

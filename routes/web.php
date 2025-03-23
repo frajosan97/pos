@@ -100,13 +100,12 @@ Route::middleware('auth')->group(function () {
      * PDF Generator routes.
      */
     Route::prefix('/pdf')->group(function () {
-        Route::get('/inventory', [PdfController::class, 'inventory'])->name('inventory.pdf');
-        Route::get('/employee', [PdfController::class, 'employee'])->name('employee.pdf');
-        Route::get('/sales', [PdfController::class, 'sales'])->name('sales.pdf');
-        Route::get('/invoice/{id}', [PdfController::class, 'invoice'])->name('invoice.pdf');
         Route::get('/branch', [PdfController::class, 'branch'])->name('branch.pdf');
-        Route::get('/company', [PdfController::class, 'company'])->name('company.pdf');
+        Route::get('/employee', [PdfController::class, 'employee'])->name('employee.pdf');
         Route::get('/contract_letter/{id}', [PdfController::class, 'contractLetter'])->name('contract_letter.pdf');
+        Route::get('/inventory', [PdfController::class, 'inventory'])->name('inventory.pdf');
+        Route::get('/sales', [PdfController::class, 'sales'])->name('sales.pdf');
+        Route::get('/receipt/{id}', [PdfController::class, 'receipt'])->name('receipt.pdf');
     });
 
     /**
