@@ -148,6 +148,8 @@
         </div>
         <!-- ================ Main Body End ================ -->
 
+        @include('layouts.partials.modal')
+
         @endif
 
     </div>

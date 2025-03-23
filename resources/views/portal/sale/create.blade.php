@@ -6,64 +6,10 @@
 
 @if(auth()->user()->hasPermission('sale_create'))
 
-<style>
-    .table th,
-    .table td {
-        vertical-align: middle;
-    }
-
-    .cash-display,
-    .table tfoot {
-        font-weight: bolder;
-        font-size: 30px;
-    }
-
-    #scanner-container {
-        position: relative;
-        width: 100%;
-        max-width: 500px;
-        height: 320px;
-        margin: 10px auto;
-        background: #000;
-        overflow: hidden;
-    }
-
-    /* Full Video Feed */
-    video {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        /* Ensures full coverage */
-    }
-
-    /* Scanning Frame */
-    .scanner-frame {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 80%;
-        height: 50%;
-        transform: translate(-50%, -50%);
-        border: 3px solid red;
-        box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
-        z-index: 2;
-    }
-
-    button {
-        margin: 10px;
-        padding: 10px 15px;
-        font-size: 16px;
-        cursor: pointer;
-    }
-</style>
-
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card border-0 shadow-sm">
-            <div class="card-body">
+            <div class="card-body point-of-sale">
 
                 <!-- Sale setups -->
                 <div class="row">
@@ -99,33 +45,9 @@
                     <input type="text" class="form-control border-0"
                         placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode"
                         name="barcode">
-                    <span class="ms-2 text-muted" data-bs-toggle="modal" data-bs-target="#scannerModal">
+                    <span class="ms-2 text-muted cursor-pointer" data-bs-toggle="modal" data-bs-target="#scannerModal">
                         <i class="fas fa-barcode"></i>
                     </span>
-
-                    <!-- Scanner Modal -->
-                    <div class="modal fade" id="scannerModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="scannerModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h1 class="modal-title fs-5" id="scannerModalLabel">Bar Code Scanner</h1>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-capitalize">
-                                    <div id="scanner-container">
-                                        <video id="camera-feed" autoplay></video>
-                                        <div class="scanner-frame"></div>
-                                    </div>
-                                    <p>Scanned Code: <span id="barcode-result"></span></p>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-outline-primary" id="start-scanner">Start Scanner</button>
-                                    <button type="button" class="btn btn-outline-danger" id="stop-scanner">Stop Scanner</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
 
                 <!-- Cart Section -->
@@ -214,7 +136,6 @@
                     isScanning = false;
                     return;
                 }
-                console.log("Scanner started");
                 Quagga.start();
                 $("#stop-scanner").show();
             });
@@ -240,20 +161,28 @@
 
             Quagga.onDetected(function(result) {
                 let code = result.codeResult.code;
+
+                // Play scanner beep sound
+                let beep = new Audio('/assets/audio/beep.mp3'); // Ensure the file exists in your project
+                beep.play();
+
+                // Delay the execution of barcode processing for 1 second (1000ms)
+                // setTimeout(() => {
                 $("#barcode-result").text(code);
-                $('#scannerModal').modal('hide');
-                $("#barcode").val(code);
-                searchProduct(code);
                 Quagga.stop();
                 $("#stop-scanner").hide();
+                $('#scannerModal').modal('hide');
                 isScanning = false;
+                $("#barcode").val(code);
+                searchProduct(code);
+                // }, 1000);
             });
         });
 
         $("#stop-scanner").click(function() {
-            $('#scannerModal').modal('hide');
             Quagga.stop();
             $("#stop-scanner").hide();
+            $('#scannerModal').modal('hide');
             isScanning = false;
         });
 

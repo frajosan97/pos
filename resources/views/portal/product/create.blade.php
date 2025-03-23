@@ -15,19 +15,17 @@
 
                     <!-- Barcode -->
                     <div class="col-md-12 input-group border rounded d-flex align-items-center">
-                        <span class="mx-2 text-muted">
+                        <span class="me-2 text-muted">
                             <i class="fas fa-search"></i>
                         </span>
-                        <input
-                            type="search"
-                            class="form-control border-0"
-                            placeholder="Search for product by Barcode (Scan or Enter Manually)"
-                            id="barcode"
-                            name="barcode"
-                            autofocus
-                            required />
+                        <input type="text" class="form-control border-0"
+                            placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode"
+                            name="barcode">
+                        <span class="mx-2 text-muted cursor-pointer" data-bs-toggle="modal" data-bs-target="#scannerModal">
+                            <i class="fas fa-barcode"></i>
+                        </span>
                         <!-- Button to generate barcode -->
-                        <span class="mx-2 text-muted cursor-pointer" id="generateBarcode" title="Generate Barcode">
+                        <span class="text-muted cursor-pointer" id="generateBarcode" title="Generate Barcode">
                             <i class="fas fa-random"></i>
                         </span>
                     </div>
@@ -142,21 +140,102 @@
 @push('script')
 <script>
     $(document).ready(function() {
+        // Get data
+        let isScanning = false;
+
         $('#generateBarcode').on('click', function() {
             // Generate a barcode using the current timestamp
             const timestamp = Date.now(); // Get current time in milliseconds
             const generatedBarcode = `${timestamp}`; // Prefix 'BAR' for distinction
             // Insert the generated barcode into the input field
             $('#barcode').val(generatedBarcode).focus();
-            search_product(generatedBarcode);
+            searchProduct(generatedBarcode);
+        });
+
+        $("#start-scanner").click(function() {
+            if (isScanning) return;
+            isScanning = true;
+
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    constraints: {
+                        facingMode: "environment", // Use back camera
+                        width: 640,
+                        height: 480
+                    },
+                    target: document.querySelector("#scanner-container")
+                },
+                locator: {
+                    patchSize: "medium",
+                    halfSample: true
+                },
+                decoder: {
+                    readers: ["ean_reader", "code_128_reader"]
+                }, // Supports multiple barcode types
+                locate: true
+            }, function(err) {
+                if (err) {
+                    console.error("Scanner initialization failed:", err);
+                    isScanning = false;
+                    return;
+                }
+                Quagga.start();
+                $("#stop-scanner").show();
+            });
+
+            Quagga.onProcessed(function(result) {
+                let drawingCanvas = Quagga.canvas.dom.overlay;
+                let ctx = drawingCanvas.getContext("2d");
+                if (result) {
+                    if (result.boxes) {
+                        ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                        result.boxes.forEach((box) => {
+                            Quagga.ImageDebug.drawPath(box, {
+                                x: 0,
+                                y: 1
+                            }, ctx, {
+                                color: "green",
+                                lineWidth: 2
+                            });
+                        });
+                    }
+                }
+            });
+
+            Quagga.onDetected(function(result) {
+                let code = result.codeResult.code;
+
+                // Play scanner beep sound
+                let beep = new Audio('/assets/audio/beep.mp3'); // Ensure the file exists in your project
+                beep.play();
+
+                // Delay the execution of barcode processing for 1 second (1000ms)
+                // setTimeout(() => {
+                $("#barcode-result").text(code);
+                Quagga.stop();
+                $("#stop-scanner").hide();
+                $('#scannerModal').modal('hide');
+                isScanning = false;
+                $("#barcode").val(code);
+                searchProduct(code);
+                // }, 1000);
+            });
+        });
+
+        $("#stop-scanner").click(function() {
+            Quagga.stop();
+            $("#stop-scanner").hide();
+            $('#scannerModal').modal('hide');
+            isScanning = false;
         });
 
         $('#barcode').on('keyup', function() {
             var barcode = $(this).val();
-            search_product(barcode);
+            searchProduct(barcode);
         });
 
-        function search_product(barcode) {
+        function searchProduct(barcode) {
             barcode = barcode;
 
             function resetFields() {
