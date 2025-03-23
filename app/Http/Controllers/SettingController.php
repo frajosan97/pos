@@ -599,7 +599,7 @@ class SettingController extends Controller
                 'email' => 'required|email|max:255',
                 'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'color' => 'nullable|string|max:7',
-                'commission_by' => 'required|email|max:255',
+                'commission_by' => 'required|max:255',
                 // 'sms_mode' => 'required|in:online,offline',
                 // 'sms_partner_id' => 'nullable|string|max:255',
                 // 'sms_api_key' => 'nullable|string|max:255',
@@ -620,7 +620,7 @@ class SettingController extends Controller
                 // Move the file to the desired location
                 $file->move($destinationPath, $fileName);
                 // Save the relative path
-                $logoPath = 'assets/images/logo/' . $fileName;
+                $logoPath = $fileName;
             }
 
             // Update the company name
