@@ -58,6 +58,7 @@
                     <input type="text" class="form-control border-0"
                         placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode"
                         name="barcode"> -->
+                    <button id="start-scanner">Start Scanner</button>
                     <div id="reader"></div>
                     <p>Scanned Code: <span id="barcode-result"></span></p>
                     <button id="stop-scanner" style="display: none;">Stop Scanner</button>
@@ -116,41 +117,39 @@
     $(document).ready(function() {
 
         // Get data
-        let scanner = new Html5Qrcode("reader");
+        let scanner;
         cart = [];
         paymentMethods = [];
         totalPrice = 0;
 
-        function onScanSuccess(decodedText, decodedResult) {
-            $("#barcode-result").text(decodedText);
-            alert("Scanned Barcode: " + decodedText);
+        $("#start-scanner").click(function() {
+            scanner = new Html5Qrcode("reader");
+            Html5Qrcode.getCameras().then(devices => {
+                if (devices.length > 0) {
+                    let cameraId = devices[0].id;
+                    scanner.start(cameraId, {
+                            fps: 10,
+                            qrbox: 250
+                        },
+                        function(decodedText) {
+                            $("#barcode-result").text(decodedText);
+                            alert("Scanned Barcode: " + decodedText);
+                            sendBarcodeToServer(decodedText);
+                        },
+                        function(error) {
+                            console.warn("Scan error:", error);
+                        }
+                    );
+                    $("#stop-scanner").show();
+                } else {
+                    alert("No cameras found!");
+                }
+            }).catch(err => {
+                alert("Camera error: " + err);
+            });
+        });
 
-            // Send data to Laravel backend via AJAX
-            sendBarcodeToServer(decodedText);
-
-            // Stop scanning after successful scan
-            scanner.stop().then(() => {
-                $("#stop-scanner").hide();
-            }).catch(err => console.error("Stop error:", err));
-        }
-
-        function onScanFailure(error) {
-            console.warn(`Scan error: ${error}`);
-        }
-
-        // Start Scanner
-        scanner.start({
-                facingMode: "environment"
-            }, // Use back camera
-            {
-                fps: 10,
-                qrbox: 250
-            },
-            onScanSuccess,
-            onScanFailure
-        );
-
-        $("#stop-scanner").show().click(function() {
+        $("#stop-scanner").click(function() {
             scanner.stop().then(() => {
                 $("#stop-scanner").hide();
             }).catch(err => console.error("Stop error:", err));
