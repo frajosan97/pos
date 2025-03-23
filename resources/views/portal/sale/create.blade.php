@@ -58,10 +58,12 @@
                     <input type="text" class="form-control border-0"
                         placeholder="Search for product by Barcode (Scan or Enter Manually)" id="barcode"
                         name="barcode"> -->
+                    <h1>Barcode Scanner</h1>
                     <button id="start-scanner">Start Scanner</button>
-                    <div id="reader"></div>
-                    <p>Scanned Code: <span id="barcode-result"></span></p>
                     <button id="stop-scanner" style="display: none;">Stop Scanner</button>
+                    <video id="scanner-container"></video>
+                    <p>Scanned Code: <span id="barcode-result"></span></p>
+
                 </div>
 
                 <!-- Cart Section -->
@@ -117,42 +119,44 @@
     $(document).ready(function() {
 
         // Get data
-        let scanner;
-        cart = [];
+        let cart = [];
         paymentMethods = [];
         totalPrice = 0;
 
         $("#start-scanner").click(function() {
-            scanner = new Html5Qrcode("reader");
-            Html5Qrcode.getCameras().then(devices => {
-                if (devices.length > 0) {
-                    let cameraId = devices[0].id;
-                    scanner.start(cameraId, {
-                            fps: 10,
-                            qrbox: 250
-                        },
-                        function(decodedText) {
-                            $("#barcode-result").text(decodedText);
-                            alert("Scanned Barcode: " + decodedText);
-                            sendBarcodeToServer(decodedText);
-                        },
-                        function(error) {
-                            console.warn("Scan error:", error);
-                        }
-                    );
-                    $("#stop-scanner").show();
-                } else {
-                    alert("No cameras found!");
+            Quagga.init({
+                inputStream: {
+                    type: "LiveStream",
+                    constraints: {
+                        facingMode: "environment"
+                    }, // Use back camera
+                    target: document.querySelector("#scanner-container")
+                },
+                decoder: {
+                    readers: ["ean_reader", "code_128_reader"]
+                } // Supports multiple barcode types
+            }, function(err) {
+                if (err) {
+                    console.error("Scanner initialization failed:", err);
+                    return;
                 }
-            }).catch(err => {
-                alert("Camera error: " + err);
+                console.log("Scanner started");
+                Quagga.start();
+                $("#stop-scanner").show();
+            });
+
+            Quagga.onDetected(function(result) {
+                let code = result.codeResult.code;
+                $("#barcode-result").text(code);
+                alert("Scanned Barcode: " + code);
+                Quagga.stop(); // Stop scanning after the first successful read
+                $("#stop-scanner").hide();
             });
         });
 
         $("#stop-scanner").click(function() {
-            scanner.stop().then(() => {
-                $("#stop-scanner").hide();
-            }).catch(err => console.error("Stop error:", err));
+            Quagga.stop();
+            $("#stop-scanner").hide();
         });
 
         // Handle barcode input
