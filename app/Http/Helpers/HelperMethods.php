@@ -194,13 +194,13 @@ if (!function_exists('formatAmount')) {
 /**
  * Store logs in a JSON file, creating or updating as necessary.
  *
- * @param string $type
- * @param mixed $data
+ * @param string $type The type of log.
+ * @param mixed $data The data to store.
  */
 if (!function_exists('storeLog')) {
     function storeLog(string $type, $data): void
     {
-        $filePath = "mpesa_logs/$type.json";
+        $filePath = "$type.json";
         $existingData = Storage::disk('public')->exists($filePath)
             ? json_decode(Storage::disk('public')->get($filePath), true)
             : [];
