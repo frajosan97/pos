@@ -83,11 +83,6 @@
                         <i class="fas fa-user-cog"></i> permissions
                     </button>
                 </li>
-                <!-- <li class="nav-item" role="presentation">
-                        <button class="nav-link text-capitalize" id="commission-tab" data-bs-toggle="tab" data-bs-target="#commission-tab-pane" type="button" role="tab" aria-controls="commission-tab-pane" aria-selected="false">
-                            <i class="fas fa-wallet"></i> commission
-                        </button>
-                    </li> -->
             </ul>
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade py-3 show active" id="kyc-tab-pane" role="tabpanel" aria-labelledby="kyc-tab" tabindex="0">
@@ -124,61 +119,59 @@
                                         {{ $user->email_verified_at ? 'Verified' : 'Not Verified' }}
                                     </td>
                                 </tr>
-
-                                @foreach($user->kyc->chunk(3) as $kycChunk)
-                                <tr>
-                                    @foreach($kycChunk as $value)
-                                    <td>
-                                        <strong class="text-muted">{{ ucwords(str_replace('_', ' ', $value->doc_type)) }}</strong><br>
-                                        @php
-                                        $filePath = public_path($value->document);
-                                        $isImage = @getimagesize($filePath);
-                                        @endphp
-
-                                        {{-- Display the document --}}
-                                        @if($isImage)
-                                        <a href="{{ asset($value->document) }}" target="_blank">
-                                            <img src="{{ asset($value->document) }}" alt="" style="max-width: 100px">
-                                        </a>
-                                        @else
-                                        <a href="{{ asset($value->document) }}" target="_blank" class="btn btn-primary">
-                                            View Document
-                                        </a>
-                                        @endif
-
-                                        {{-- Display status and approval/rejection actions --}}
-                                        <div class="mt-2">
-                                            @if($value->status === 'approved')
-                                            <span class="badge bg-success">Approved</span>
-                                            @elseif($value->status === 'rejected')
-                                            <span class="badge bg-danger">Rejected</span>
-                                            @else
-                                            <span class="badge bg-warning">Pending Approval</span>
-                                            @if(auth()->user()->hasPermission('manager_general')) {{-- Check user permission --}}
-                                            <div class="mt-2">
-                                                <button class="btn btn-success btn-sm approve-kyc" data-id="{{ $value->id }}">
-                                                    Approve
-                                                </button>
-                                                <button class="btn btn-danger btn-sm reject-kyc" data-id="{{ $value->id }}">
-                                                    Reject
-                                                </button>
-                                            </div>
-                                            @endif
-                                            @endif
-                                        </div>
-                                    </td>
-                                    @endforeach
-
-                                    {{-- Fill empty cells if the chunk has less than 3 items --}}
-                                    @for($i = count($kycChunk); $i < 3; $i++)
-                                        <td>
-                                        </td>
-                                        @endfor
-                                </tr>
-                                @endforeach
-
                             </tbody>
                         </table>
+                    </div>
+
+                    <div class="row">
+                        @foreach($user->kyc as $value)
+                            <div class="col-md-2 mb-2">
+                                <div class="border p-2 text-center rounded shadow-none h-100">
+                                    {{-- Document Type --}}
+                                    <strong class="text-muted d-block mb-2">
+                                        {{ ucwords(str_replace('_', ' ', $value->doc_type)) }}
+                                    </strong>
+
+                                    {{-- Display the document --}}
+                                    @php
+                                        $filePath = public_path($value->document);
+                                        $isImage = @getimagesize($filePath);
+                                    @endphp
+
+                                    @if($isImage)
+                                        <a href="{{ asset($value->document) }}" target="_blank">
+                                            <img src="{{ asset($value->document) }}" alt="Document" class="img-fluid" style="max-height: 120px;">
+                                        </a>
+                                    @else
+                                        <a href="{{ asset($value->document) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            View Document
+                                        </a>
+                                    @endif
+
+                                    {{-- Status and Actions --}}
+                                    <div class="mt-3">
+                                        @if($value->status === 'approved')
+                                            <span class="badge bg-success">Approved</span>
+                                        @elseif($value->status === 'rejected')
+                                            <span class="badge bg-danger">Rejected</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark">Pending Approval</span>
+
+                                            @if(auth()->user()->hasPermission('manager_general'))
+                                                <div class="mt-2 d-flex gap-2">
+                                                    <button class="btn btn-success btn-sm approve-kyc" data-id="{{ $value->id }}">
+                                                        Approve
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm reject-kyc" data-id="{{ $value->id }}">
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
                 <div class="tab-pane fade py-3" id="permissions-tab-pane" role="tabpanel" aria-labelledby="permissions-tab" tabindex="0">
@@ -240,21 +233,6 @@
                         </table>
                     </div>
                 </div>
-                <!-- <div class="tab-pane fade py-3" id="commission-tab-pane" role="tabpanel" aria-labelledby="commission-tab" tabindex="0">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-bordered table-sm">
-                                <thead class="table-primary">
-                                    <tr>
-                                        <th>Period</th>
-                                        <th>Amount Earned</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-
-                                </tbody>
-                            </table>
-                        </div>
-                    </div> -->
             </div>
 
         </div>

@@ -4,10 +4,10 @@
 
 @section('content')
 
-@if(auth()->user()->hasPermission('product_view'))
-
 <!-- control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
+
+    <!-- Create button -->
     @if(auth()->user()->hasPermission('product_create'))
     <li class="nav-item">
         <a href="{{ route('product.create') }}" class="nav-link">
@@ -41,11 +41,8 @@
                             <tr>
                                 <th>Image</th>
                                 <th>Product</th>
-                                <th>N</th>
-                                <th>W/S</th>
-                                <th>A</th>
+                                <th>Price</th>
                                 <th>Qnty</th>
-                                <th>S/B</th>
                                 <th>Status</th>
                                 <th>Action</th>
                             </tr>
@@ -73,10 +70,6 @@
     </div>
 </div>
 
-@else
-@include('layouts.partials.no_permission')
-@endif
-
 @endsection
 
 @push('script')
@@ -103,24 +96,12 @@
                     name: 'name'
                 },
                 {
-                    data: 'normal_price',
-                    name: 'normal_price'
-                },
-                {
-                    data: 'whole_sale_price',
-                    name: 'whole_sale_price'
-                },
-                {
-                    data: 'agent_price',
-                    name: 'agent_price'
+                    data: 'price_list',
+                    name: 'price_list'
                 },
                 {
                     data: 'quantity',
                     name: 'quantity'
-                },
-                {
-                    data: 'stock_balance',
-                    name: 'stock_balance'
                 },
                 {
                     data: 'status',

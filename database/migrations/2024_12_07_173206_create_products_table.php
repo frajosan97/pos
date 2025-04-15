@@ -13,28 +13,68 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id();
+
+            /** ---------------------------------------------
+             *  RELATIONSHIPS
+             *  --------------------------------------------- */
             $table->foreignId('branch_id')->constrained()->cascadeOnDelete();
             $table->foreignId('catalogue_id')->constrained()->cascadeOnDelete();
+
+            /** ---------------------------------------------
+             *  IDENTIFIERS & BASIC INFO
+             *  --------------------------------------------- */
             $table->string('barcode')->unique()->nullable();
+            $table->string('sku')->unique();              // Stock Keeping Unit
             $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('photo')->nullable();          // Product image path
+
+            /** ---------------------------------------------
+             *  PRICING INFORMATION
+             *  --------------------------------------------- */
             $table->decimal('buying_price', 10, 2)->default(0.00);
             $table->decimal('normal_price', 10, 2)->default(0.00);
             $table->decimal('whole_sale_price', 10, 2)->default(0.00);
             $table->decimal('agent_price', 10, 2)->default(0.00);
-            $table->decimal('tax_rate', 5, 2)->default(0.00); // Tax percentage
-            $table->decimal('discount', 10, 2)->default(0.00); // Discount amount
-            $table->integer('quantity'); // Available stock quantity
-            $table->integer('sold_quantity')->default(0); // Tracks sold stock
-            $table->integer('low_stock_threshold')->default(10); // Minimum stock level for alerts
-            $table->string('sku')->unique();
-            $table->string('photo')->nullable();
-            $table->string('unit')->default('piece'); // Unit of measure
-            $table->decimal('weight', 8, 2)->nullable(); // Weight or volume for measurement
             $table->decimal('commission_on_sale', 10, 2)->default(0.00);
-            $table->string('status')->default('active'); // active or inactive
-            $table->text('description')->nullable();
+            $table->decimal('discount', 10, 2)->default(0.00);
+            $table->decimal('tax_rate', 5, 2)->default(0.00); // As percentage
+
+            /** ---------------------------------------------
+             *  STOCK & INVENTORY MANAGEMENT
+             *  --------------------------------------------- */
+            $table->integer('quantity')->default(0);                // Current stock
+            $table->integer('sold_quantity')->default(0);           // For analytics
+            $table->integer('low_stock_threshold')->default(10);    // Alert level
+
+            /** ---------------------------------------------
+             *  ADDITIONAL DETAILS
+             *  --------------------------------------------- */
+            $table->string('unit')->default('piece');        // e.g., piece, kg, liter
+            $table->decimal('weight', 8, 2)->nullable();     // Product weight
+
+            /** ---------------------------------------------
+             *  STATUS & APPROVAL
+             *  --------------------------------------------- */
+            $table->enum('status', ['active', 'inactive'])->default('active'); // enforce valid states
+            $table->boolean('is_verified')->default(false);  
+            $table->string('verified_by')->nullable();
+            $table->timestamp('verified_at')->nullable();
+
+            /** ---------------------------------------------
+             *  AUDIT TRAIL
+             *  --------------------------------------------- */
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
+
+            /** ---------------------------------------------
+             *  SOFT DELETES
+             *  --------------------------------------------- */
+            $table->softDeletes();
+
+            /** ---------------------------------------------
+             *  TIMESTAMPS
+             *  --------------------------------------------- */
             $table->timestamps();
         });
     }

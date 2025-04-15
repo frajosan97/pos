@@ -132,9 +132,9 @@
                 <!-- Main content -->
                 <section class="content">
                     <div class="container-fluid">
-
-                        @yield('content')
-
+                        <div class="row pb-3">
+                            @yield('content')
+                        </div>
                     </div>
                 </section>
                 <!-- /.content -->

@@ -4,8 +4,6 @@
 
 @section('content')
 
-@if(auth()->user()->hasPermission('user_edit'))
-
 <div class="row">
     <div class="col-md-12">
 
@@ -201,10 +199,6 @@
         </form>
     </div>
 </div>
-
-@else
-@include('layouts.partials.no_permission')
-@endif
 
 @endsection
 

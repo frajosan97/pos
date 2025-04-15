@@ -11,7 +11,7 @@
     </button>
     @endif
 
-    @if(auth()->user()->hasPermission('catalogue_delete'))
+    @if(auth()->user()->hasPermission('catalogue_destroy'))
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-outline-danger delete-catalogue"

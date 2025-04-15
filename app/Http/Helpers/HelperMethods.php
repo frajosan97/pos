@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\View;
 use Carbon\Carbon;
@@ -279,3 +280,36 @@ if (!function_exists('formatDateWithOrdinal')) {
         }
     }
 }
+
+if (!function_exists('getProtectedRouteNames')) {
+    function getProtectedRouteNames()
+    {
+        // Get all routes
+        $routes = Route::getRoutes();
+
+        // Filter routes by the 'auth' and 'permission' middleware
+        $protectedRoutes = collect($routes)->filter(function ($route) {
+            $middleware = $route->middleware();
+            return in_array('auth', $middleware) && in_array('permission', $middleware);
+        });
+
+        // Extract route names
+        $routeNames = $protectedRoutes->map(function ($route) {
+            return $route->getName();
+        })->filter();
+
+        return $routeNames->all();
+    }
+}
+
+if (!function_exists('permissionSlug')) {
+    function permissionSlug($permissionSlug) {
+
+        if($permissionSlug==='/') {
+            $permissionSlug = 'dashboard';
+        }
+        
+        return str_replace( '.', '_', $permissionSlug );
+    }
+}
+

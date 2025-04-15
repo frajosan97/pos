@@ -1,4 +1,3 @@
-@if(auth()->user()->hasPermission('sale_create'))
 <!-- POS Menu -->
 <li class="nav-item">
     <a href="/" class="nav-link">
@@ -6,9 +5,7 @@
         <p>Point of Sale</p>
     </a>
 </li>
-@endif
 
-@if(auth()->user()->hasPermission('view_analytics'))
 <!-- Analytics -->
 <li class="nav-item">
     <a href="{{ route('analytics.index') }}" class="nav-link">
@@ -16,10 +13,8 @@
         <p>Analytics</p>
     </a>
 </li>
-@endif
 
 <!-- Products -->
-@if(auth()->user()->hasPermission('product_view'))
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
         <i class="nav-icon fas fa-box-open"></i>
@@ -29,25 +24,20 @@
         </p>
     </a>
     <ul class="nav nav-treeview">
-        @if(auth()->user()->hasPermission('catalogue_view'))
         <li class="nav-item">
             <a href="{{ route('catalogue.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-book-open"></i>
                 <p>Catalogue</p>
             </a>
         </li>
-        @endif
-        @if(auth()->user()->hasPermission('product_view'))
         <li class="nav-item">
             <a href="{{ route('product.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-list"></i>
                 <p>Products List</p>
             </a>
         </li>
-        @endif
     </ul>
 </li>
-@endif
 
 <!-- Reports -->
 <li class="nav-item">
@@ -59,45 +49,36 @@
         </p>
     </a>
     <ul class="nav nav-treeview">
-        @if(auth()->user()->hasPermission('reports_sales'))
         <li class="nav-item">
             <a href="{{ route('sale.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-chart-bar"></i>
                 <p>Sales</p>
             </a>
         </li>
-        @endif
 
-        @if(auth()->user()->hasPermission('manager_catalogue'))
         <li class="nav-item">
             <a href="{{ route('sale.catalogue') }}" class="nav-link">
                 <i class="nav-icon fas fa-tags"></i>
                 <p>Brand Sales</p>
             </a>
         </li>
-        @endif
 
-        @if(auth()->user()->hasPermission('manager_product'))
         <li class="nav-item">
             <a href="{{ route('sale.product') }}" class="nav-link">
                 <i class="nav-icon fas fa-box"></i>
                 <p>Product Sales</p>
             </a>
         </li>
-        @endif
 
-        @if(auth()->user()->hasPermission('payment_view'))
         <li class="nav-item">
             <a href="{{ route('payment.index') }}" class="nav-link">
                 <i class="nav-icon fas fa-receipt"></i>
                 <p>Payments</p>
             </a>
         </li>
-        @endif
     </ul>
 </li>
 
-@if(auth()->user()->hasPermission('user_view'))
 <!-- Employees -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -122,7 +103,6 @@
         </li>
     </ul>
 </li>
-@endif
 
 <li class="nav-item">
     <a href="{{ route('chat.index') }}" class="nav-link">
@@ -131,7 +111,6 @@
     </a>
 </li>
 
-@if(auth()->user()->hasPermission('system_setting'))
 <!-- Settings -->
 <li class="nav-item">
     <a class="nav-link" href="javascript:void(0)">
@@ -180,16 +159,13 @@
         </li>
     </ul>
 </li>
-@endif
 
-@if(auth()->user()->hasPermission('system_cache'))
 <li class="nav-item">
     <a href="{{ route('clear-cache.form') }}" class="nav-link">
         <i class="nav-icon fas fa-broom"></i>
         <p>Clear Cache</p>
     </a>
 </li>
-@endif
 
 <!-- Logout -->
 <li class="nav-item">

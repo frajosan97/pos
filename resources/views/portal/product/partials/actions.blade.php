@@ -1,5 +1,5 @@
 <div class="btn-group ms-2 d-flex w-100 justify-content-end text-nowrap" role="group">
-    @if(auth()->user()->hasPermission('product_view'))
+    @if(auth()->user()->hasPermission('product_show'))
     <!-- Manage Button -->
     <a href="{{ route('product.show', $product->id) }}"
         class="btn btn-outline-primary"
@@ -9,7 +9,7 @@
     </a>
     @endif
 
-    @if(auth()->user()->hasPermission('product_delete'))
+    @if(auth()->user()->hasPermission('product_destroy'))
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-outline-danger delete-product"

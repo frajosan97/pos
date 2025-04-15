@@ -7,72 +7,33 @@ use App\Models\User;
 use App\Models\Permission;
 use Illuminate\Support\Facades\Hash;
 
-class UserSeeder extends Seeder
-{
+class UserSeeder extends Seeder {
     /**
-     * Run the database seeds.
-     */
-    public function run(): void
-    {
-        // Step 1: Define permissions
-        $permissions = [
-            // Manager-related permissions
-            'manager_catalogue',
-            'manager_product',
-            'manager_self',
-            'manager_branch',
-            'manager_general',
-            // Sale-related permissions
-            'sale_create',
-            'sale_view',
-            'sale_edit',
-            'sale_delete',
-            // Product-related permissions
-            'catalogue_create',
-            'catalogue_view',
-            'catalogue_edit',
-            'catalogue_delete',
-            'product_create',
-            'product_view',
-            'product_edit',
-            'product_delete',
-            // User-related permissions
-            'user_create',
-            'user_view',
-            'user_edit',
-            'user_delete',
-            // Permission-related permissions
-            'permission_create',
-            'permission_view',
-            'permission_edit',
-            'permission_delete',
-            // Payment-related permissions
-            'payment_create',
-            'payment_view',
-            'payment_edit',
-            'payment_delete',
-            // Report-related permissions
-            'reports_inventory',
-            'reports_sales',
-            'reports_payments',
-            // Setting-related permissions
-            'system_setting',
-            'system_cache',
-            'system_optimization',
-            // Analytics
-            'view_analytics',
-        ];
+    * Run the database seeds.
+    */
 
-        // Step 2: Create and/or get predefined permissions
-        foreach ($permissions as $permissionSlug) {
-            $permission = Permission::firstOrCreate([
-                'slug' => $permissionSlug,
-                'name' => ucfirst(str_replace('_', ' ', $permissionSlug)),
-                'description' => ucfirst(str_replace('_', ' ', $permissionSlug)) . ' Permission', // Optional: Add description
-            ]);
+    public function run(): void {
+        // Step 1: Define permissions
+        $allPermissions = getProtectedRouteNames();
+
+        // Create and/or get permissions
+        foreach ( $allPermissions as $permissionSlug ) {
+            // Normalize the route name to a consistent slug format ( e.g., 'chat.index' -> 'chat_index' )
+            $slug = permissionSlug($permissionSlug);
+
+            // Remove 'index' from the slug when generating name and description
+            $displayName = str_replace( [ '_', 'index' ], [ ' ', '' ], $slug );
+            // removes 'index' and replaces '_' with space
+
+            $permission = Permission::firstOrCreate( [
+                'slug' => $slug,
+            ], [
+                'name' => ucfirst( $displayName ),
+                'description' => ucfirst( $displayName ) . ' Permission',
+            ] );
         }
 
-        // Step 3: Create the admin user (modify values as necessary)
+        // Step 3: Create the admin user ( modify values as necessary )
         $user = [
             'branch_id' => 1, // Example: modify based on actual data
             'user_name' => 'admin', // Admin username
@@ -97,6 +58,6 @@ class UserSeeder extends Seeder
         $adminUser->permissions()->attach($permissions);
 
         // Step 6: Output success message
-        $this->command->info('Admin user with permissions created successfully.');
+        $this->command->info('Admin user with permissions created successfully.' );
+        }
     }
-}
