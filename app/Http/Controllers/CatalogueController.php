@@ -18,10 +18,11 @@ class CatalogueController extends Controller
     {
         try {
             if ($request->ajax()) {
-                $catalogues = Catalogue::with('products')  // Eager loading products if needed
+                $catalogues = Catalogue::withCount('products')  // Eager loading products if needed
                     ->get()
                     ->map(function ($catalogue) {
                         return [
+                            'products_count'=>$catalogue->products_count,
                             'name' => ucwords($catalogue->name),  // Capitalize catalogue name
                             'action' => view('portal.catalogue.partials.actions', compact('catalogue'))->render(),
                         ];
@@ -55,6 +56,20 @@ class CatalogueController extends Controller
             return response()->json(['error' => $exception->getMessage()], 500);
         }
     }
+
+    public function edit(string $id)
+    {
+        try {
+            // Attempt to find the catalogue
+            $catalogue = Catalogue::findOrFail($id);
+
+            return response()->json($catalogue);
+        } catch (\Exception $exception) {
+            Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
+            return response()->json(['error' => $exception->getMessage()], 500);
+        }
+    }
+
 
     /**
      * Store a newly created resource in storage.

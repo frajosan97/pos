@@ -54,6 +54,18 @@ Route::prefix('verify')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'permission'])->group(function () {
+    /*
+    |-------------------------------------------------------------------------
+    | Management
+    |-------------------------------------------------------------------------
+    */
+    Route::prefix('manage')->group(function () {
+        Route::get('/self', [DashboardController::class, 'manager_self'])->name('manager.self');
+        Route::get('/branch', [DashboardController::class, 'manager_branch'])->name('manager.branch');
+        Route::get('/general', [DashboardController::class, 'manager_general'])->name('manager.general');
+        Route::get('/product', [DashboardController::class, 'manager_product'])->name('manager.product');
+        Route::get('/catalogue', [DashboardController::class, 'manager_catalogue'])->name('manager.catalogue');
+    });
 
     /*
     |--------------------------------------------------------------------------

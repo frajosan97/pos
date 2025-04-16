@@ -37,10 +37,10 @@ class UserSeeder extends Seeder {
         $user = [
             'branch_id' => 1, // Example: modify based on actual data
             'user_name' => 'admin', // Admin username
-            'name' => 'Administrator', // Full name
+            'name' => 'Francis Kioko', // Full name
             'passport' => 'A12345678', // Example passport number, if needed
             'gender' => 'male', // Gender example
-            'phone' => '0700000000', // Phone number
+            'phone' => '0796594366', // Phone number
             'id_number' => '12345678', // ID number
             'email' => 'frajosan97@gmail.com', // Admin's email
             'password' => Hash::make('Frajosan97@001'), // Password
