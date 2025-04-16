@@ -9,7 +9,6 @@ use App\Models\Commission;
 use App\Models\Company;
 use App\Models\Sale;
 use App\Models\SaleItem;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,6 +43,7 @@ class SaleController extends Controller
 
                 // Fetch the sales and map the data
                 $sales = $salesQuery->with('user')
+                    ->latest()
                     ->get()
                     ->map(function ($sale) {
                         // Bill calculations
@@ -281,7 +281,10 @@ class SaleController extends Controller
                 }
 
                 // Fetch the sales and map the data
-                $sales = $salesQuery->get()->map(function ($sale) {
+                $sales = $salesQuery
+                    ->latest()
+                    ->get()
+                    ->map(function ($sale) {
 
                     return [
                         'product' => ucwords($sale->product->name),

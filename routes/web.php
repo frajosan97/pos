@@ -63,8 +63,9 @@ Route::middleware(['auth', 'permission'])->group(function () {
         Route::get('/self', [DashboardController::class, 'manager_self'])->name('manager.self');
         Route::get('/branch', [DashboardController::class, 'manager_branch'])->name('manager.branch');
         Route::get('/general', [DashboardController::class, 'manager_general'])->name('manager.general');
-        Route::get('/product', [DashboardController::class, 'manager_product'])->name('manager.product');
-        Route::get('/catalogue', [DashboardController::class, 'manager_catalogue'])->name('manager.catalogue');
+        Route::get('/product', [SaleController::class, 'catalogue'])->name('manager.product');
+        Route::get('/catalogue', [SaleController::class, 'product'])->name('manager.catalogue');
+        Route::get('/category-product-sales', [SaleController::class, 'catProFetch'])->name('sale.cat_pro_fetch');
     });
 
     /*
@@ -103,15 +104,6 @@ Route::middleware(['auth', 'permission'])->group(function () {
         Route::get('/get-user/{id}', [ChatController::class, 'getUser'])->name('chat.get');
         Route::post('/send-message', [ChatController::class, 'sendMessage'])->name('message.send');
     });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Sale Specific Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::get('/brand-sales', [SaleController::class, 'catalogue'])->name('sale.catalogue');
-    Route::get('/product-sales', [SaleController::class, 'product'])->name('sale.product');
-    Route::get('/category-product-sales', [SaleController::class, 'catProFetch'])->name('sale.cat_pro_fetch');
 
     /*
     |--------------------------------------------------------------------------
@@ -175,6 +167,7 @@ Route::middleware(['auth', 'permission'])->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::view('/clear-cache', 'portal.setting.clear-cache')->name('clear-cache.form');
+    Route::view('/optimize-system', 'portal.setting.optimize-system')->name('optimize-system.form');
     Route::post('/clear-cache', [SettingController::class, 'clearCache'])->name('cache.clear');
     Route::post('/optimize', [SettingController::class, 'optimize'])->name('cache.optimize');
 });

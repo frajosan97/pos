@@ -3,8 +3,7 @@
     <!-- Edit Button -->
     <button type="button"
         class="btn btn-outline-success edit-catalogue"
-        data-catalogue-id="{{ $catalogue->id }}"
-        data-catalogue-name="{{ $catalogue->name }}"
+        data-id="{{ $catalogue->id }}"
         aria-label="Edit Catalogue">
         <i class="fas fa-pencil-alt"></i>
         <span class="d-none d-sm-inline-block">Edit</span>
@@ -15,7 +14,8 @@
     <!-- Delete Button -->
     <button type="button"
         class="btn btn-outline-danger delete-catalogue"
-        data-catalogue-id="{{ $catalogue->id }}"
+        data-id="{{ $catalogue->id }}"
+        data-name="{{ $catalogue->name }}"
         aria-label="Delete Catalogue">
         <i class="fas fa-trash-alt"></i>
         <span class="d-none d-sm-inline-block">Delete</span>

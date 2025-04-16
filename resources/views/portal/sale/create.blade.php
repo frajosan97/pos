@@ -4,8 +4,6 @@
 
 @section('content')
 
-@if(auth()->user()->hasPermission('sale_create'))
-
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card border-0 shadow-sm">
@@ -91,10 +89,6 @@
         </div>
     </div>
 </div>
-
-@else
-@include('layouts.partials.no_permission')
-@endif
 
 @endsection
 

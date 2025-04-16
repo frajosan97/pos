@@ -31,21 +31,24 @@ class PaymentController extends Controller
                 }
 
                 // Fetch the payments and map the data
-                $payments = $paymentsQuery->get()->map(function ($payment) {
-                    return [
-                        'payment_id' => str_pad($payment->id, 6, '0', STR_PAD_LEFT),
-                        'amount' => '<div class="text-end">' . number_format($payment->amount, 2) . '</div>',
-                        'branch' => $payment->branch->name ?? 'Unknown Branch',
-                        'payment_method' => $payment->paymentMethod->name ?? 'Unknown Method',
-                        'cashier' => User::where('id', $payment->created_by)->value('name') ?? 'Unknown Cashier',
-                        'created_at' => $payment->created_at->format('Y-m-d H:i:s'),
-                        'action' => view('portal.payment.partials.payment_actions', compact('payment'))->render(),
-                    ];
+                $payments = $paymentsQuery->with(['sale.branch','paymentMethod'])
+                    ->latest()
+                    ->get()
+                    ->map(function ($payment) {
+                        return [
+                            'branch' => $payment->sale?->branch->name ?? 'Unknown Branch',
+                            'sale' => str_pad($payment->sale->id, 6, '0', STR_PAD_LEFT),
+                            'amount' => number_format($payment->amount, 2),
+                            'payment_method' => $payment->paymentMethod->name ?? 'Unknown Method',
+                            'status'=> $payment->status,
+                            'payment_date' => $payment->created_at->format('Y-m-d H:i:s'),
+                            'action' => view('portal.payment.partials.actions', compact('payment'))->render(),
+                        ];
                 });
 
                 // Return the payments data to DataTables
                 return DataTables::of($payments)
-                    ->rawColumns(['amount', 'action'])
+                    ->rawColumns(['amount', 'status', 'action'])
                     ->make(true);
             } else {
                 return view('portal.payment.index'); // Return the index view if not an AJAX request

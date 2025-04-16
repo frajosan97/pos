@@ -23,7 +23,9 @@ class CatalogueController extends Controller
                     ->map(function ($catalogue) {
                         return [
                             'products_count'=>$catalogue->products_count,
-                            'name' => ucwords($catalogue->name),  // Capitalize catalogue name
+                            'name' => ucwords($catalogue->name),
+                            'description' => ucwords($catalogue->description),
+                            'is_active' => ucwords($catalogue->is_active),
                             'action' => view('portal.catalogue.partials.actions', compact('catalogue'))->render(),
                         ];
                     });
@@ -78,23 +80,26 @@ class CatalogueController extends Controller
     {
         // Validation
         $request->validate([
-            'catalogue' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'required|boolean',
         ]);
-
+    
         try {
             // Create a new catalogue
             $catalogue = Catalogue::create([
-                'name' => $request->input('catalogue'),
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'is_active' => $request->boolean('is_active'),
                 'created_by' => Auth::user()->id ?? null,
             ]);
-
-            // Return success response
+    
             return response()->json('Catalogue created successfully.', 200);
         } catch (\Exception $exception) {
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());
             return response()->json(['error' => $exception->getMessage()], 500);
         }
-    }
+    }    
 
     /**
      * Update the specified resource in storage.
@@ -102,20 +107,22 @@ class CatalogueController extends Controller
     public function update(Request $request, string $id)
     {
         // Validation
-        $request->validate([
-            'catalogue' => 'required|string|max:255',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'is_active' => 'required|in:true,false,1,0',
         ]);
 
         try {
-            // Fetch the catalogue to update
             $catalogue = Catalogue::findOrFail($id);
 
             $catalogue->update([
-                'name' => $request->input('catalogue'),
-                'updated_by' => Auth::user()->id ?? null,
+                'name' => $request->input('name'),
+                'description' => $request->input('description'),
+                'is_active' => filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN),
+                'updated_by' => Auth::id(),
             ]);
 
-            // Return success response
             return response()->json('Catalogue updated successfully.', 200);
         } catch (\Exception $exception) {
             Log::error('Error in ' . __METHOD__ . ' - File: ' . $exception->getFile() . ', Line: ' . $exception->getLine() . ', Message: ' . $exception->getMessage());

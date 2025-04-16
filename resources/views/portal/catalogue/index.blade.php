@@ -3,7 +3,7 @@
 @section('pageTitle', 'Catalogue Management')
 
 @section('content')
-<div class="container-fluid">
+
     <!-- Control Buttons -->
     <ul class="nav nav-pills rounded bg-white mb-3 shadow-sm">
         @if(auth()->user()->hasPermission('catalogue_create'))
@@ -57,8 +57,10 @@
 <div class="modal fade" id="catalogueModal" tabindex="-1" aria-labelledby="catalogueModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <form id="catalogue-form" method="POST">
+            <form id="catalogue-form" action="{{ route('catalogue.store') }}" method="post">
                 @csrf
+                @method('POST')
+
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title" id="catalogueModalLabel">Add New Catalogue</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -76,9 +78,12 @@
                         <textarea class="form-control" id="description" name="description" 
                                   rows="3" placeholder="Optional description"></textarea>
                     </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="is_active" name="is_active" checked>
-                        <label class="form-check-label" for="is_active">Active</label>
+                    <div class="mb-3">
+                        <label for="is_active" class="form-label">Active Status</label>
+                        <select id="is_active" name="is_active" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -91,7 +96,7 @@
             </form>
         </div>
     </div>
-</div>
+    
 @endsection
 
 @push('script')
@@ -128,19 +133,19 @@ $(document).ready(function () {
             { 
                 data: 'products_count', 
                 name: 'products_count',
-                className: 'text-center',
                 render: function(data) {
-                    return `<span class="badge bg-primary">${data}</span>`;
+                    return data > 10 ? 
+                        `<span class="badge bg-success">${data}</span>` : 
+                        `<span class="badge bg-danger">${data}</span>`;
                 }
             },
             { 
                 data: 'is_active', 
                 name: 'is_active',
-                className: 'text-center',
                 render: function(data) {
-                    return data ? 
-                        '<span class="badge bg-success">Active</span>' : 
-                        '<span class="badge bg-danger">Inactive</span>';
+                    return data == 1 ? 
+                        '<span class="badge bg-success"><i class="fas fa-check-circle"></i> Active</span>' : 
+                        '<span class="badge bg-danger"><i class="fas fa-times-circle"></i> Inactive</span>';
                 }
             },
             { 
@@ -248,6 +253,17 @@ $(document).ready(function () {
         $('#catalogues-table').DataTable().search(this.value).draw();
     }, 300));
 
+    // Reset form when modal is closed
+    $('#catalogueModal').on('hidden.bs.modal', function () {
+        const form = $('#catalogue-form');
+        form[0].reset();
+        form.find('.is-invalid').removeClass('is-invalid');
+        form.find('input[name="_method"]').val('POST');
+        form.attr('action', "{{ route('catalogue.store') }}");
+        $('#catalogueModalLabel').text('Add New Catalogue');
+        $('#save-button').html('<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Save Changes');
+    });
+
     // Filters
     $(document).on('click', '.filter-branch, .filter-status', function (e) {
         e.preventDefault();
@@ -261,144 +277,97 @@ $(document).ready(function () {
     // Initialize mobile view
     fetchMobileCatalogues();
 
-    // Form handling
-    $('#catalogue-form').validate({
-        rules: {
-            name: {
-                required: true,
-                minlength: 2,
-                maxlength: 255
-            }
-        },
-        messages: {
-            name: {
-                required: "Please enter a catalogue name",
-                minlength: "Catalogue name must be at least 2 characters",
-                maxlength: "Catalogue name cannot exceed 255 characters"
-            }
-        },
-        errorElement: 'span',
-        errorPlacement: function(error, element) {
-            error.addClass('invalid-feedback');
-            element.closest('.mb-3').append(error);
-        },
-        highlight: function(element) {
-            $(element).addClass('is-invalid');
-        },
-        unhighlight: function(element) {
-            $(element).removeClass('is-invalid');
-        },
-        submitHandler: function(form) {
-            const submitButton = $('#save-button');
-            const spinner = submitButton.find('.spinner-border');
-            
-            submitButton.prop('disabled', true);
-            spinner.removeClass('d-none');
-            
-            const formData = new FormData(form);
-            const method = $(form).find('input[name="_method"]').val() || 'POST';
-            const url = method === 'POST' ? $(form).attr('action') : $(form).attr('action').replace('/edit', '');
-            
-            $.ajax({
-                url: url,
-                type: method,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    $('#catalogueModal').modal('hide');
-                    showSuccessAlert(response.message || 'Operation completed successfully');
-                    $('#catalogues-table').DataTable().ajax.reload(null, false);
-                    fetchMobileCatalogues($('#search-input').val());
-                },
-                error: function(xhr) {
-                    let errorMessage = 'An error occurred. Please try again.';
-                    if (xhr.responseJSON && xhr.responseJSON.errors) {
-                        // Handle validation errors
-                        const errors = xhr.responseJSON.errors;
-                        $.each(errors, function(key, value) {
-                            const element = $(`#${key}`);
-                            element.addClass('is-invalid');
-                            element.next('.invalid-feedback').text(value[0]);
-                        });
-                        errorMessage = 'Please correct the errors in the form.';
-                    } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-                    showErrorAlert(errorMessage);
-                },
-                complete: function() {
-                    submitButton.prop('disabled', false);
-                    spinner.addClass('d-none');
-                }
-            });
-        }
-    });
-
-    // Edit Catalogue Handler
-    $(document).on('click', '.edit-catalogue', function() {
+    $(document).on('click', '.edit-catalogue', function () {
+        // Get catalogue ID
         const id = $(this).data('id');
-        const url = `{{ route('catalogue.edit', ['catalogue' => ':id']) }}`.replace(':id', id);
 
-        // Show loading state in SweetAlert
+        // Validate ID
+        if (!id) {
+            Swal.fire('Error', 'No catalogue ID provided.', 'error');
+            return;
+        }
+
+        // Show loading alert
         Swal.fire({
-            icon: info,
             title: 'Loading...',
             text: 'Please wait while we fetch the catalogue details.',
+            icon: 'info',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
             }
         });
 
-        $.get(url, function(data) {
-            // Close the loading SweetAlert
+        // Fetch catalogue data
+        $.get(`{{ url('catalogue') }}/${id}/edit`, function (data) {
             Swal.close();
 
-            // Display catalogue details in modal
-            $('#catalogueModalLabel').text('Edit Catalogue');
-            $('#game-form').attr('action', `{{ url('portal/game') }}/${id}`);
-            $('#game-form input[name="_method"]').val('PUT');
+            // Set form for update
+            $('#catalogue-form').attr('action', `{{ url('catalogue') }}/${id}`);
+            $('#catalogue-form input[name="_method"]').val('PUT');
 
-            $('#name').val(data.name);
-            $('#slug').val(data.slug);
-            $('#game_category_id').val(data.game_category_id);
-            $('#icon').val(data.icon);
-            $('#provider').val(data.provider);
-            $('#portal_name').val(data.portal_name);
-            $('#game_launch_category').val(data.game_launch_category);
-            $('#game_launch_name').val(data.game_launch_name);
+            // Populate form fields
+            $('#catalogueModalLabel').text('Edit Catalogue');
+            $('#catalogue').val(data.name);
+            $('#description').val(data.description);
+
+            // Set checkbox state based on boolean value
             $('#is_active').val(data.is_active ? 1 : 0);
 
-            // save button
+            // Update save button
             $('#save-button').html('<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Update Catalogue');
 
-            $('#gameModal').modal('show');
-        }).fail(function() {
-            Swal.fire('Error', 'Failed to fetch game details.', 'error');
+            // Show modal
+            $('#catalogueModal').modal('show');
+
+        }).fail(function () {
+            Swal.fire('Error', 'Failed to fetch catalogue details.', 'error');
         });
+    });
 
+    // Submit form
+    $('#catalogue-form').validate({
+        submitHandler: function(form, event) {
+            event.preventDefault();
 
-
-
-
-        // const name = $(this).data('name');
-        // const description = $(this).data('description');
-        // const isActive = $(this).data('active');
-        
-        // const form = $('#catalogue-form');
-        // form[0].reset();
-        // form.find('.is-invalid').removeClass('is-invalid');
-        
-        // $('#catalogueModalLabel').text('Edit Catalogue');
-        // form.attr('action', `/catalogue/${id}/edit`);
-        // form.append('<input type="hidden" name="_method" value="PUT">');
-        // $('#catalogue').val(name);
-        // $('#description').val(description);
-        // $('#is_active').prop('checked', isActive);
-        // $('#save-button').html('<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Update Catalogue');
-        
-        // $('#catalogueModal').modal('show');
+            Swal.fire({
+                title: 'Save Catalogue?',
+                text: 'Do you want to save the catelogue information.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Save'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Loader
+                    Swal.fire({
+                        title: 'Processing...',
+                        icon: 'warning',
+                        text: 'Please wait while your request is being processed.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    // Submit
+                    $.ajax({
+                        url: $(form).attr('action'),
+                        type: 'POST',
+                        data: new FormData(form),
+                        contentType: false,
+                        processData: false,
+                        success: function(response) {
+                            Swal.fire('Success', response.success, 'success').then(() => {
+                                $('#catalogueModal').modal('hide');
+                                table.ajax.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error!', xhr.responseJSON.error || xhr.responseJSON.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
     });
 
     // Delete Catalogue Handler
@@ -453,17 +422,6 @@ $(document).ready(function () {
                 });
             }
         });
-    });
-
-    // Reset form when modal is closed
-    $('#catalogueModal').on('hidden.bs.modal', function () {
-        const form = $('#catalogue-form');
-        form[0].reset();
-        form.find('.is-invalid').removeClass('is-invalid');
-        form.find('input[name="_method"]').remove();
-        form.attr('action', "{{ route('catalogue.store') }}");
-        $('#catalogueModalLabel').text('Add New Catalogue');
-        $('#save-button').html('<span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span> Save Changes');
     });
 
     // Utility functions

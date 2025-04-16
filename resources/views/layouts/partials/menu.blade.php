@@ -57,14 +57,14 @@
         </li>
 
         <li class="nav-item">
-            <a href="{{ route('sale.catalogue') }}" class="nav-link">
+            <a href="{{ route('manager.catalogue') }}" class="nav-link">
                 <i class="nav-icon fas fa-tags"></i>
                 <p>Brand Sales</p>
             </a>
         </li>
 
         <li class="nav-item">
-            <a href="{{ route('sale.product') }}" class="nav-link">
+            <a href="{{ route('manager.product') }}" class="nav-link">
                 <i class="nav-icon fas fa-box"></i>
                 <p>Product Sales</p>
             </a>
@@ -157,14 +157,19 @@
                 <p>Company Information</p>
             </a>
         </li>
+        <li class="nav-item">
+            <a href="{{ route('clear-cache.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-broom"></i>
+                <p>Clear Cache</p>
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="{{ route('optimize-system.form') }}" class="nav-link">
+                <i class="nav-icon fas fa-wrench"></i>
+                <p>Optimize System</p>
+            </a>
+        </li>
     </ul>
-</li>
-
-<li class="nav-item">
-    <a href="{{ route('clear-cache.form') }}" class="nav-link">
-        <i class="nav-icon fas fa-broom"></i>
-        <p>Clear Cache</p>
-    </a>
 </li>
 
 <!-- Logout -->

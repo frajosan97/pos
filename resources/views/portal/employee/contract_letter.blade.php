@@ -4,6 +4,8 @@
 
 @section('content')
 
+<div class="container-fluid">
+
 <div class="row">
 
     @if($employee->hasCompletedKYC())
@@ -61,7 +63,7 @@
 
     <div class="col-md-12">
         <div class="card shadow-sm border-0">
-            <div class="card-header">
+            <div class="card-header card-title">
                 Contract Letter
             </div>
             <div class="card-body">
@@ -79,7 +81,7 @@
 
     <div class="col-md-12">
         <div class="card shadow-sm border-0">
-            <div class="card-header">
+            <div class="card-header card-title">
                 Contract Letter
             </div>
             <div class="card-body">
@@ -89,6 +91,8 @@
     </div>
 
     @endif
+</div>
+
 </div>
 
 @endsection

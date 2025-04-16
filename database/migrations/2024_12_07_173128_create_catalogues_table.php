@@ -24,8 +24,8 @@ return new class extends Migration
             // Catalogue name - required string
             $table->string('name');
 
-            // Status of the catalogue (e.g., active/inactive) - default is 'active'
-            $table->string('status')->default('active')->nullable();
+            // Active status
+            $table->boolean('is_active')->default(false);
 
             // Who created the record - optional string
             $table->string('created_by')->nullable();

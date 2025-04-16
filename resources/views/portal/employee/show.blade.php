@@ -4,241 +4,244 @@
 
 @section('content')
 
-<div class="row">
-    <div class="col-md-3">
-        <!-- Profile Card -->
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-md-3">
+            <!-- Profile Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="text-center">
+                        <!-- Passport Photo -->
+                        @php
+                        // Retrieve the passport photo URL from the user's KYC data
+                        $passportPhoto = $user->kyc->where('doc_type', 'passport_photo')->first();
+                        $passportPath = $passportPhoto ? asset($passportPhoto->document) : asset('assets/images/profiles/passport.png');
+                        @endphp
+
+                        <img src="{{ $passportPath }}"
+                            alt="Profile Picture"
+                            class="rounded-circle img-fluid profile-picture mb-3 p-1 shadow-sm bg-white" />
+
+                        <!-- Full Name -->
+                        <h3 class="fw-bold">{{ $user->name }}</h3>
+                        <!-- Edit icon -->
+                        <a class="w-100 btn btn-outline-primary mb-3" href="{{ route('employee.edit', $user->id) }}">
+                            <i class="fas fa-pencil"></i> Edit Profile
+                        </a>
+                        <a class="w-100 btn btn-outline-success mb-3" href="{{ route('contract_letter.show',$user->id) }}">
+                            <i class="fas fa-file-pdf"></i> Contract Letter
+                        </a>
+                        <a class="w-100 btn btn-outline-secondary mb-3" href="#">
+                            <i class="fas fa-print"></i> Print Data
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-body">
+                    <input type="text" id="daterange" class="form-control" placeholder="Select Date Range" />
+                    <hr>
+                    <div class="row g-2" id="user-analytics-cards">
+                        @for ($i = 0; $i < 4; $i++)
+                            <div class="col-md-6">
+                            <div class="card shadow-sm rounded-3 p-0 bg-white placeholder-glow">
+                                <div class="card-body p-0 d-flex align-items-center">
+                                    <div class="col-2 me-3">
+                                        <div class="placeholder rounded-circle bg-secondary" style="width: 40px; height: 40px;"></div>
+                                    </div>
+                                    <div class="col-10">
+                                        <h6 class="placeholder bg-secondary rounded mb-2" style="width: 60%; height: 15px;"></h6>
+                                        <h5 class="placeholder bg-secondary rounded mb-2" style="width: 80%; height: 20px;"></h5>
+                                        <div class="mb-2 progress rounded" style="height: 5px;">
+                                            <div class="progress-bar placeholder bg-secondary" style="width: 50%;"></div>
+                                        </div>
+                                        <div class="placeholder bg-secondary rounded mt-2" style="width: 50%; height: 10px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    @endfor
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-12">
         <div class="card shadow-sm border-0">
             <div class="card-body">
-                <div class="text-center">
-                    <!-- Passport Photo -->
-                    @php
-                    // Retrieve the passport photo URL from the user's KYC data
-                    $passportPhoto = $user->kyc->where('doc_type', 'passport_photo')->first();
-                    $passportPath = $passportPhoto ? asset($passportPhoto->document) : asset('assets/images/profiles/passport.png');
-                    @endphp
 
-                    <img src="{{ $passportPath }}"
-                        alt="Profile Picture"
-                        class="rounded-circle img-fluid profile-picture mb-3 p-1 shadow-sm bg-white" />
-
-                    <!-- Full Name -->
-                    <h3 class="fw-bold">{{ $user->name }}</h3>
-                    <!-- Edit icon -->
-                    <a class="w-100 btn btn-outline-primary mb-3" href="{{ route('employee.edit', $user->id) }}">
-                        <i class="fas fa-pencil"></i> Edit Profile
-                    </a>
-                    <a class="w-100 btn btn-outline-success mb-3" href="{{ route('contract_letter.show',$user->id) }}">
-                        <i class="fas fa-file-pdf"></i> Contract Letter
-                    </a>
-                    <a class="w-100 btn btn-outline-secondary mb-3" href="#">
-                        <i class="fas fa-print"></i> Print Data
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-9">
-        <div class="card">
-            <div class="card-body">
-                <input type="text" id="daterange" class="form-control" placeholder="Select Date Range" />
-                <hr>
-                <div class="row g-4" id="user-analytics-cards">
-                    @for ($i = 0; $i < 4; $i++)
-                        <div class="col-md-6">
-                        <div class="card shadow-sm rounded-3 p-3 bg-white placeholder-glow">
-                            <div class="card-body p-0 d-flex align-items-center">
-                                <div class="col-2 me-3">
-                                    <div class="placeholder rounded-circle bg-secondary" style="width: 40px; height: 40px;"></div>
-                                </div>
-                                <div class="col-10">
-                                    <h6 class="placeholder bg-secondary rounded mb-2" style="width: 60%; height: 15px;"></h6>
-                                    <h5 class="placeholder bg-secondary rounded mb-2" style="width: 80%; height: 20px;"></h5>
-                                    <div class="mb-2 progress rounded" style="height: 5px;">
-                                        <div class="progress-bar placeholder bg-secondary" style="width: 50%;"></div>
-                                    </div>
-                                    <div class="placeholder bg-secondary rounded mt-2" style="width: 50%; height: 10px;"></div>
-                                </div>
-                            </div>
+                <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-capitalize active" id="kyc-tab" data-bs-toggle="tab" data-bs-target="#kyc-tab-pane" type="button" role="tab" aria-controls="kyc-tab-pane" aria-selected="true">
+                            <i class="fas fa-user-circle"></i> KYC Information
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-capitalize" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions-tab-pane" type="button" role="tab" aria-controls="permissions-tab-pane" aria-selected="false">
+                            <i class="fas fa-user-cog"></i> permissions
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="myTabContent">
+                    <div class="tab-pane fade py-3 show active" id="kyc-tab-pane" role="tabpanel" aria-labelledby="kyc-tab" tabindex="0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-sm">
+                                <tbody>
+                                    <tr>
+                                        <td colspan="3">
+                                            <span class="text-muted">Email:</span>
+                                            {{ $user->email }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <span class="text-muted">Phone Number:</span>
+                                            {{ $user->phone }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <span class="text-muted">Gender:</span>
+                                            {{ $user->gender }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <span class="text-muted">Branch:</span>
+                                            {{ $user->branch->name }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <span class="text-muted">Account Status:</span>
+                                            {{ $user->email_verified_at ? 'Verified' : 'Not Verified' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                </div>
-                @endfor
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="col-md-12">
-    <div class="card shadow-sm border-0">
-        <div class="card-body">
+                        <div class="row">
+                            @foreach($user->kyc as $value)
+                                <div class="col-md-2 mb-2">
+                                    <div class="border p-2 text-center rounded shadow-none h-100">
+                                        {{-- Document Type --}}
+                                        <strong class="text-muted d-block mb-2">
+                                            {{ ucwords(str_replace('_', ' ', $value->doc_type)) }}
+                                        </strong>
 
-            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link text-capitalize active" id="kyc-tab" data-bs-toggle="tab" data-bs-target="#kyc-tab-pane" type="button" role="tab" aria-controls="kyc-tab-pane" aria-selected="true">
-                        <i class="fas fa-user-circle"></i> KYC Information
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link text-capitalize" id="permissions-tab" data-bs-toggle="tab" data-bs-target="#permissions-tab-pane" type="button" role="tab" aria-controls="permissions-tab-pane" aria-selected="false">
-                        <i class="fas fa-user-cog"></i> permissions
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade py-3 show active" id="kyc-tab-pane" role="tabpanel" aria-labelledby="kyc-tab" tabindex="0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-sm">
-                            <tbody>
-                                <tr>
-                                    <td colspan="3">
-                                        <span class="text-muted">Email:</span>
-                                        {{ $user->email }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3">
-                                        <span class="text-muted">Phone Number:</span>
-                                        {{ $user->phone }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3">
-                                        <span class="text-muted">Gender:</span>
-                                        {{ $user->gender }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3">
-                                        <span class="text-muted">Branch:</span>
-                                        {{ $user->branch->name }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="3">
-                                        <span class="text-muted">Account Status:</span>
-                                        {{ $user->email_verified_at ? 'Verified' : 'Not Verified' }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                        {{-- Display the document --}}
+                                        @php
+                                            $filePath = public_path($value->document);
+                                            $isImage = @getimagesize($filePath);
+                                        @endphp
 
-                    <div class="row">
-                        @foreach($user->kyc as $value)
-                            <div class="col-md-2 mb-2">
-                                <div class="border p-2 text-center rounded shadow-none h-100">
-                                    {{-- Document Type --}}
-                                    <strong class="text-muted d-block mb-2">
-                                        {{ ucwords(str_replace('_', ' ', $value->doc_type)) }}
-                                    </strong>
-
-                                    {{-- Display the document --}}
-                                    @php
-                                        $filePath = public_path($value->document);
-                                        $isImage = @getimagesize($filePath);
-                                    @endphp
-
-                                    @if($isImage)
-                                        <a href="{{ asset($value->document) }}" target="_blank">
-                                            <img src="{{ asset($value->document) }}" alt="Document" class="img-fluid" style="max-height: 120px;">
-                                        </a>
-                                    @else
-                                        <a href="{{ asset($value->document) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                            View Document
-                                        </a>
-                                    @endif
-
-                                    {{-- Status and Actions --}}
-                                    <div class="mt-3">
-                                        @if($value->status === 'approved')
-                                            <span class="badge bg-success">Approved</span>
-                                        @elseif($value->status === 'rejected')
-                                            <span class="badge bg-danger">Rejected</span>
+                                        @if($isImage)
+                                            <a href="{{ asset($value->document) }}" target="_blank">
+                                                <img src="{{ asset($value->document) }}" alt="Document" class="img-fluid" style="max-height: 120px;">
+                                            </a>
                                         @else
-                                            <span class="badge bg-warning text-dark">Pending Approval</span>
-
-                                            @if(auth()->user()->hasPermission('manager_general'))
-                                                <div class="mt-2 d-flex gap-2">
-                                                    <button class="btn btn-success btn-sm approve-kyc" data-id="{{ $value->id }}">
-                                                        Approve
-                                                    </button>
-                                                    <button class="btn btn-danger btn-sm reject-kyc" data-id="{{ $value->id }}">
-                                                        Reject
-                                                    </button>
-                                                </div>
-                                            @endif
+                                            <a href="{{ asset($value->document) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                                View Document
+                                            </a>
                                         @endif
+
+                                        {{-- Status and Actions --}}
+                                        <div class="mt-3">
+                                            @if($value->status === 'approved')
+                                                <span class="badge bg-success">Approved</span>
+                                            @elseif($value->status === 'rejected')
+                                                <span class="badge bg-danger">Rejected</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark">Pending Approval</span>
+
+                                                @if(auth()->user()->hasPermission('manager_general'))
+                                                    <div class="mt-2 d-flex gap-2">
+                                                        <button class="btn btn-success btn-sm approve-kyc" data-id="{{ $value->id }}">
+                                                            Approve
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm reject-kyc" data-id="{{ $value->id }}">
+                                                            Reject
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endforeach
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="tab-pane fade py-3" id="permissions-tab-pane" role="tabpanel" aria-labelledby="permissions-tab" tabindex="0">
+                        <h5 class="bg-light p-2">User Permissions</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered table-sm">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Permission</th>
+                                        <th>More Description</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if($user->permissions->isEmpty())
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No permissions assigned.</td>
+                                    </tr>
+                                    @else
+                                    @foreach ($user->permissions as $key => $permission)
+                                    <tr>
+                                        <td>{{ $key + 1 }}</td>
+                                        <td>{{ $permission->name }}</td>
+                                        <td>
+                                            <!-- Display additional information based on permission slug -->
+                                            @switch($permission->slug)
+                                            @case('manager_branch')
+                                            <ul>
+                                                @foreach($user->selectedBranches() as $branch)
+                                                <li>{{ $branch->name }}</li>
+                                                @endforeach
+                                            </ul>
+                                            @break
+
+                                            @case('manager_product')
+                                            <ul>
+                                                @foreach($user->selectedProducts() as $product)
+                                                <li>{{ $product->name }}</li>
+                                                @endforeach
+                                            </ul>
+                                            @break
+
+                                            @case('manager_catalogue')
+                                            <ul>
+                                                @foreach($user->selectedCatalogues() as $catalogue)
+                                                <li>{{ $catalogue->name }}</li>
+                                                @endforeach
+                                            </ul>
+                                            @break
+
+                                            @default
+                                            <!-- You can add a default case here if needed -->
+                                            @endswitch
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-                <div class="tab-pane fade py-3" id="permissions-tab-pane" role="tabpanel" aria-labelledby="permissions-tab" tabindex="0">
-                    <h5 class="bg-light p-2">User Permissions</h5>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-bordered table-sm">
-                            <thead class="table-primary">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Permission</th>
-                                    <th>More Description</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if($user->permissions->isEmpty())
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">No permissions assigned.</td>
-                                </tr>
-                                @else
-                                @foreach ($user->permissions as $key => $permission)
-                                <tr>
-                                    <td>{{ $key + 1 }}</td>
-                                    <td>{{ $permission->name }}</td>
-                                    <td>
-                                        <!-- Display additional information based on permission slug -->
-                                        @switch($permission->slug)
-                                        @case('manager_branch')
-                                        <ul>
-                                            @foreach($user->selectedBranches() as $branch)
-                                            <li>{{ $branch->name }}</li>
-                                            @endforeach
-                                        </ul>
-                                        @break
 
-                                        @case('manager_product')
-                                        <ul>
-                                            @foreach($user->selectedProducts() as $product)
-                                            <li>{{ $product->name }}</li>
-                                            @endforeach
-                                        </ul>
-                                        @break
-
-                                        @case('manager_catalogue')
-                                        <ul>
-                                            @foreach($user->selectedCatalogues() as $catalogue)
-                                            <li>{{ $catalogue->name }}</li>
-                                            @endforeach
-                                        </ul>
-                                        @break
-
-                                        @default
-                                        <!-- You can add a default case here if needed -->
-                                        @endswitch
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @endif
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
             </div>
-
         </div>
     </div>
-</div>
 
+</div>
 </div>
 
 @endsection

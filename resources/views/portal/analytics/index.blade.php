@@ -4,8 +4,7 @@
 
 @section('content')
 
-<div class="container-fluid">
-    <!-- Control buttons -->
+<!-- Control buttons -->
 <ul class="nav nav-pills rounded bg-white mb-3">
     <li class="nav-item">
         <a href="#" class="nav-link">
@@ -51,7 +50,6 @@
             </div>
         </div>
     </div>
-</div>
 </div>
 
 @endsection

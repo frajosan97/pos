@@ -3,7 +3,7 @@
 @section('pageTitle', 'Products')
 
 @section('content')
-<div class="container-fluid">
+
     <!-- Control Buttons -->
     <ul class="nav nav-pills rounded bg-white mb-3 shadow-sm">
         @if(auth()->user()->hasPermission('product_create'))
@@ -64,7 +64,7 @@
             <button class="btn btn-outline-primary" id="next-page">Next<i class="fas fa-chevron-right ms-1"></i></button>
         </div>
     </div>
-</div>
+    
 @endsection
 
 @push('script')

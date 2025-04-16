@@ -133,7 +133,9 @@
                 <section class="content">
                     <div class="container-fluid">
                         <div class="row pb-3">
-                            @yield('content')
+                            <div class="container-fluid">
+                                @yield('content')
+                            </div>
                         </div>
                     </div>
                 </section>
