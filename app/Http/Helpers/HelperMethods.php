@@ -313,3 +313,10 @@ if (!function_exists('permissionSlug')) {
     }
 }
 
+if (!function_exists('invoiceNumber')) {
+    function invoiceNumber($invoiceId)
+    {
+        return str_pad($invoiceId, 6, '0', STR_PAD_LEFT);
+    }
+}
+

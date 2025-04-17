@@ -31,7 +31,10 @@ class Payment extends Model
         return $this->belongsTo(Sale::class);
     }
 
-    // Corrected relationship to PaymentMethod
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
     public function paymentMethod()
     {
         return $this->belongsTo(PaymentMethod::class, 'payment_method_id');

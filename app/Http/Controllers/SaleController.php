@@ -57,7 +57,7 @@ class SaleController extends Controller
                             : '<strong class="text-danger text-capitalize"><i class="fas fa-times-circle"></i> ' . $sale->status . '</strong>';
 
                         return [
-                            'invoice_number' => str_pad($sale->id, 6, '0', STR_PAD_LEFT),
+                            'invoice_number' => invoiceNumber($sale->id),
                             'total_billed' => '<div class="text-end">' . number_format($total_billed, 2) . '</div>',
                             'total_paid' => '<div class="text-end">' . number_format($total_paid, 2) . '</div>',
                             'total_balance' => '<div class="text-end">' . number_format($total_balance, 2) . '</div>',

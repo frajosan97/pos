@@ -1,5 +1,9 @@
 <?php
 
+use App\Exports\PaymentsExport;
+use App\Exports\SalesExport;
+use App\Exports\ProductsExport;
+use App\Exports\UsersExport;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -15,6 +19,7 @@ use App\Http\Controllers\PdfController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SettingController;
+use Maatwebsite\Excel\Facades\Excel;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +51,40 @@ Route::prefix('verify')->group(function () {
     })->name('verify.activate');
 
     Route::post('/activate-account/{email}', [LoginController::class, 'activateAccount'])->name('account.activate');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Excel Generator
+|--------------------------------------------------------------------------
+*/
+Route::prefix('excel')->group(function () {
+    Route::get('/users', function () {
+        return Excel::download(new UsersExport, 'users.xlsx');
+    });
+    Route::get('/inventory', function () {
+        return Excel::download(new ProductsExport, 'inventory.xlsx');
+    });
+    Route::get('/sales', function () {
+        return Excel::download(new SalesExport, 'sales.xlsx');
+    });
+    Route::get('/payments', function () {
+        return Excel::download(new PaymentsExport, 'payments.xlsx');
+    });
+});
+
+/*
+|--------------------------------------------------------------------------
+| PDF Generator
+|--------------------------------------------------------------------------
+*/
+Route::prefix('pdf')->group(function () {
+    Route::get('/branch', [PdfController::class, 'branch'])->name('branch.pdf');
+    Route::get('/employee', [PdfController::class, 'employee'])->name('employee.pdf');
+    Route::get('/contract_letter/{id}', [PdfController::class, 'contractLetter'])->name('contract_letter.pdf');
+    Route::get('/inventory', [PdfController::class, 'inventory'])->name('inventory.pdf');
+    Route::get('/sales', [PdfController::class, 'sales'])->name('sales.pdf');
+    Route::get('/receipt/{id}', [PdfController::class, 'receipt'])->name('receipt.pdf');
 });
 
 /*
@@ -103,20 +142,6 @@ Route::middleware(['auth', 'permission'])->group(function () {
         Route::get('/messages/{conversationId}', [ChatController::class, 'getMessages'])->name('message.get');
         Route::get('/get-user/{id}', [ChatController::class, 'getUser'])->name('chat.get');
         Route::post('/send-message', [ChatController::class, 'sendMessage'])->name('message.send');
-    });
-
-    /*
-    |--------------------------------------------------------------------------
-    | PDF Generator
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('pdf')->group(function () {
-        Route::get('/branch', [PdfController::class, 'branch'])->name('branch.pdf');
-        Route::get('/employee', [PdfController::class, 'employee'])->name('employee.pdf');
-        Route::get('/contract_letter/{id}', [PdfController::class, 'contractLetter'])->name('contract_letter.pdf');
-        Route::get('/inventory', [PdfController::class, 'inventory'])->name('inventory.pdf');
-        Route::get('/sales', [PdfController::class, 'sales'])->name('sales.pdf');
-        Route::get('/receipt/{id}', [PdfController::class, 'receipt'])->name('receipt.pdf');
     });
 
     /*

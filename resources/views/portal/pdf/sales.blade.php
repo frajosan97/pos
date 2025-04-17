@@ -22,7 +22,7 @@
                 @if (count($sales) > 0)
                 @foreach ($sales as $sale)
                 <tr>
-                    <td>{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}</td>
+                    <td>{{ invoiceNumber($sale->id) }}</td>
                     <td>{{ number_format($sale->total_amount,2) }}</td>
                     <td>{{ number_format($sale->payments->sum('amount'),2) }}</td>
                     <td>

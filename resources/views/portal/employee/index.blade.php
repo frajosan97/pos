@@ -17,7 +17,7 @@
             </a>
             <ul class="dropdown-menu rounded-0 border-0 shadow-sm p-0">
                 <li><a href="{{ route('employee.pdf') }}" target="_blank" class="dropdown-item"><i class="fas fa-file-pdf text-danger me-2"></i>PDF</a></li>
-                <li><a href="#" class="dropdown-item"><i class="fas fa-file-excel text-success me-2"></i>Excel</a></li>
+                <li><a href="{{ url('excel/users') }}" class="dropdown-item"><i class="fas fa-file-excel text-success me-2"></i>Excel</a></li>
             </ul>
         </li>
     </ul>
